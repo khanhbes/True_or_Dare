@@ -1,0 +1,29 @@
+- main [ref=f1e4]:
+  - generic [ref=f1e654]:
+    - generic [ref=f1e655]:
+      - generic [ref=f1e656]:
+        - 'button "Nhạc nền: Tắt" [ref=f1e657]'
+        - button "Bộ sưu tập thẻ" [ref=f1e663]
+      - group "Chọn chế độ ứng dụng" [ref=f1e667]:
+        - button "Player" [pressed] [ref=f1e668]
+        - button "Developer" [ref=f1e672]
+    - generic [ref=f1e677]:
+      - heading "Truth or Dare" [level=1] [ref=f1e685]
+      - paragraph [ref=f1e686]: Dành Cho Cặp Đôi • Sự Thật Hay Thách
+      - paragraph [ref=f1e687]: Khám phá từng lá bài qua những câu hỏi gắn kết và thử thách dành riêng cho hai người.
+      - generic [ref=f1e688]:
+        - generic [ref=f1e689]:
+          - generic [ref=f1e690]: 🌸
+          - generic [ref=f1e691]: Nhẹ nhàng
+        - generic [ref=f1e692]:
+          - generic [ref=f1e693]: 🔥
+          - generic [ref=f1e694]: Thân mật
+        - generic [ref=f1e695]:
+          - generic [ref=f1e696]: 💋
+          - generic [ref=f1e697]: Nồng nhiệt
+      - button "Bắt Đầu Chơi" [ref=f1e698] [cursor=pointer]
+      - button "Cách chơi & luật phạt" [ref=f1e704]
+    - generic [ref=f1e709]:
+      - generic [ref=f1e710]: Thiết kế dành riêng cho 2 người
+      - generic [ref=f1e711]: ♥
+      - generic [ref=f1e712]: Giữ trọn cảm xúc ngọt ngào

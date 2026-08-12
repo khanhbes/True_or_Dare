@@ -1,0 +1,42 @@
+- main [ref=f1e4]:
+  - generic [ref=f1e172]:
+    - generic [ref=f1e173]:
+      - generic [ref=f1e174]:
+        - generic [ref=f1e175]: 👨‍💼
+        - generic [ref=f1e176]:
+          - generic [ref=f1e177]: Đang tới lượt
+          - generic [ref=f1e178]: Anh
+      - generic [ref=f1e181]: Lượt 1
+      - generic [ref=f1e190]:
+        - button "Tắt âm thanh" [ref=f1e191]
+        - button "Cách chơi và luật phạt" [ref=f1e196]
+        - button "Bộ sưu tập" [ref=f1e200]
+        - button "Thống kê" [ref=f1e204]
+    - generic [ref=f1e255]:
+      - generic [ref=f1e261]:
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=f1e262]:
+          - generic [ref=f1e263]:
+            - generic [ref=f1e264]:
+              - generic [ref=f1e265]: 🔍 SỰ THẬT
+              - generic [ref=f1e266]: 🔥 Thân mật
+            - button "Yêu thích lá bài này" [ref=f1e267]
+          - generic [ref=f1e270]:
+            - text: "Lượt thực hiện:"
+            - generic [ref=f1e271]: Anh 👨‍💼
+          - paragraph [ref=f1e290]: Có khoảnh khắc nào khi bên nhau bạn đã cố nén sự cuồng nhiệt vì ngại ngùng không?
+      - generic [ref=f1e291]:
+        - button "Sai / Không trả lời" [ref=f1e292] [cursor=pointer]
+        - button "Hoàn Thành" [ref=f1e298] [cursor=pointer]
+    - generic [ref=f1e237]:
+      - generic [ref=f1e238]:
+        - generic [ref=f1e239]: 👨‍💼
+        - generic [ref=f1e240]: "Anh:"
+        - generic [ref=f1e241]: 0 hoàn thành
+      - generic [ref=f1e243]:
+        - generic [ref=f1e244]: 👩‍💼
+        - generic [ref=f1e245]: "Em:"
+        - generic [ref=f1e246]: 0 hoàn thành

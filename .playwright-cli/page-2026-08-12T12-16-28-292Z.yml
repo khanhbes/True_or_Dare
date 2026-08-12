@@ -1,0 +1,135 @@
+- main [ref=f1e1161]:
+  - generic [ref=f1e1221]:
+    - generic [ref=f1e1222]:
+      - button [ref=f1e1223]
+      - heading "Thiết Lập Trò Chơi" [level=2] [ref=f1e1226]
+      - button "Cách chơi và luật phạt" [ref=f1e1227]
+    - generic [ref=f1e1231]:
+      - generic [ref=f1e1232]:
+        - heading "Tên 2 Người Chơi" [level=3] [ref=f1e1233]
+        - generic [ref=f1e1238]:
+          - generic [ref=f1e1239]:
+            - generic [ref=f1e1240]: Người chơi 1
+            - generic [ref=f1e1242]:
+              - button "Chọn biểu tượng người chơi" [ref=f1e1244] [cursor=pointer]:
+                - generic [ref=f1e1245]: 👨‍💼
+              - textbox "Nhập tên..." [ref=f1e1248]: Anh
+          - generic [ref=f1e1249]:
+            - generic [ref=f1e1250]: Người chơi 2
+            - generic [ref=f1e1252]:
+              - button "Chọn biểu tượng người chơi" [ref=f1e1254] [cursor=pointer]:
+                - generic [ref=f1e1255]: 👩‍💼
+              - textbox "Nhập tên..." [ref=f1e1258]: Em
+      - region [ref=f1e1259]:
+        - generic [ref=f1e1260]:
+          - generic [ref=f1e1261]:
+            - heading "Trang Phục Ban Đầu" [level=3] [ref=f1e1262]
+            - paragraph [ref=f1e1265]: Tự chọn số món, kiểu và màu. Có thể bắt đầu với bất kỳ cấu hình nào, kể cả 0 món.
+          - paragraph [ref=f1e1266]: Nam tối đa 3 · Nữ tối đa 4 món
+        - tablist "Chọn nhân vật để chỉnh trang phục" [ref=f1e1267]:
+          - tab "👨 Anh" [selected] [ref=f1e1268]
+          - tab "👩 Em" [ref=f1e1269]
+        - region "Anh" [ref=f1e1271]:
+          - generic [ref=f1e1272]:
+            - generic [ref=f1e1273]:
+              - paragraph [ref=f1e1274]: Nhân vật nam
+              - heading "Anh" [level=4] [ref=f1e1275]
+            - generic "3 món đang mặc" [ref=f1e1276]: 3/3
+          - generic [ref=f1e1279]:
+            - figure "Anh và trang phục hiện có" [ref=f1e1280]:
+              - generic [ref=f1e1323]: Anh
+            - generic [ref=f1e1324]:
+              - generic "Chọn các món đồ" [ref=f1e1325]:
+                - group "Áo" [ref=f1e1326]:
+                  - button "Áo Đang mặc · Chạm để chỉnh" [pressed] [ref=f1e1327]:
+                    - generic [ref=f1e1328]: Áo
+                    - generic [ref=f1e1329]: Đang mặc · Chạm để chỉnh
+                  - button "Bỏ áo" [pressed] [ref=f1e1330]
+                - group "Quần" [ref=f1e1332]:
+                  - button "Quần Đang mặc · Chạm để chỉnh" [ref=f1e1333]:
+                    - generic [ref=f1e1334]: Quần
+                    - generic [ref=f1e1335]: Đang mặc · Chạm để chỉnh
+                  - button "Bỏ quần" [pressed] [ref=f1e1336]
+                - group "Quần lót" [ref=f1e1338]:
+                  - button "Quần lót Đang mặc · Chạm để chỉnh" [ref=f1e1339]:
+                    - generic [ref=f1e1340]: Quần lót
+                    - generic [ref=f1e1341]: Đang mặc · Chạm để chỉnh
+                  - button "Bỏ quần lót" [pressed] [ref=f1e1342]
+              - generic [ref=f1e1344]:
+                - generic [ref=f1e1345]:
+                  - generic [ref=f1e1346]: Kiểu áo
+                  - generic [ref=f1e1347]:
+                    - button "Áo thun" [pressed] [ref=f1e1348] [cursor=pointer]
+                    - button "Sơ mi" [ref=f1e1351] [cursor=pointer]
+                    - button "Hoodie" [ref=f1e1352] [cursor=pointer]
+                - generic [ref=f1e1353]:
+                  - generic [ref=f1e1354]: Màu sắc
+                  - generic [ref=f1e1355]:
+                    - button "Màu Hồng" [pressed] [ref=f1e1356] [cursor=pointer]
+                    - button "Màu Trắng kem" [ref=f1e1358] [cursor=pointer]
+                    - button "Màu Đỏ rượu" [ref=f1e1360] [cursor=pointer]
+                    - button "Màu Đen" [ref=f1e1362] [cursor=pointer]
+                    - button "Màu Navy" [ref=f1e1364] [cursor=pointer]
+                    - button "Màu Xanh ngọc" [ref=f1e1366] [cursor=pointer]
+                    - button "Màu Tím" [ref=f1e1368] [cursor=pointer]
+                    - button "Màu Vàng" [ref=f1e1370] [cursor=pointer]
+                    - generic "Chọn màu tùy ý" [ref=f1e1372] [cursor=pointer]:
+                      - generic [ref=f1e1373]: Tự chọn
+                      - textbox "Màu tùy chọn cho áo" [ref=f1e1374]: "#ff6b9d"
+      - generic [ref=f1e1375]:
+        - generic [ref=f1e1376]:
+          - generic [ref=f1e1379]: Chọn Cấp Độ Thách
+          - generic [ref=f1e1380]: (Có thể chọn nhiều cấp độ)
+        - generic [ref=f1e1381]:
+          - button "🌸 Nhẹ nhàng Làm quen, câu hỏi vui, kỷ niệm ngọt ngào và thử thách dễ thương." [pressed] [ref=f1e1382] [cursor=pointer]:
+            - generic [ref=f1e1386]:
+              - generic [ref=f1e1387]: 🌸
+              - generic [ref=f1e1388]: Nhẹ nhàng
+              - paragraph [ref=f1e1389]: Làm quen, câu hỏi vui, kỷ niệm ngọt ngào và thử thách dễ thương.
+          - button "🔥 Thân mật Tăng sự gắn kết, tán tỉnh, cử chỉ lãng mạn và kết nối cảm xúc sâu sắc." [pressed] [ref=f1e1390] [cursor=pointer]:
+            - generic [ref=f1e1394]:
+              - generic [ref=f1e1395]: 🔥
+              - generic [ref=f1e1396]: Thân mật
+              - paragraph [ref=f1e1397]: Tăng sự gắn kết, tán tỉnh, cử chỉ lãng mạn và kết nối cảm xúc sâu sắc.
+          - button "💋 Nồng nhiệt Quyến rũ, riêng tư, nồng nàn dành riêng cho cặp đôi gắn bó." [pressed] [ref=f1e1398] [cursor=pointer]:
+            - generic [ref=f1e1402]:
+              - generic [ref=f1e1403]: 💋
+              - generic [ref=f1e1404]: Nồng nhiệt
+              - paragraph [ref=f1e1405]: Quyến rũ, riêng tư, nồng nàn dành riêng cho cặp đôi gắn bó.
+      - generic [ref=f1e1406]:
+        - heading "Tùy Chỉnh Lượt Chơi & Bảo Mật" [level=3] [ref=f1e1407]
+        - generic [ref=f1e1408]:
+          - generic [ref=f1e1409]:
+            - generic [ref=f1e1410]: Chế độ số lượt chơi
+            - generic [ref=f1e1411]: Giới hạn số lượt hoặc chơi thoải mái
+          - generic [ref=f1e1412]:
+            - button "Không giới hạn" [ref=f1e1413]
+            - button "Cố định" [ref=f1e1414]
+        - generic [ref=f1e1415]:
+          - generic [ref=f1e1422]:
+            - generic [ref=f1e1423]: Chế độ bảo mật câu hỏi
+            - generic [ref=f1e1424]: Che nội dung lá bài cho tới khi người chơi bấm "Xem nội dung"
+          - switch "Che nội dung thẻ theo mặc định" [checked] [ref=f1e1425]
+        - generic [ref=f1e1427]:
+          - generic [ref=f1e1435]:
+            - generic [ref=f1e1436]: Cách chọn thể loại bài
+            - generic [ref=f1e1437]: Chọn trước Sự Thật/Thách hay để hệ thống ngẫu nhiên
+          - generic [ref=f1e1438]:
+            - button "Ngẫu nhiên cả hai" [ref=f1e1439]
+            - button "Tự chọn trước" [ref=f1e1440]
+        - generic [ref=f1e1441]:
+          - generic [ref=f1e1446]:
+            - generic [ref=f1e1447]: Đếm ngược cho thử thách
+            - generic [ref=f1e1448]: Hiển thị đồng hồ đếm ngược cho các lá bài Thử Thách
+          - switch "Bật đếm ngược cho thử thách" [checked] [ref=f1e1449]
+        - generic [ref=f1e1451]:
+          - generic [ref=f1e1455]:
+            - generic [ref=f1e1456]: Luật phạt cởi 1 món
+            - generic [ref=f1e1457]: Khi bỏ lượt, người đang chơi chọn một món của chính mình để bỏ
+          - switch "Bật luật phạt cởi một món" [checked] [ref=f1e1458]
+      - generic [ref=f1e1460] [cursor=pointer]:
+        - checkbox "Xác nhận 18+ và đồng thuận Chúng tôi đều là người trưởng thành, tự nguyện tham gia và đã thống nhất giới hạn cũng như từ dừng." [ref=f1e1461]
+        - generic [ref=f1e1462]:
+          - generic [ref=f1e1463]: Xác nhận 18+ và đồng thuận
+          - generic [ref=f1e1467]: Chúng tôi đều là người trưởng thành, tự nguyện tham gia và đã thống nhất giới hạn cũng như từ dừng.
+      - button "Vào Bàn Chơi Ngay" [disabled] [ref=f1e1468]

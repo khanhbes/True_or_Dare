@@ -1,0 +1,72 @@
+- main [ref=f1e1161]:
+  - generic [ref=f1e1472]:
+    - generic [ref=f1e1473]:
+      - generic [ref=f1e1474]:
+        - generic [ref=f1e1475]: 👨‍💼
+        - generic [ref=f1e1476]:
+          - generic [ref=f1e1477]: Đang tới lượt
+          - generic [ref=f1e1478]: Anh
+      - generic [ref=f1e1481]: Lượt 1
+      - generic [ref=f1e1490]:
+        - button "Tắt âm thanh" [ref=f1e1491]
+        - button "Cách chơi và luật phạt" [ref=f1e1496]
+        - button "Mở bộ sưu tập thẻ" [ref=f1e1500]
+        - button "Mở tổng kết và thống kê" [ref=f1e1503]
+    - region "Tỉ lệ xuất hiện thẻ ở lượt hiện tại" [ref=f1e1510]:
+      - generic [ref=f1e1511]: Tỉ lệ lượt này
+      - generic [ref=f1e1517]:
+        - generic [ref=f1e1518]:
+          - text: Sự thật
+          - strong [ref=f1e1519]: 50%
+        - generic [ref=f1e1520]:
+          - text: Thử thách
+          - strong [ref=f1e1521]: 50%
+        - generic [ref=f1e1522]:
+          - text: 🌸
+          - strong [ref=f1e1523]: 70%
+        - generic [ref=f1e1524]:
+          - text: 🔥
+          - strong [ref=f1e1525]: 20%
+        - generic [ref=f1e1526]:
+          - text: 💋
+          - strong [ref=f1e1527]: 10%
+    - paragraph [ref=f1e1528]: Anh đang tới lượt, còn 3 món đồ.
+    - generic "Trang phục hiện tại của hai người chơi" [ref=f1e1529]:
+      - 'complementary "Anh: Đang mặc đồ, còn 3 món" [ref=f1e1530]':
+        - figure "Hình trang phục hiện tại của Anh" [ref=f1e1531]
+        - generic [ref=f1e1574]:
+          - generic [ref=f1e1575]: 👨‍💼 Anh
+          - generic [ref=f1e1576]: Đang mặc đồ · 3 món
+      - 'complementary "Em: Đang mặc đồ, còn 4 món" [ref=f1e1577]':
+        - figure "Hình trang phục hiện tại của Em" [ref=f1e1578]
+        - generic [ref=f1e1629]:
+          - generic [ref=f1e1630]: 👩‍💼 Em
+          - generic [ref=f1e1631]: Đang mặc đồ · 4 món
+    - generic [ref=f1e1676]:
+      - generic [ref=f1e1683]:
+        - generic [ref=f1e1684]:
+          - generic [ref=f1e1685]:
+            - generic [ref=f1e1686]: ⚡ THỬ THÁCH
+            - generic [ref=f1e1687]: 🌸 Nhẹ nhàng
+          - button "Yêu thích lá bài này" [ref=f1e1688]
+        - generic [ref=f1e1691]:
+          - text: "Lượt thực hiện:"
+          - generic [ref=f1e1692]: Anh 👨‍💼
+        - paragraph [ref=f1e1716]: Chụp một tấm ảnh selfie thân mật ngẫu hứng của 2 người bằng biểu cảm đáng yêu nhất.
+        - generic [ref=f1e1717]:
+          - generic [ref=f1e1718]:
+            - generic [ref=f1e1722]: "Thời gian:"
+            - generic [ref=f1e1723]: 30s
+          - button "Bắt đầu đếm" [ref=f1e1724]
+      - generic [ref=f1e1725]:
+        - button "Không thực hiện" [ref=f1e1726] [cursor=pointer]
+        - button "Hoàn Thành" [ref=f1e1732] [cursor=pointer]
+    - generic [ref=f1e1658]:
+      - generic [ref=f1e1659]:
+        - generic [ref=f1e1660]: 👨‍💼
+        - generic [ref=f1e1661]: "Anh:"
+        - generic [ref=f1e1662]: 0 hoàn thành
+      - generic [ref=f1e1664]:
+        - generic [ref=f1e1665]: 👩‍💼
+        - generic [ref=f1e1666]: "Em:"
+        - generic [ref=f1e1667]: 0 hoàn thành

@@ -1,0 +1,63 @@
+- main [ref=e4]:
+  - generic [ref=e470]:
+    - generic [ref=e471]:
+      - generic [ref=e472]:
+        - generic [ref=e473]: 👨‍💼
+        - generic [ref=e474]:
+          - generic [ref=e475]: Đang tới lượt
+          - generic [ref=e476]: Anh
+      - generic [ref=e479]: Lượt 1
+      - generic [ref=e488]:
+        - button "Tắt âm thanh" [ref=e489]
+        - button "Cách chơi và luật phạt" [ref=e494]
+        - button "Mở bộ sưu tập thẻ" [ref=e498]
+        - button "Mở tổng kết và thống kê" [ref=e501]
+    - region "Tỉ lệ xuất hiện thẻ ở lượt hiện tại" [ref=e508]:
+      - generic [ref=e509]: Tỉ lệ lượt này
+      - generic [ref=e515]:
+        - generic [ref=e516]:
+          - text: Sự thật
+          - strong [ref=e517]: 50%
+        - generic [ref=e518]:
+          - text: Thử thách
+          - strong [ref=e519]: 50%
+        - generic [ref=e520]:
+          - text: 🌸
+          - strong [ref=e521]: 0%
+        - generic [ref=e522]:
+          - text: 🔥
+          - strong [ref=e523]: 100%
+        - generic [ref=e524]:
+          - text: 💋
+          - strong [ref=e525]: 0%
+    - paragraph [ref=e526]: Anh đang tới lượt, còn 3 món đồ.
+    - generic "Trang phục hiện tại của hai người chơi" [ref=e527]:
+      - 'complementary "Anh: Đang mặc đồ, còn 3 món" [ref=e528]':
+        - figure "Hình trang phục hiện tại của Anh" [ref=e529]
+        - generic [ref=e578]:
+          - generic [ref=e579]: 👨‍💼 Anh
+          - generic [ref=e580]: Đang mặc đồ · 3 món
+      - 'complementary "Em: Đang mặc đồ, còn 4 món" [ref=e581]':
+        - figure "Hình trang phục hiện tại của Em" [ref=e582]
+        - generic [ref=e633]:
+          - generic [ref=e634]: 👩‍💼 Em
+          - generic [ref=e635]: Đang mặc đồ · 4 món
+    - generic [ref=e672]:
+      - heading "Lựa Chọn Của Anh" [level=3] [ref=e673]
+      - paragraph [ref=e674]: Bạn muốn chọn câu hỏi Sự Thật hay nhận thử thách Thách?
+      - generic [ref=e675]:
+        - button "Sự Thật Trả lời thành thật" [ref=e676] [cursor=pointer]:
+          - generic [ref=e680]: Sự Thật
+          - generic [ref=e681]: Trả lời thành thật
+        - button "Thử Thách Thực hiện hành động" [ref=e682] [cursor=pointer]:
+          - generic [ref=e685]: Thử Thách
+          - generic [ref=e686]: Thực hiện hành động
+    - generic [ref=e662]:
+      - generic [ref=e663]:
+        - generic [ref=e664]: 👨‍💼
+        - generic [ref=e665]: "Anh:"
+        - generic [ref=e666]: 0 hoàn thành
+      - generic [ref=e668]:
+        - generic [ref=e669]: 👩‍💼
+        - generic [ref=e670]: "Em:"
+        - generic [ref=e671]: 0 hoàn thành

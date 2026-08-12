@@ -1,0 +1,70 @@
+- main [ref=f3e4]:
+  - generic [ref=f3e312]:
+    - generic [ref=f3e313]:
+      - generic [ref=f3e314]:
+        - generic [ref=f3e315]: 👨‍💼
+        - generic [ref=f3e316]:
+          - generic [ref=f3e317]: Đang tới lượt
+          - generic [ref=f3e318]: Anh
+      - generic [ref=f3e321]: Lượt 1
+      - generic [ref=f3e330]:
+        - button "Tắt âm thanh" [ref=f3e331]
+        - button "Cách chơi và luật phạt" [ref=f3e336]
+        - button "Mở bộ sưu tập thẻ" [ref=f3e340]
+        - button "Mở tổng kết và thống kê" [ref=f3e343]
+    - region "Tỉ lệ xuất hiện thẻ ở lượt hiện tại" [ref=f3e350]:
+      - generic [ref=f3e351]:
+        - generic [ref=f3e356]: Tỉ lệ lượt này
+        - generic [ref=f3e357]: Tăng nhiệt
+      - generic [ref=f3e358]:
+        - generic [ref=f3e359]:
+          - text: Sự thật
+          - strong [ref=f3e360]: 50%
+        - generic [ref=f3e361]:
+          - text: Thử thách
+          - strong [ref=f3e362]: 50%
+        - generic [ref=f3e363]:
+          - text: 🌸
+          - strong [ref=f3e364]: 47%
+        - generic [ref=f3e365]:
+          - text: 🔥
+          - strong [ref=f3e366]: 13%
+        - generic [ref=f3e367]:
+          - text: 💋
+          - strong [ref=f3e368]: 40%
+      - paragraph [ref=f3e369]: "Cả hai còn tối đa 1 món: Nồng nhiệt được tăng lên 40% nếu cấp này đang bật."
+    - paragraph [ref=f3e370]: Anh đang tới lượt, còn 1 món đồ.
+    - generic "Trang phục hiện tại của hai người chơi" [ref=f3e371]:
+      - 'complementary "Anh: Chỉ còn đồ lót, còn 1 món" [ref=f3e372]':
+        - figure "Hình trang phục hiện tại của Anh" [ref=f3e373]
+        - generic [ref=f3e405]:
+          - generic [ref=f3e406]: 👨‍💼 Anh
+          - generic [ref=f3e407]: Chỉ còn đồ lót · 1 món
+      - 'complementary "Em: Chỉ còn đồ lót, còn 1 món" [ref=f3e408]':
+        - figure "Hình trang phục hiện tại của Em" [ref=f3e409]
+        - generic [ref=f3e442]:
+          - generic [ref=f3e443]: 👩‍💼 Em
+          - generic [ref=f3e444]: Chỉ còn đồ lót · 1 món
+    - generic [ref=f3e447]:
+      - generic [ref=f3e451] [cursor=pointer]:
+        - generic [ref=f3e452]: ✦
+        - generic [ref=f3e453]: ✦
+        - generic [ref=f3e454]: ✦
+        - generic [ref=f3e455]: ✦
+        - generic [ref=f3e456]:
+          - generic [ref=f3e457]: TRUTH OR DARE
+          - generic [ref=f3e461]: CẶP ĐÔI
+      - paragraph [ref=f3e462]:
+        - generic [ref=f3e463]: Đến lượt
+        - generic [ref=f3e464]: Anh
+        - generic [ref=f3e465]: rút lá bài tình yêu
+      - button "Rút Bài Ngay" [ref=f3e466] [cursor=pointer]
+    - generic [ref=f3e471]:
+      - generic [ref=f3e472]:
+        - generic [ref=f3e473]: 👨‍💼
+        - generic [ref=f3e474]: "Anh:"
+        - generic [ref=f3e475]: 0 hoàn thành
+      - generic [ref=f3e477]:
+        - generic [ref=f3e478]: 👩‍💼
+        - generic [ref=f3e479]: "Em:"
+        - generic [ref=f3e480]: 0 hoàn thành

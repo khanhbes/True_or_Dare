@@ -1,0 +1,24 @@
+- main [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - 'button "Nhạc nền: Tắt" [ref=e7]'
+      - button "Bộ sưu tập thẻ" [ref=e13]
+    - generic [ref=e17]:
+      - heading "Truth or Dare" [level=1] [ref=e25]
+      - paragraph [ref=e26]: Dành Cho Cặp Đôi • Sự Thật Hay Thách
+      - paragraph [ref=e27]: Một không gian lãng mạn, tinh tế và riêng tư. Nơi hai tâm hồn xích lại gần nhau qua những câu hỏi gắn kết và thử thách tán tỉnh ngọt ngào.
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]: 🌸
+          - generic [ref=e31]: Nhẹ nhàng
+        - generic [ref=e32]:
+          - generic [ref=e33]: 🔥
+          - generic [ref=e34]: Thân mật
+        - generic [ref=e35]:
+          - generic [ref=e36]: 💋
+          - generic [ref=e37]: Nồng nhiệt
+      - button "Bắt Đầu Chơi" [ref=e38] [cursor=pointer]
+    - generic [ref=e44]:
+      - generic [ref=e45]: Thiết kế dành riêng cho 2 người
+      - generic [ref=e46]: ♥
+      - generic [ref=e47]: Giữ trọn cảm xúc ngọt ngào

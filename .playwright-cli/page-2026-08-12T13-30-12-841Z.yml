@@ -1,0 +1,77 @@
+- main [ref=e4]:
+  - generic [ref=e470]:
+    - generic [ref=e471]:
+      - generic [ref=e472]:
+        - generic [ref=e473]: 👨‍💼
+        - generic [ref=e474]:
+          - generic [ref=e475]: Đang tới lượt
+          - generic [ref=e476]: Anh
+      - generic [ref=e479]: Lượt 1
+      - generic [ref=e488]:
+        - button "Tắt âm thanh" [ref=e489]
+        - button "Cách chơi và luật phạt" [ref=e494]
+        - button "Mở bộ sưu tập thẻ" [ref=e498]
+        - button "Mở tổng kết và thống kê" [ref=e501]
+    - region "Tỉ lệ xuất hiện thẻ ở lượt hiện tại" [ref=e508]:
+      - generic [ref=e509]: Tỉ lệ lượt này
+      - generic [ref=e515]:
+        - generic [ref=e516]:
+          - text: Sự thật
+          - strong [ref=e517]: 50%
+        - generic [ref=e518]:
+          - text: Thử thách
+          - strong [ref=e519]: 50%
+        - generic [ref=e520]:
+          - text: 🌸
+          - strong [ref=e521]: 0%
+        - generic [ref=e522]:
+          - text: 🔥
+          - strong [ref=e523]: 100%
+        - generic [ref=e524]:
+          - text: 💋
+          - strong [ref=e525]: 0%
+    - paragraph [ref=e526]: Anh đang tới lượt, còn 3 món đồ.
+    - generic "Trang phục hiện tại của hai người chơi" [ref=e527]:
+      - 'complementary "Anh: Đang mặc đồ, còn 3 món" [ref=e528]':
+        - figure "Hình trang phục hiện tại của Anh" [ref=e529]
+        - generic [ref=e578]:
+          - generic [ref=e579]: 👨‍💼 Anh
+          - generic [ref=e580]: Đang mặc đồ · 3 món
+      - 'complementary "Em: Đang mặc đồ, còn 4 món" [ref=e581]':
+        - figure "Hình trang phục hiện tại của Em" [ref=e582]
+        - generic [ref=e633]:
+          - generic [ref=e634]: 👩‍💼 Em
+          - generic [ref=e635]: Đang mặc đồ · 4 món
+    - generic [ref=e695]:
+      - generic [ref=e701]:
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e702]:
+          - generic [ref=e703]:
+            - generic [ref=e704]:
+              - generic [ref=e705]: ⚡ THỬ THÁCH
+              - generic [ref=e706]: 🔥 Thân mật
+            - button "Yêu thích lá bài này" [ref=e707]
+          - generic [ref=e710]:
+            - text: "Lượt thực hiện:"
+            - generic [ref=e711]: Anh 👨‍💼
+          - paragraph [ref=e733]: Cùng thống nhất rồi chọn một món đối phương đang mặc để họ cởi bỏ. Chỉ tiếp tục khi cả hai đều đồng ý.
+          - generic [ref=e734]:
+            - generic [ref=e735]:
+              - generic [ref=e739]: "Thời gian:"
+              - generic [ref=e740]: 30s
+            - button "Bắt đầu đếm giờ" [ref=e741]: Bắt đầu đếm
+      - generic [ref=e742]:
+        - button "Không thực hiện" [ref=e743] [cursor=pointer]
+        - button "Hoàn Thành" [ref=e749] [cursor=pointer]
+    - generic [ref=e662]:
+      - generic [ref=e663]:
+        - generic [ref=e664]: 👨‍💼
+        - generic [ref=e665]: "Anh:"
+        - generic [ref=e666]: 0 hoàn thành
+      - generic [ref=e668]:
+        - generic [ref=e669]: 👩‍💼
+        - generic [ref=e670]: "Em:"
+        - generic [ref=e671]: 0 hoàn thành

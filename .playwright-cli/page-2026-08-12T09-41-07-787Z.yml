@@ -1,0 +1,120 @@
+- main [ref=e4]:
+  - generic [ref=e53]:
+    - generic [ref=e54]:
+      - button [ref=e55]
+      - heading "Thiết Lập Trò Chơi" [level=2] [ref=e58]
+      - button "Cách chơi và luật phạt" [ref=e59]
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - heading "Tên 2 Người Chơi" [level=3] [ref=e65]
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e72]: Người chơi 1
+            - generic [ref=e74]:
+              - button "Chọn biểu tượng người chơi" [ref=e76] [cursor=pointer]:
+                - generic [ref=e77]: 👨‍💼
+              - textbox "Nhập tên..." [ref=e80]: Anh
+          - generic [ref=e81]:
+            - generic [ref=e82]: Người chơi 2
+            - generic [ref=e84]:
+              - button "Chọn biểu tượng người chơi" [ref=e86] [cursor=pointer]:
+                - generic [ref=e87]: 👩‍💼
+              - textbox "Nhập tên..." [ref=e90]: Em
+      - region [ref=e91]:
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - heading "Trang Phục Ban Đầu" [level=3] [ref=e94]
+            - paragraph [ref=e97]: Tự chọn số món, kiểu và màu. Có thể bắt đầu với bất kỳ cấu hình nào, kể cả 0 món.
+          - paragraph [ref=e98]: Nam tối đa 3 · Nữ tối đa 4 món
+        - tablist "Chọn nhân vật để chỉnh trang phục" [ref=e99]:
+          - tab "👨 Anh" [selected] [ref=e100]
+          - tab "👩 Em" [ref=e101]
+        - region "Anh" [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - paragraph [ref=e106]: Nhân vật nam
+              - heading "Anh" [level=4] [ref=e107]
+            - generic "3 món đang mặc" [ref=e108]: 3/3
+          - generic [ref=e111]:
+            - figure "Anh và trang phục hiện có" [ref=e112]:
+              - generic [ref=e135]: Anh
+            - generic [ref=e136]:
+              - generic "Chọn các món đồ" [ref=e137]:
+                - button "Áo" [pressed] [ref=e138] [cursor=pointer]
+                - button "Quần" [pressed] [ref=e142] [cursor=pointer]
+                - button "Quần lót" [pressed] [ref=e146] [cursor=pointer]
+              - generic [ref=e150]:
+                - generic [ref=e151]:
+                  - generic [ref=e152]: Kiểu áo
+                  - generic [ref=e153]:
+                    - button "Áo thun" [pressed] [ref=e154] [cursor=pointer]
+                    - button "Sơ mi" [ref=e157] [cursor=pointer]
+                    - button "Hoodie" [ref=e158] [cursor=pointer]
+                - generic [ref=e159]:
+                  - generic [ref=e160]: Màu sắc
+                  - generic [ref=e161]:
+                    - button "Màu Hồng" [pressed] [ref=e162] [cursor=pointer]
+                    - button "Màu Trắng kem" [ref=e164] [cursor=pointer]
+                    - button "Màu Đỏ rượu" [ref=e166] [cursor=pointer]
+                    - button "Màu Đen" [ref=e168] [cursor=pointer]
+                    - button "Màu Navy" [ref=e170] [cursor=pointer]
+                    - button "Màu Xanh ngọc" [ref=e172] [cursor=pointer]
+                    - button "Màu Tím" [ref=e174] [cursor=pointer]
+                    - button "Màu Vàng" [ref=e176] [cursor=pointer]
+                    - generic "Chọn màu tùy ý" [ref=e178] [cursor=pointer]:
+                      - generic [ref=e179]: Tự chọn
+                      - textbox "Màu tùy chọn cho áo" [ref=e180]: "#ff6b9d"
+      - generic [ref=e181]:
+        - generic [ref=e182]:
+          - generic [ref=e185]: Chọn Cấp Độ Thách
+          - generic [ref=e186]: (Có thể chọn nhiều cấp độ)
+        - generic [ref=e187]:
+          - generic [ref=e192] [cursor=pointer]:
+            - generic [ref=e193]: 🌸
+            - generic [ref=e194]: Nhẹ nhàng
+            - paragraph [ref=e195]: Làm quen, câu hỏi vui, kỷ niệm ngọt ngào và thử thách dễ thương.
+          - generic [ref=e200] [cursor=pointer]:
+            - generic [ref=e201]: 🔥
+            - generic [ref=e202]: Thân mật
+            - paragraph [ref=e203]: Tăng sự gắn kết, tán tỉnh, cử chỉ lãng mạn và kết nối cảm xúc sâu sắc.
+          - generic [ref=e208] [cursor=pointer]:
+            - generic [ref=e209]: 💋
+            - generic [ref=e210]: Nồng nhiệt
+            - paragraph [ref=e211]: Quyến rũ, riêng tư, nồng nàn dành riêng cho cặp đôi gắn bó.
+      - generic [ref=e212]:
+        - heading "Tùy Chỉnh Lượt Chơi & Bảo Mật" [level=3] [ref=e213]
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - generic [ref=e216]: Chế độ số lượt chơi
+            - generic [ref=e217]: Giới hạn số lượt hoặc chơi thoải mái
+          - generic [ref=e218]:
+            - button "Không giới hạn" [ref=e219]
+            - button "Cố định" [ref=e220]
+        - generic [ref=e221]:
+          - generic [ref=e228]:
+            - generic [ref=e229]: Chế độ bảo mật câu hỏi
+            - generic [ref=e230]: Che nội dung lá bài cho tới khi người chơi bấm "Xem nội dung"
+          - button [ref=e231]
+        - generic [ref=e233]:
+          - generic [ref=e241]:
+            - generic [ref=e242]: Cách chọn thể loại bài
+            - generic [ref=e243]: Chọn trước Sự Thật/Thách hay để hệ thống ngẫu nhiên
+          - generic [ref=e244]:
+            - button "Ngẫu nhiên cả hai" [ref=e245]
+            - button "Tự chọn trước" [ref=e246]
+        - generic [ref=e247]:
+          - generic [ref=e252]:
+            - generic [ref=e253]: Đếm ngược cho thử thách
+            - generic [ref=e254]: Hiển thị đồng hồ đếm ngược cho các lá bài Thử Thách
+          - button [ref=e255]
+        - generic [ref=e257]:
+          - generic [ref=e261]:
+            - generic [ref=e262]: Luật phạt cởi 1 món
+            - generic [ref=e263]: Khi bỏ lượt, người đang chơi chọn một món của chính mình để bỏ
+          - switch "Bật luật phạt cởi một món" [checked] [ref=e264]
+      - generic [ref=e266] [cursor=pointer]:
+        - checkbox "Xác nhận 18+ và đồng thuận Chúng tôi đều là người trưởng thành, tự nguyện tham gia và đã thống nhất giới hạn cũng như từ dừng." [ref=e267]
+        - generic [ref=e268]:
+          - generic [ref=e269]: Xác nhận 18+ và đồng thuận
+          - generic [ref=e273]: Chúng tôi đều là người trưởng thành, tự nguyện tham gia và đã thống nhất giới hạn cũng như từ dừng.
+      - button "Vào Bàn Chơi Ngay" [disabled] [ref=e274]

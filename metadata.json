@@ -1,0 +1,6 @@
+{
+  "name": "Truth or Dare for Couples",
+  "description": "Game Sự Thật Hay Thách dành cho cặp đôi - lãng mạn, thân mật và gợi cảm nhẹ nhàng",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

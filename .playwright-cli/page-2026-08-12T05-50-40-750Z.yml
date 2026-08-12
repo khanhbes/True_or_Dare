@@ -1,0 +1,780 @@
+- main [ref=e4]:
+  - generic [ref=e118]:
+    - generic [ref=e119]:
+      - button "Về trang chủ" [ref=e120] [cursor=pointer]
+      - heading "Bộ Sưu Tập Bài Tình Yêu" [level=2] [ref=e125]
+      - button "Thêm bài riêng" [active] [ref=e126] [cursor=pointer]
+    - generic [ref=e129]:
+      - textbox "Tìm kiếm nội dung câu hỏi hoặc thử thách..." [ref=e134]
+      - generic [ref=e135]:
+        - button "Tất cả" [ref=e136] [cursor=pointer]
+        - button "🔍 Sự Thật" [ref=e137] [cursor=pointer]
+        - button "⚡ Thử Thách" [ref=e138] [cursor=pointer]
+        - button "🌸 Nhẹ nhàng" [ref=e139] [cursor=pointer]
+        - button "🔥 Thân mật" [ref=e140] [cursor=pointer]
+        - button "💋 Nồng nhiệt" [ref=e141] [cursor=pointer]
+        - button "♥ Đã thích (0)" [ref=e142] [cursor=pointer]
+    - generic [ref=e143]:
+      - 'button "Mở lá bài: Ấn tượng đầu tiên của bạn về đối phương trong lần đầu tiên gặp mặt là gì?" [ref=e144] [cursor=pointer]':
+        - generic [ref=e145]:
+          - generic [ref=e146]:
+            - generic [ref=e147]:
+              - generic [ref=e148]: SỰ THẬT
+              - generic [ref=e149]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e150]
+          - generic [ref=e153]:
+            - paragraph [ref=e159]: Ấn tượng đầu tiên của bạn về đối phương trong lần đầu tiên gặp mặt là gì?
+            - paragraph [ref=e160]: 💡 Hãy thật thà chia sẻ cảm xúc lúc ấy nhé!
+      - 'button "Mở lá bài: Khoảnh khắc nào khiến bạn nhận ra mình đã thực sự \"phải lòng\" người ấy?" [ref=e162] [cursor=pointer]':
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - generic [ref=e165]:
+              - generic [ref=e166]: SỰ THẬT
+              - generic [ref=e167]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e168]
+          - generic [ref=e171]:
+            - paragraph [ref=e175]: Khoảnh khắc nào khiến bạn nhận ra mình đã thực sự "phải lòng" người ấy?
+            - paragraph [ref=e176]: 💡 Một nụ cười, một cử chỉ hay một lời nói?
+      - 'button "Mở lá bài: Trang phục hoặc kiểu tóc nào của đối phương khiến bạn cảm thấy họ cuốn hút nhất?" [ref=e178] [cursor=pointer]':
+        - generic [ref=e179]:
+          - generic [ref=e180]:
+            - generic [ref=e181]:
+              - generic [ref=e182]: SỰ THẬT
+              - generic [ref=e183]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e184]
+          - paragraph [ref=e194]: Trang phục hoặc kiểu tóc nào của đối phương khiến bạn cảm thấy họ cuốn hút nhất?
+      - 'button "Mở lá bài: Thói quen nhỏ đáng yêu nào của người ấy khiến bạn âm thầm mỉm cười mỗi khi nhớ đến?" [ref=e196] [cursor=pointer]':
+        - generic [ref=e197]:
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - generic [ref=e200]: SỰ THẬT
+              - generic [ref=e201]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e202]
+          - paragraph [ref=e209]: Thói quen nhỏ đáng yêu nào của người ấy khiến bạn âm thầm mỉm cười mỗi khi nhớ đến?
+      - 'button "Mở lá bài: Nếu có một ngày hẹn hò mơ ước trọn vẹn chỉ có 2 người, bạn muốn chúng ta sẽ làm gì cùng nhau?" [ref=e211] [cursor=pointer]':
+        - generic [ref=e212]:
+          - generic [ref=e213]:
+            - generic [ref=e214]:
+              - generic [ref=e215]: SỰ THẬT
+              - generic [ref=e216]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e217]
+          - paragraph [ref=e227]: Nếu có một ngày hẹn hò mơ ước trọn vẹn chỉ có 2 người, bạn muốn chúng ta sẽ làm gì cùng nhau?
+      - 'button "Mở lá bài: Bài hát nào mỗi khi vang lên đều làm bạn lập tức nhớ đến người đối diện?" [ref=e229] [cursor=pointer]':
+        - generic [ref=e230]:
+          - generic [ref=e231]:
+            - generic [ref=e232]:
+              - generic [ref=e233]: SỰ THẬT
+              - generic [ref=e234]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e235]
+          - paragraph [ref=e244]: Bài hát nào mỗi khi vang lên đều làm bạn lập tức nhớ đến người đối diện?
+      - 'button "Mở lá bài: Điều ngốc nghếch nhất mà bạn từng làm để gây sự chú ý với đối phương là gì?" [ref=e246] [cursor=pointer]':
+        - generic [ref=e247]:
+          - generic [ref=e248]:
+            - generic [ref=e249]:
+              - generic [ref=e250]: SỰ THẬT
+              - generic [ref=e251]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e252]
+          - paragraph [ref=e262]: Điều ngốc nghếch nhất mà bạn từng làm để gây sự chú ý với đối phương là gì?
+      - 'button "Mở lá bài: Điểm gì trên khuôn mặt người ấy mà bạn thích ngắm nhìn nhất khi họ ngủ hoặc tập trung?" [ref=e264] [cursor=pointer]':
+        - generic [ref=e265]:
+          - generic [ref=e266]:
+            - generic [ref=e267]:
+              - generic [ref=e268]: SỰ THẬT
+              - generic [ref=e269]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e270]
+          - paragraph [ref=e279]: Điểm gì trên khuôn mặt người ấy mà bạn thích ngắm nhìn nhất khi họ ngủ hoặc tập trung?
+      - 'button "Mở lá bài: Kỷ niệm hẹn hò nào giữa hai người làm bạn cảm thấy bình yên nhất?" [ref=e281] [cursor=pointer]':
+        - generic [ref=e282]:
+          - generic [ref=e283]:
+            - generic [ref=e284]:
+              - generic [ref=e285]: SỰ THẬT
+              - generic [ref=e286]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e287]
+          - paragraph [ref=e294]: Kỷ niệm hẹn hò nào giữa hai người làm bạn cảm thấy bình yên nhất?
+      - 'button "Mở lá bài: Bạn thích cách đối phương gọi tên bạn hay cách họ xưng hô thân mật nào nhất?" [ref=e296] [cursor=pointer]':
+        - generic [ref=e297]:
+          - generic [ref=e298]:
+            - generic [ref=e299]:
+              - generic [ref=e300]: SỰ THẬT
+              - generic [ref=e301]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e302]
+          - paragraph [ref=e311]: Bạn thích cách đối phương gọi tên bạn hay cách họ xưng hô thân mật nào nhất?
+      - 'button "Mở lá bài: Nhìn thẳng vào mắt người ấy trong 30 giây không chớp mắt và nở một nụ cười thật ngọt ngào." [ref=e313] [cursor=pointer]':
+        - generic [ref=e314]:
+          - generic [ref=e315]:
+            - generic [ref=e316]:
+              - generic [ref=e317]: THỬ THÁCH
+              - generic [ref=e318]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e319]
+          - paragraph [ref=e330]: Nhìn thẳng vào mắt người ấy trong 30 giây không chớp mắt và nở một nụ cười thật ngọt ngào.
+          - generic [ref=e331]: ⏱ 30s
+      - 'button "Mở lá bài: Nhắm mắt lại, dùng ngón tay chạm nhẹ lên khuôn mặt đối phương và đoán xem ngón tay đang dừng ở đâu (mắt, mũi, môi, má)." [ref=e333] [cursor=pointer]':
+        - generic [ref=e334]:
+          - generic [ref=e335]:
+            - generic [ref=e336]:
+              - generic [ref=e337]: THỬ THÁCH
+              - generic [ref=e338]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e339]
+          - paragraph [ref=e350]: Nhắm mắt lại, dùng ngón tay chạm nhẹ lên khuôn mặt đối phương và đoán xem ngón tay đang dừng ở đâu (mắt, mũi, môi, má).
+      - 'button "Mở lá bài: Nói 3 điều bạn trân trọng nhất ở người ấy bằng giọng thì thầm vào tai." [ref=e352] [cursor=pointer]':
+        - generic [ref=e353]:
+          - generic [ref=e354]:
+            - generic [ref=e355]:
+              - generic [ref=e356]: THỬ THÁCH
+              - generic [ref=e357]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e358]
+          - paragraph [ref=e369]: Nói 3 điều bạn trân trọng nhất ở người ấy bằng giọng thì thầm vào tai.
+      - 'button "Mở lá bài: Thực hiện một cái ôm ấm áp kéo dài đúng 20 giây không buông." [ref=e371] [cursor=pointer]':
+        - generic [ref=e372]:
+          - generic [ref=e373]:
+            - generic [ref=e374]:
+              - generic [ref=e375]: THỬ THÁCH
+              - generic [ref=e376]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e377]
+          - paragraph [ref=e388]: Thực hiện một cái ôm ấm áp kéo dài đúng 20 giây không buông.
+          - generic [ref=e389]: ⏱ 20s
+      - 'button "Mở lá bài: Chụp một tấm ảnh selfie thân mật ngẫu hứng của 2 người bằng biểu cảm đáng yêu nhất." [ref=e391] [cursor=pointer]':
+        - generic [ref=e392]:
+          - generic [ref=e393]:
+            - generic [ref=e394]:
+              - generic [ref=e395]: THỬ THÁCH
+              - generic [ref=e396]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e397]
+          - paragraph [ref=e410]: Chụp một tấm ảnh selfie thân mật ngẫu hứng của 2 người bằng biểu cảm đáng yêu nhất.
+      - 'button "Mở lá bài: Cùng người ấy khiêu vũ nhẹ nhàng không cần nhạc trong 1 phút." [ref=e412] [cursor=pointer]':
+        - generic [ref=e413]:
+          - generic [ref=e414]:
+            - generic [ref=e415]:
+              - generic [ref=e416]: THỬ THÁCH
+              - generic [ref=e417]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e418]
+          - paragraph [ref=e430]: Cùng người ấy khiêu vũ nhẹ nhàng không cần nhạc trong 1 phút.
+          - generic [ref=e431]: ⏱ 60s
+      - 'button "Mở lá bài: Hát ngẫu hứng một câu hát tình ca hoặc đọc 2 câu thơ ngọt ngào tặng riêng cho đối phương." [ref=e433] [cursor=pointer]':
+        - generic [ref=e434]:
+          - generic [ref=e435]:
+            - generic [ref=e436]:
+              - generic [ref=e437]: THỬ THÁCH
+              - generic [ref=e438]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e439]
+          - paragraph [ref=e448]: Hát ngẫu hứng một câu hát tình ca hoặc đọc 2 câu thơ ngọt ngào tặng riêng cho đối phương.
+      - 'button "Mở lá bài: Đặt một nụ hôn nhẹ nhàng lên trán người ấy để thể hiện sự nuông chiều." [ref=e450] [cursor=pointer]':
+        - generic [ref=e451]:
+          - generic [ref=e452]:
+            - generic [ref=e453]:
+              - generic [ref=e454]: THỬ THÁCH
+              - generic [ref=e455]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e456]
+          - paragraph [ref=e466]: Đặt một nụ hôn nhẹ nhàng lên trán người ấy để thể hiện sự nuông chiều.
+      - 'button "Mở lá bài: Mát-xa nhẹ vùng vai và cổ cho đối phương trong 1 phút." [ref=e468] [cursor=pointer]':
+        - generic [ref=e469]:
+          - generic [ref=e470]:
+            - generic [ref=e471]:
+              - generic [ref=e472]: THỬ THÁCH
+              - generic [ref=e473]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e474]
+          - paragraph [ref=e487]: Mát-xa nhẹ vùng vai và cổ cho đối phương trong 1 phút.
+          - generic [ref=e488]: ⏱ 60s
+      - 'button "Mở lá bài: Gửi một tin nhắn ngắn ngọt ngào vào điện thoại đối phương ngay lúc này." [ref=e490] [cursor=pointer]':
+        - generic [ref=e491]:
+          - generic [ref=e492]:
+            - generic [ref=e493]:
+              - generic [ref=e494]: THỬ THÁCH
+              - generic [ref=e495]: 🌸 Nhẹ nhàng
+            - button "Thêm vào yêu thích" [ref=e496]
+          - paragraph [ref=e506]: Gửi một tin nhắn ngắn ngọt ngào vào điện thoại đối phương ngay lúc này.
+      - 'button "Mở lá bài: Cử chỉ hoặc lời nói nào của đối phương dễ khiến bạn cảm thấy \"xao xuyến\" và loạn nhịp nhất?" [ref=e508] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e509]:
+          - generic [ref=e510]:
+            - generic [ref=e511]:
+              - generic [ref=e512]: SỰ THẬT
+              - generic [ref=e513]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e514]
+          - paragraph [ref=e522]: Cử chỉ hoặc lời nói nào của đối phương dễ khiến bạn cảm thấy "xao xuyến" và loạn nhịp nhất?
+      - 'button "Mở lá bài: Thì thầm điều ước thầm kín nhất mà bạn muốn hai người cùng làm trong đêm nay." [ref=e524] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e525]:
+          - generic [ref=e526]:
+            - generic [ref=e527]:
+              - generic [ref=e528]: SỰ THẬT
+              - generic [ref=e529]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e530]
+          - paragraph [ref=e539]: Thì thầm điều ước thầm kín nhất mà bạn muốn hai người cùng làm trong đêm nay.
+      - 'button "Mở lá bài: Lần gần nhất bạn nhìn người ấy và cảm thấy ngập tràn ham muốn được ôm chặt họ là khi nào?" [ref=e541] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e542]:
+          - generic [ref=e543]:
+            - generic [ref=e544]:
+              - generic [ref=e545]: SỰ THẬT
+              - generic [ref=e546]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e547]
+          - paragraph [ref=e558]: Lần gần nhất bạn nhìn người ấy và cảm thấy ngập tràn ham muốn được ôm chặt họ là khi nào?
+      - 'button "Mở lá bài: Vùng nào trên cơ thể bạn nhạy cảm nhất mỗi khi đối phương chạm nhẹ vào?" [ref=e560] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e561]:
+          - generic [ref=e562]:
+            - generic [ref=e563]:
+              - generic [ref=e564]: SỰ THẬT
+              - generic [ref=e565]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e566]
+          - paragraph [ref=e574]: Vùng nào trên cơ thể bạn nhạy cảm nhất mỗi khi đối phương chạm nhẹ vào?
+      - 'button "Mở lá bài: Bạn cảm thấy góc nghiêng hoặc đường nét nào trên cơ thể người ấy quyến rũ nhất?" [ref=e576] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e577]:
+          - generic [ref=e578]:
+            - generic [ref=e579]:
+              - generic [ref=e580]: SỰ THẬT
+              - generic [ref=e581]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e582]
+          - paragraph [ref=e592]: Bạn cảm thấy góc nghiêng hoặc đường nét nào trên cơ thể người ấy quyến rũ nhất?
+      - 'button "Mở lá bài: Bản nhạc hay mùi hương nào làm bạn cảm thấy tràn ngập cảm hứng lãng mạn khi ở bên nhau?" [ref=e594] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e595]:
+          - generic [ref=e596]:
+            - generic [ref=e597]:
+              - generic [ref=e598]: SỰ THẬT
+              - generic [ref=e599]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e600]
+          - paragraph [ref=e609]: Bản nhạc hay mùi hương nào làm bạn cảm thấy tràn ngập cảm hứng lãng mạn khi ở bên nhau?
+      - 'button "Mở lá bài: Nụ hôn nào trong quá khứ của hai người khiến bạn đắm đuối và nhớ mãi không quên?" [ref=e611] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e612]:
+          - generic [ref=e613]:
+            - generic [ref=e614]:
+              - generic [ref=e615]: SỰ THẬT
+              - generic [ref=e616]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e617]
+          - paragraph [ref=e627]: Nụ hôn nào trong quá khứ của hai người khiến bạn đắm đuối và nhớ mãi không quên?
+      - 'button "Mở lá bài: Nếu được yêu cầu người ấy làm 1 điều lãng mạn ngay lúc này, bạn sẽ ước điều gì?" [ref=e629] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e630]:
+          - generic [ref=e631]:
+            - generic [ref=e632]:
+              - generic [ref=e633]: SỰ THẬT
+              - generic [ref=e634]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e635]
+          - paragraph [ref=e642]: Nếu được yêu cầu người ấy làm 1 điều lãng mạn ngay lúc này, bạn sẽ ước điều gì?
+      - 'button "Mở lá bài: Có khoảnh khắc nào khi bên nhau bạn đã cố nén sự cuồng nhiệt vì ngại ngùng không?" [ref=e644] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e645]:
+          - generic [ref=e646]:
+            - generic [ref=e647]:
+              - generic [ref=e648]: SỰ THẬT
+              - generic [ref=e649]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e650]
+          - paragraph [ref=e658]: Có khoảnh khắc nào khi bên nhau bạn đã cố nén sự cuồng nhiệt vì ngại ngùng không?
+      - 'button "Mở lá bài: Lời tán tỉnh ngọt ngào nào của đối phương khiến tâm trí bạn chao đảo nhất?" [ref=e660] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e661]:
+          - generic [ref=e662]:
+            - generic [ref=e663]:
+              - generic [ref=e664]: SỰ THẬT
+              - generic [ref=e665]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e666]
+          - paragraph [ref=e675]: Lời tán tỉnh ngọt ngào nào của đối phương khiến tâm trí bạn chao đảo nhất?
+      - 'button "Mở lá bài: Thì thầm vào tai đối phương một lời khen gợi cảm và lãng mạn nhất bạn có thể nghĩ ra." [ref=e677] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e678]:
+          - generic [ref=e679]:
+            - generic [ref=e680]:
+              - generic [ref=e681]: THỬ THÁCH
+              - generic [ref=e682]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e683]
+          - paragraph [ref=e694]: Thì thầm vào tai đối phương một lời khen gợi cảm và lãng mạn nhất bạn có thể nghĩ ra.
+      - 'button "Mở lá bài: Hôn nhẹ lên cổ đối phương trong 10 giây và cảm nhận hơi thở của nhau." [ref=e696] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e697]:
+          - generic [ref=e698]:
+            - generic [ref=e699]:
+              - generic [ref=e700]: THỬ THÁCH
+              - generic [ref=e701]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e702]
+          - paragraph [ref=e712]: Hôn nhẹ lên cổ đối phương trong 10 giây và cảm nhận hơi thở của nhau.
+          - generic [ref=e713]: ⏱ 10s
+      - 'button "Mở lá bài: Dùng đầu ngón tay lướt nhẹ từ xương xương đòn xuống bàn tay đối phương một cách chậm rãi." [ref=e715] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e716]:
+          - generic [ref=e717]:
+            - generic [ref=e718]:
+              - generic [ref=e719]: THỬ THÁCH
+              - generic [ref=e720]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e721]
+          - paragraph [ref=e729]: Dùng đầu ngón tay lướt nhẹ từ xương xương đòn xuống bàn tay đối phương một cách chậm rãi.
+      - 'button "Mở lá bài: Ngồi sát vào lòng hoặc tựa sát vào ngực đối phương, nhắm mắt lắng nghe nhịp tim trong 45 giây." [ref=e731] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e732]:
+          - generic [ref=e733]:
+            - generic [ref=e734]:
+              - generic [ref=e735]: THỬ THÁCH
+              - generic [ref=e736]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e737]
+          - paragraph [ref=e749]: Ngồi sát vào lòng hoặc tựa sát vào ngực đối phương, nhắm mắt lắng nghe nhịp tim trong 45 giây.
+          - generic [ref=e750]: ⏱ 45s
+      - 'button "Mở lá bài: Trao cho người ấy một nụ hôn sâu kiểu Pháp đầy say đắm kéo dài ít nhất 15 giây." [ref=e752] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e753]:
+          - generic [ref=e754]:
+            - generic [ref=e755]:
+              - generic [ref=e756]: THỬ THÁCH
+              - generic [ref=e757]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e758]
+          - paragraph [ref=e768]: Trao cho người ấy một nụ hôn sâu kiểu Pháp đầy say đắm kéo dài ít nhất 15 giây.
+          - generic [ref=e769]: ⏱ 15s
+      - 'button "Mở lá bài: Tháo bớt một món phụ kiện hoặc trang phục nhỏ (như đồng hồ, nhẫn, áo khoác, nơ) cho đối phương." [ref=e771] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e772]:
+          - generic [ref=e773]:
+            - generic [ref=e774]:
+              - generic [ref=e775]: THỬ THÁCH
+              - generic [ref=e776]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e777]
+          - paragraph [ref=e788]: Tháo bớt một món phụ kiện hoặc trang phục nhỏ (như đồng hồ, nhẫn, áo khoác, nơ) cho đối phương.
+      - 'button "Mở lá bài: Dùng môi chạm nhẹ vào bờ vai đối phương và giữ lại vài giây thật ấm áp." [ref=e790] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e791]:
+          - generic [ref=e792]:
+            - generic [ref=e793]:
+              - generic [ref=e794]: THỬ THÁCH
+              - generic [ref=e795]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e796]
+          - paragraph [ref=e806]: Dùng môi chạm nhẹ vào bờ vai đối phương và giữ lại vài giây thật ấm áp.
+      - 'button "Mở lá bài: Nắm chặt tay đối phương, đan các ngón tay vào nhau và nhìn sâu vào mắt đối phương đến hết lượt chơi." [ref=e808] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e809]:
+          - generic [ref=e810]:
+            - generic [ref=e811]:
+              - generic [ref=e812]: THỬ THÁCH
+              - generic [ref=e813]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e814]
+          - paragraph [ref=e827]: Nắm chặt tay đối phương, đan các ngón tay vào nhau và nhìn sâu vào mắt đối phương đến hết lượt chơi.
+      - 'button "Mở lá bài: Đút cho đối phương một ngụm nước hoặc một ít đồ ăn nhẹ bằng cách thật quyến rũ." [ref=e829] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e830]:
+          - generic [ref=e831]:
+            - generic [ref=e832]:
+              - generic [ref=e833]: THỬ THÁCH
+              - generic [ref=e834]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e835]
+          - paragraph [ref=e849]: Đút cho đối phương một ngụm nước hoặc một ít đồ ăn nhẹ bằng cách thật quyến rũ.
+      - 'button "Mở lá bài: Mát-xa nhẹ nhàng hai bàn tay và các ngón tay của người ấy kèm câu nói \"Em/Anh thuộc về anh/em\"." [ref=e851] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e852]:
+          - generic [ref=e853]:
+            - generic [ref=e854]:
+              - generic [ref=e855]: THỬ THÁCH
+              - generic [ref=e856]: 🔥 Thân mật
+            - button "Thêm vào yêu thích" [ref=e857]
+          - paragraph [ref=e870]: Mát-xa nhẹ nhàng hai bàn tay và các ngón tay của người ấy kèm câu nói "Em/Anh thuộc về anh/em".
+      - 'button "Mở lá bài: Nói ra suy nghĩ nồng nhiệt nhất của bạn về người ấy ngay trong giây phút này." [ref=e872] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e873]:
+          - generic [ref=e874]:
+            - generic [ref=e875]:
+              - generic [ref=e876]: SỰ THẬT
+              - generic [ref=e877]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e878]
+          - paragraph [ref=e886]: Nói ra suy nghĩ nồng nhiệt nhất của bạn về người ấy ngay trong giây phút này.
+      - 'button "Mở lá bài: Trang phục quyến rũ nào bạn muốn nhìn thấy người ấy mặc riêng cho mình trong một buổi tối lãng mạn?" [ref=e888] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e889]:
+          - generic [ref=e890]:
+            - generic [ref=e891]:
+              - generic [ref=e892]: SỰ THẬT
+              - generic [ref=e893]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e894]
+          - paragraph [ref=e904]: Trang phục quyến rũ nào bạn muốn nhìn thấy người ấy mặc riêng cho mình trong một buổi tối lãng mạn?
+      - 'button "Mở lá bài: Nơi nào là địa điểm lãng mạn & riêng tư nhất bạn ước hai người có thể cùng trao nhau những nụ hôn cháy bỏng?" [ref=e906] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e907]:
+          - generic [ref=e908]:
+            - generic [ref=e909]:
+              - generic [ref=e910]: SỰ THẬT
+              - generic [ref=e911]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e912]
+          - paragraph [ref=e922]: Nơi nào là địa điểm lãng mạn & riêng tư nhất bạn ước hai người có thể cùng trao nhau những nụ hôn cháy bỏng?
+      - 'button "Mở lá bài: Nụ hôn ở vị trí nào trên cơ thể làm tim bạn đập nhanh nhất?" [ref=e924] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e925]:
+          - generic [ref=e926]:
+            - generic [ref=e927]:
+              - generic [ref=e928]: SỰ THẬT
+              - generic [ref=e929]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e930]
+          - paragraph [ref=e940]: Nụ hôn ở vị trí nào trên cơ thể làm tim bạn đập nhanh nhất?
+      - 'button "Mở lá bài: Điều gì ở ánh mắt hoặc giọng nói của đối phương dễ khiến bạn \"tan chảy\" hoàn toàn?" [ref=e942] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e943]:
+          - generic [ref=e944]:
+            - generic [ref=e945]:
+              - generic [ref=e946]: SỰ THẬT
+              - generic [ref=e947]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e948]
+          - paragraph [ref=e957]: Điều gì ở ánh mắt hoặc giọng nói của đối phương dễ khiến bạn "tan chảy" hoàn toàn?
+      - 'button "Mở lá bài: Kế hoạch hứa hẹn ngọt ngào nhất bạn muốn dành cho đối phương sau khi trò chơi này kết thúc là gì?" [ref=e959] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e960]:
+          - generic [ref=e961]:
+            - generic [ref=e962]:
+              - generic [ref=e963]: SỰ THẬT
+              - generic [ref=e964]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e965]
+          - paragraph [ref=e972]: Kế hoạch hứa hẹn ngọt ngào nhất bạn muốn dành cho đối phương sau khi trò chơi này kết thúc là gì?
+      - 'button "Mở lá bài: Thói quen nuông chiều nào trong không gian riêng của hai người làm bạn thấy cuồng nhiệt nhất?" [ref=e974] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e975]:
+          - generic [ref=e976]:
+            - generic [ref=e977]:
+              - generic [ref=e978]: SỰ THẬT
+              - generic [ref=e979]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e980]
+          - paragraph [ref=e988]: Thói quen nuông chiều nào trong không gian riêng của hai người làm bạn thấy cuồng nhiệt nhất?
+      - 'button "Mở lá bài: Bí mật ngọt ngào nào về cảm xúc dành cho người ấy mà bạn chưa từng bộc lộ trọn vẹn?" [ref=e990] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e991]:
+          - generic [ref=e992]:
+            - generic [ref=e993]:
+              - generic [ref=e994]: SỰ THẬT
+              - generic [ref=e995]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e996]
+          - paragraph [ref=e1005]: Bí mật ngọt ngào nào về cảm xúc dành cho người ấy mà bạn chưa từng bộc lộ trọn vẹn?
+      - 'button "Mở lá bài: Đặt 3 nụ hôn nồng nàn lên 3 vị trí khác nhau trên khuôn mặt và cổ của người ấy." [ref=e1007] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e1008]:
+          - generic [ref=e1009]:
+            - generic [ref=e1010]:
+              - generic [ref=e1011]: THỬ THÁCH
+              - generic [ref=e1012]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e1013]
+          - paragraph [ref=e1023]: Đặt 3 nụ hôn nồng nàn lên 3 vị trí khác nhau trên khuôn mặt và cổ của người ấy.
+      - 'button "Mở lá bài: Thì thầm một câu nói tán tỉnh nồng cháy nhất vào tai đối phương khiến họ phải đỏ mặt." [ref=e1025] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e1026]:
+          - generic [ref=e1027]:
+            - generic [ref=e1028]:
+              - generic [ref=e1029]: THỬ THÁCH
+              - generic [ref=e1030]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e1031]
+          - paragraph [ref=e1040]: Thì thầm một câu nói tán tỉnh nồng cháy nhất vào tai đối phương khiến họ phải đỏ mặt.
+      - 'button "Mở lá bài: Tự tay tháo một cúc áo hoặc vuốt ve dịu dàng lưng đối phương trong 30 giây." [ref=e1042] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e1043]:
+          - generic [ref=e1044]:
+            - generic [ref=e1045]:
+              - generic [ref=e1046]: THỬ THÁCH
+              - generic [ref=e1047]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e1048]
+          - paragraph [ref=e1061]: Tự tay tháo một cúc áo hoặc vuốt ve dịu dàng lưng đối phương trong 30 giây.
+          - generic [ref=e1062]: ⏱ 30s
+      - 'button "Mở lá bài: Bịt mắt đối phương trong 30 giây và trao cho họ một nụ hôn bất ngờ ở vị trí họ không đoán trước." [ref=e1064] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e1065]:
+          - generic [ref=e1066]:
+            - generic [ref=e1067]:
+              - generic [ref=e1068]: THỬ THÁCH
+              - generic [ref=e1069]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e1070]
+          - paragraph [ref=e1081]: Bịt mắt đối phương trong 30 giây và trao cho họ một nụ hôn bất ngờ ở vị trí họ không đoán trước.
+          - generic [ref=e1082]: ⏱ 30s
+      - 'button "Mở lá bài: Ngồi lên đùi đối phương (hoặc kéo đối phương vào lòng), ôm chặt và nói: \"Đêm nay anh/em là của em/anh\"." [ref=e1084] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e1085]:
+          - generic [ref=e1086]:
+            - generic [ref=e1087]:
+              - generic [ref=e1088]: THỬ THÁCH
+              - generic [ref=e1089]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e1090]
+          - paragraph [ref=e1096]: "Ngồi lên đùi đối phương (hoặc kéo đối phương vào lòng), ôm chặt và nói: \"Đêm nay anh/em là của em/anh\"."
+      - 'button "Mở lá bài: Dùng một viên đá lạnh/ngón tay ấm lướt nhẹ theo sống lưng người ấy một cách thật quyến rũ." [ref=e1098] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e1099]:
+          - generic [ref=e1100]:
+            - generic [ref=e1101]:
+              - generic [ref=e1102]: THỬ THÁCH
+              - generic [ref=e1103]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e1104]
+          - paragraph [ref=e1116]: Dùng một viên đá lạnh/ngón tay ấm lướt nhẹ theo sống lưng người ấy một cách thật quyến rũ.
+      - 'button "Mở lá bài: Kéo sát người ấy lại, cắn nhẹ vào vành tai họ rồi mỉm cười thì thì thầm nụ hôn đắm say." [ref=e1118] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e1119]:
+          - generic [ref=e1120]:
+            - generic [ref=e1121]:
+              - generic [ref=e1122]: THỬ THÁCH
+              - generic [ref=e1123]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e1124]
+          - paragraph [ref=e1135]: Kéo sát người ấy lại, cắn nhẹ vào vành tai họ rồi mỉm cười thì thì thầm nụ hôn đắm say.
+      - 'button "Mở lá bài: Trao một nụ hôn cháy bỏng kéo dài 30 giây không ngắt quãng." [ref=e1137] [cursor=pointer]':
+        - generic: ♠ ♥
+        - generic: ♦ ♣
+        - generic: ♥ ♠
+        - generic: ♣ ♦
+        - generic [ref=e1138]:
+          - generic [ref=e1139]:
+            - generic [ref=e1140]:
+              - generic [ref=e1141]: THỬ THÁCH
+              - generic [ref=e1142]: 💋 Nồng nhiệt
+            - button "Thêm vào yêu thích" [ref=e1143]
+          - paragraph [ref=e1153]: Trao một nụ hôn cháy bỏng kéo dài 30 giây không ngắt quãng.
+          - generic [ref=e1154]: ⏱ 30s
+    - dialog [ref=e1156]:
+      - generic [ref=e1157]:
+        - button "Đóng trình chỉnh sửa" [ref=e1158]
+        - heading "Thêm Lá Bài Riêng" [level=3] [ref=e1162]
+        - paragraph [ref=e1163]: Tự viết câu hỏi hoặc thử thách bí mật. Có thể thêm ảnh minh hoạ!
+        - generic [ref=e1164]:
+          - generic [ref=e1165]:
+            - generic [ref=e1166]:
+              - generic [ref=e1167]: Thể loại
+              - combobox [ref=e1168] [cursor=pointer]:
+                - option "🔍 Sự Thật" [selected]
+                - option "⚡ Thử Thách"
+            - generic [ref=e1169]:
+              - generic [ref=e1170]: Cấp độ
+              - combobox [ref=e1171] [cursor=pointer]:
+                - option "🌸 Nhẹ nhàng" [selected]
+                - option "🔥 Thân mật"
+                - option "💋 Nồng nhiệt"
+          - generic [ref=e1172]:
+            - generic [ref=e1173]: Nội dung lá bài
+            - textbox "Nhập câu hỏi hoặc thử thách ngọt ngào..." [ref=e1174]
+          - generic [ref=e1175]:
+            - generic [ref=e1176]: Gợi ý thêm (Không bắt buộc)
+            - textbox "Gợi ý nhỏ..." [ref=e1177]
+          - generic [ref=e1178]:
+            - generic [ref=e1179]:
+              - generic [ref=e1180]: Biểu tượng trên thẻ
+              - generic [ref=e1181]: 122 lựa chọn
+            - generic [ref=e1182]:
+              - button "Chọn biểu tượng lips" [ref=e1183]
+              - button "Chọn biểu tượng kiss" [ref=e1187]
+              - button "Chọn biểu tượng kiss_cheek" [ref=e1195]
+              - button "Chọn biểu tượng kiss_forehead" [ref=e1201]
+              - button "Chọn biểu tượng kiss_nose" [ref=e1207]
+              - button "Chọn biểu tượng kiss_hand" [ref=e1214]
+              - button "Chọn biểu tượng kiss_neck" [ref=e1220]
+              - button "Chọn biểu tượng kiss_shoulder" [ref=e1226]
+              - button "Chọn biểu tượng kiss_hair" [ref=e1232]
+              - button "Chọn biểu tượng kiss_air" [ref=e1238]
+              - button "Chọn biểu tượng kiss_lips" [ref=e1245]
+              - button "Chọn biểu tượng kiss_hug" [ref=e1251]
+              - button "Chọn biểu tượng kiss_temple" [ref=e1259]
+              - button "Chọn biểu tượng kiss_eyelid" [ref=e1266]
+              - button "Chọn biểu tượng kiss_ear" [ref=e1272]
+              - button "Chọn biểu tượng kiss_mistletoe" [ref=e1279]
+              - button "Chọn biểu tượng kiss_surprise" [ref=e1287]
+              - button "Chọn biểu tượng kiss_goodnight" [ref=e1294]
+              - button "Chọn biểu tượng kiss_rain" [ref=e1300]
+              - button "Chọn biểu tượng heart" [ref=e1309]
+              - button "Chọn biểu tượng flame" [ref=e1312]
+              - button "Chọn biểu tượng hand" [ref=e1316]
+              - button "Chọn biểu tượng eyes" [ref=e1320]
+              - button "Chọn biểu tượng blindfold" [ref=e1325]
+              - button "Chọn biểu tượng dance" [ref=e1332]
+              - button "Chọn biểu tượng wine" [ref=e1338]
+              - button "Chọn biểu tượng phone" [ref=e1343]
+              - button "Chọn biểu tượng massage" [ref=e1349]
+              - button "Chọn biểu tượng hug" [ref=e1357]
+              - button "Chọn biểu tượng ear" [ref=e1364]
+              - button "Chọn biểu tượng feather" [ref=e1369]
+              - button "Chọn biểu tượng camera" [ref=e1375]
+              - button "Chọn biểu tượng music" [ref=e1382]
+              - button "Chọn biểu tượng sparkle" [ref=e1387]
+              - button "Chọn biểu tượng whisper" [ref=e1393]
+              - button "Chọn biểu tượng neck" [ref=e1398]
+              - button "Chọn biểu tượng ice" [ref=e1403]
+              - button "Chọn biểu tượng lap" [ref=e1411]
+              - button "Chọn biểu tượng hands" [ref=e1419]
+              - button "Chọn biểu tượng button" [ref=e1426]
+              - button "Chọn biểu tượng breath" [ref=e1433]
+              - button "Chọn biểu tượng lingerie" [ref=e1437]
+              - button "Chọn biểu tượng tongue" [ref=e1442]
+              - button "Chọn biểu tượng couple" [ref=e1447]
+              - button "Chọn biểu tượng couple_eye_contact" [ref=e1455]
+              - button "Chọn biểu tượng couple_forehead_touch" [ref=e1462]
+              - button "Chọn biểu tượng couple_back_hug" [ref=e1468]
+              - button "Chọn biểu tượng couple_side_cuddle" [ref=e1476]
+              - button "Chọn biểu tượng couple_heartbeat_cuddle" [ref=e1484]
+              - button "Chọn biểu tượng couple_holding_hands" [ref=e1492]
+              - button "Chọn biểu tượng couple_arm_in_arm" [ref=e1501]
+              - button "Chọn biểu tượng couple_slow_dance" [ref=e1509]
+              - button "Chọn biểu tượng couple_selfie" [ref=e1517]
+              - button "Chọn biểu tượng couple_whisper" [ref=e1526]
+              - button "Chọn biểu tượng couple_face_caress" [ref=e1533]
+              - button "Chọn biểu tượng couple_shoulder_massage" [ref=e1540]
+              - button "Chọn biểu tượng couple_hand_care" [ref=e1549]
+              - button "Chọn biểu tượng couple_back_caress" [ref=e1558]
+              - button "Chọn biểu tượng couple_feeding" [ref=e1567]
+              - button "Chọn biểu tượng couple_stargazing" [ref=e1577]
+              - button "Chọn biểu tượng heels" [ref=e1585]
+              - button "Chọn biểu tượng body" [ref=e1589]
+              - button "Chọn biểu tượng handcuffs" [ref=e1595]
+              - button "Chọn biểu tượng dress" [ref=e1601]
+              - button "Chọn biểu tượng rose" [ref=e1605]
+              - button "Chọn biểu tượng ring" [ref=e1610]
+              - button "Chọn biểu tượng gift" [ref=e1615]
+              - button "Chọn biểu tượng moon" [ref=e1620]
+              - button "Chọn biểu tượng candle" [ref=e1624]
+              - button "Chọn biểu tượng key" [ref=e1629]
+              - button "Chọn biểu tượng lock" [ref=e1634]
+              - button "Chọn biểu tượng letter" [ref=e1639]
+              - button "Chọn biểu tượng chocolate" [ref=e1644]
+              - button "Chọn biểu tượng coffee" [ref=e1649]
+              - button "Chọn biểu tượng perfume" [ref=e1654]
+              - button "Chọn biểu tượng mirror" [ref=e1660]
+              - button "Chọn biểu tượng crown" [ref=e1666]
+              - button "Chọn biểu tượng constellation" [ref=e1671]
+              - button "Chọn biểu tượng pillow" [ref=e1679]
+              - button "Chọn biểu tượng location" [ref=e1683]
+              - button "Chọn biểu tượng clock" [ref=e1687]
+              - button "Chọn biểu tượng infinity" [ref=e1691]
+              - button "Chọn biểu tượng bra" [ref=e1694]
+              - button "Chọn biểu tượng lace_bra" [ref=e1698]
+              - button "Chọn biểu tượng panties" [ref=e1705]
+              - button "Chọn biểu tượng thong" [ref=e1710]
+              - button "Chọn biểu tượng boxers" [ref=e1715]
+              - button "Chọn biểu tượng briefs" [ref=e1721]
+              - button "Chọn biểu tượng corset" [ref=e1725]
+              - button "Chọn biểu tượng bodysuit" [ref=e1731]
+              - button "Chọn biểu tượng stockings" [ref=e1735]
+              - button "Chọn biểu tượng garter" [ref=e1739]
+              - button "Chọn biểu tượng robe" [ref=e1746]
+              - button "Chọn biểu tượng shirt" [ref=e1750]
+              - button "Chọn biểu tượng skirt" [ref=e1756]
+              - button "Chọn biểu tượng shorts" [ref=e1761]
+              - button "Chọn biểu tượng female_torso" [ref=e1765]
+              - button "Chọn biểu tượng male_torso" [ref=e1769]
+              - button "Chọn biểu tượng female_hips" [ref=e1773]
+              - button "Chọn biểu tượng male_hips" [ref=e1777]
+              - button "Chọn biểu tượng back" [ref=e1781]
+              - button "Chọn biểu tượng thigh" [ref=e1785]
+              - button "Chọn biểu tượng collarbone" [ref=e1788]
+              - button "Chọn biểu tượng navel" [ref=e1792]
+              - button "Chọn biểu tượng couple_embrace_art" [ref=e1797]
+              - button "Chọn biểu tượng couple_reclining_art" [ref=e1799]
+              - button "Chọn biểu tượng couple_carry_art" [ref=e1801]
+              - button "Chọn biểu tượng couple_seated_art" [ref=e1803]
+              - button "Chọn biểu tượng movie_clapper" [ref=e1805]
+              - button "Chọn biểu tượng film_reel" [ref=e1811]
+              - button "Chọn biểu tượng film_strip" [ref=e1821]
+              - button "Chọn biểu tượng popcorn" [ref=e1827]
+              - button "Chọn biểu tượng cinema_ticket" [ref=e1837]
+              - button "Chọn biểu tượng projector" [ref=e1841]
+              - button "Chọn biểu tượng cinema_screen" [ref=e1848]
+              - button "Chọn biểu tượng play" [ref=e1854]
+              - button "Chọn biểu tượng movie_camera" [ref=e1859]
+              - button "Chọn biểu tượng glasses_3d" [ref=e1868]
+              - button "Chọn biểu tượng director_chair" [ref=e1872]
+              - button "Chọn biểu tượng movie_award" [ref=e1876]
+              - button "Chọn biểu tượng streaming" [ref=e1881]
+              - button "Chọn biểu tượng cinema_seats" [ref=e1886]
+          - generic [ref=e1892]:
+            - generic [ref=e1893]: Ảnh minh hoạ (không bắt buộc)
+            - generic [ref=e1897] [cursor=pointer]:
+              - generic [ref=e1901]: Bấm để chọn ảnh hoặc kéo thả
+              - generic [ref=e1902]: PNG, JPG, WEBP — Ảnh sẽ được chuyển thành icon hồng-trắng
+          - button "Lưu Vào Bộ Sưu Tập" [ref=e1903] [cursor=pointer]

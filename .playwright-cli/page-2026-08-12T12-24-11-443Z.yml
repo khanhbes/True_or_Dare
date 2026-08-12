@@ -1,0 +1,86 @@
+- main [ref=f1e1161]:
+  - generic [ref=f1e2367]:
+    - generic [ref=f1e2368]:
+      - generic [ref=f1e2369]:
+        - generic [ref=f1e2370]: 👩‍💼
+        - generic [ref=f1e2371]:
+          - generic [ref=f1e2372]: Đang tới lượt
+          - generic [ref=f1e2373]: Em
+      - generic [ref=f1e2376]: Lượt 2
+      - generic [ref=f1e2385]:
+        - button "Tắt âm thanh" [ref=f1e2386]
+        - button "Cách chơi và luật phạt" [ref=f1e2391]
+        - button "Mở bộ sưu tập thẻ" [ref=f1e2395]
+        - button "Mở tổng kết và thống kê" [ref=f1e2398]
+    - region "Tỉ lệ xuất hiện thẻ ở lượt hiện tại" [ref=f1e2405]:
+      - generic [ref=f1e2406]: Tỉ lệ lượt này
+      - generic [ref=f1e2412]:
+        - generic [ref=f1e2413]:
+          - text: Sự thật
+          - strong [ref=f1e2414]: 50%
+        - generic [ref=f1e2415]:
+          - text: Thử thách
+          - strong [ref=f1e2416]: 50%
+        - generic [ref=f1e2417]:
+          - text: 🌸
+          - strong [ref=f1e2418]: 70%
+        - generic [ref=f1e2419]:
+          - text: 🔥
+          - strong [ref=f1e2420]: 20%
+        - generic [ref=f1e2421]:
+          - text: 💋
+          - strong [ref=f1e2422]: 10%
+    - paragraph [ref=f1e2423]: Em đang tới lượt, còn 4 món đồ.
+    - generic "Trang phục hiện tại của hai người chơi" [ref=f1e2424]:
+      - 'complementary "Anh: Đang mặc đồ, còn 3 món" [ref=f1e2425]':
+        - figure "Hình trang phục hiện tại của Anh" [ref=f1e2426]
+        - generic [ref=f1e2469]:
+          - generic [ref=f1e2470]: 👨‍💼 Anh
+          - generic [ref=f1e2471]: Đang mặc đồ · 3 món
+      - 'complementary "Em: Đang mặc đồ, còn 4 món" [ref=f1e2472]':
+        - figure "Hình trang phục hiện tại của Em" [ref=f1e2473]
+        - generic [ref=f1e2524]:
+          - generic [ref=f1e2525]: 👩‍💼 Em
+          - generic [ref=f1e2526]: Đang mặc đồ · 4 món
+    - generic [ref=f1e2571]:
+      - generic [ref=f1e2578]:
+        - generic [ref=f1e2579]:
+          - generic [ref=f1e2580]:
+            - generic [ref=f1e2581]: ⚡ THỬ THÁCH
+            - generic [ref=f1e2582]: 🌸 Nhẹ nhàng
+          - button "Yêu thích lá bài này" [ref=f1e2583]
+        - generic [ref=f1e2586]:
+          - text: "Lượt thực hiện:"
+          - generic [ref=f1e2587]: Em 👩‍💼
+        - paragraph [ref=f1e2609]: Nhắm mắt lại, dùng ngón tay chạm nhẹ lên khuôn mặt đối phương và đoán xem ngón tay đang dừng ở đâu (mắt, mũi, môi, má).
+        - generic [ref=f1e2610]:
+          - generic [ref=f1e2611]:
+            - generic [ref=f1e2615]: "Thời gian:"
+            - generic [ref=f1e2616]: 30s
+          - button "Bắt đầu đếm" [ref=f1e2617]
+      - generic [ref=f1e2618]:
+        - button "Không thực hiện" [ref=f1e2619] [cursor=pointer]
+        - button "Hoàn Thành" [ref=f1e2625] [cursor=pointer]
+    - generic [ref=f1e2553]:
+      - generic [ref=f1e2554]:
+        - generic [ref=f1e2555]: 👨‍💼
+        - generic [ref=f1e2556]: "Anh:"
+        - generic [ref=f1e2557]: 1 hoàn thành
+      - generic [ref=f1e2559]:
+        - generic [ref=f1e2560]: 👩‍💼
+        - generic [ref=f1e2561]: "Em:"
+        - generic [ref=f1e2562]: 0 hoàn thành
+    - dialog [ref=f1e2630]:
+      - generic [ref=f1e2631]:
+        - button "Quay lại lá bài" [ref=f1e2632]
+        - generic [ref=f1e2636]: 👩‍💼
+        - generic [ref=f1e2637]: Luật phạt · Tùy chọn
+        - heading "Lượt Này Chưa Hoàn Thành" [level=2] [ref=f1e2638]
+        - paragraph [ref=f1e2639]: Nếu thử thách chưa được thực hiện, có thể áp dụng luật phạt đã thống nhất.
+        - generic [ref=f1e2640]:
+          - paragraph [ref=f1e2641]: Em có thể chọn một món đồ đang được phép bỏ. Bạn vẫn có thể không áp dụng luật phạt.
+          - generic [ref=f1e2642]: Chỉ tiếp tục khi vẫn đồng thuận; luôn có thể từ chối, đổi phương án hoặc dừng.
+        - generic [ref=f1e2647]:
+          - button "Chọn Món Đồ" [active] [ref=f1e2648]
+          - button "Không áp dụng phạt · Chuyển lượt" [ref=f1e2656]
+          - button "Quay lại lá bài" [ref=f1e2657]

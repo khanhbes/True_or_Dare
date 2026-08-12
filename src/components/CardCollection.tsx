@@ -1,0 +1,1058 @@
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
+import {
+  Search,
+  Plus,
+  X,
+  Home,
+  ArrowLeft,
+  Upload,
+  RotateCcw,
+  Trash2,
+  Move,
+  ZoomIn,
+  Pencil,
+  Eraser,
+  Code2,
+  LockKeyhole,
+} from 'lucide-react';
+import { CardItem, CardLevel, CardType, ClothingEffect } from '../types';
+import { soundEngine } from '../utils/audio';
+import { GameCard } from './GameCard';
+import { CARD_ICON_NAMES, autoAssignIcon, getCardIcon } from './CardIcons';
+
+export type CardCollectionMode = 'player' | 'developer';
+
+export interface CardCollectionProps {
+  cards: CardItem[];
+  favorites: string[];
+  onToggleFavorite: (cardId: string) => void;
+  onAddCustomCard: (newCard: CardItem) => void;
+  onUpdateCard: (
+    card: CardItem,
+    metadata: { clothingEffectTouched: boolean },
+  ) => void;
+  /** Defaults to developer to preserve the behavior of older call sites. */
+  mode?: CardCollectionMode;
+  /** Undefined means all cards are unlocked, preserving older saved data/call sites. */
+  unlockedCardIds?: string[];
+  /** Developer-only action. Omit it when card deletion is not supported. */
+  onDeleteCard?: (card: CardItem) => void;
+  /** Keeps the back action accurate when the collection is opened mid-game. */
+  backDestination?: 'home' | 'game';
+  onBack: () => void;
+}
+
+const LEVEL_SORT_ORDER: Record<CardLevel, number> = {
+  gentle: 0,
+  intimate: 1,
+  passionate: 2,
+};
+
+const TYPE_SORT_ORDER: Record<CardType, number> = {
+  truth: 0,
+  dare: 1,
+};
+
+type ClothingEffectSelection = 'none' | ClothingEffect['target'];
+type CollectionTab = 'all' | 'truth' | 'dare' | 'favorites' | CardLevel;
+
+interface LockedCollectionCardProps {
+  position: number;
+}
+
+const LockedCollectionCard: React.FC<LockedCollectionCardProps> = ({ position }) => (
+  <div
+    role="img"
+    aria-label={`Lá bài bí mật số ${position}, chưa mở khóa. Hoàn thành lá bài này trong ván chơi để mở khóa.`}
+    className="group relative min-h-[180px] overflow-hidden rounded-[1.35rem] border border-white/10 bg-neutral-950/75 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.2)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-rose-300/30 hover:shadow-[0_20px_45px_rgba(244,63,94,0.12)] motion-reduce:transform-none motion-reduce:transition-none"
+  >
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(244,114,182,0.12),transparent_42%)] opacity-70" />
+    <div className="relative flex h-full min-h-[154px] flex-col items-center justify-center text-center">
+      <span className="absolute left-2.5 top-2.5 flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-neutral-500">
+        <LockKeyhole className="h-3 w-3" aria-hidden="true" /> Bí mật
+      </span>
+      <span
+        aria-hidden="true"
+        className="font-serif-romantic text-6xl font-bold leading-none text-rose-200/70 drop-shadow-[0_0_18px_rgba(251,113,133,0.25)] transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
+      >
+        ?
+      </span>
+      <p className="mt-3 max-w-[13rem] text-[10px] leading-relaxed text-neutral-500">
+        Hoàn thành trong ván chơi để mở khóa
+      </p>
+    </div>
+  </div>
+);
+
+// Crop and recolor an upload to the same pink/white language as the built-in icons.
+function renderCardIcon(
+  originalDataUrl: string,
+  options: {
+    threshold: number;
+    contrast: number;
+    zoom: number;
+    offsetX: number;
+    offsetY: number;
+    removeBackground: boolean;
+    backgroundTolerance: number;
+  },
+  callback: (dataUrl: string) => void
+) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const size = 256;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    // At 1x the whole image is always visible. Higher values zoom safely inside the square canvas.
+    const containScale = Math.min(size / img.width, size / img.height) * options.zoom;
+    const width = img.width * containScale;
+    const height = img.height * containScale;
+    const x = (size - width) / 2 + (options.offsetX / 100) * size;
+    const y = (size - height) / 2 + (options.offsetY / 100) * size;
+    ctx.clearRect(0, 0, size, size);
+    ctx.drawImage(img, x, y, width, height);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Estimate a flat background color from the four corners of the original image.
+    const sampleCanvas = document.createElement('canvas');
+    sampleCanvas.width = 32;
+    sampleCanvas.height = 32;
+    const sampleCtx = sampleCanvas.getContext('2d')!;
+    sampleCtx.drawImage(img, 0, 0, 32, 32);
+    const sampleData = sampleCtx.getImageData(0, 0, 32, 32).data;
+    const cornerOrigins = [[0, 0], [29, 0], [0, 29], [29, 29]];
+    let backgroundR = 0;
+    let backgroundG = 0;
+    let backgroundB = 0;
+    let backgroundSamples = 0;
+    cornerOrigins.forEach(([originX, originY]) => {
+      for (let sampleY = originY; sampleY < originY + 3; sampleY += 1) {
+        for (let sampleX = originX; sampleX < originX + 3; sampleX += 1) {
+          const sampleIndex = (sampleY * 32 + sampleX) * 4;
+          if (sampleData[sampleIndex + 3] < 20) continue;
+          backgroundR += sampleData[sampleIndex];
+          backgroundG += sampleData[sampleIndex + 1];
+          backgroundB += sampleData[sampleIndex + 2];
+          backgroundSamples += 1;
+        }
+      }
+    });
+    if (backgroundSamples > 0) {
+      backgroundR /= backgroundSamples;
+      backgroundG /= backgroundSamples;
+      backgroundB /= backgroundSamples;
+    }
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      let a = data[i + 3];
+
+      if (a < 10) continue;
+
+      if (options.removeBackground && backgroundSamples > 0) {
+        const colorDistance = Math.sqrt(
+          ((r - backgroundR) ** 2) +
+          ((g - backgroundG) ** 2) +
+          ((b - backgroundB) ** 2)
+        );
+        if (colorDistance <= options.backgroundTolerance) {
+          data[i + 3] = 0;
+          continue;
+        }
+        const featherWidth = 42;
+        if (colorDistance < options.backgroundTolerance + featherWidth) {
+          const featherAlpha = (colorDistance - options.backgroundTolerance) / featherWidth;
+          a = Math.round(a * featherAlpha);
+        }
+      }
+
+      // Calculate brightness
+      let brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+
+      // Apply contrast
+      brightness = ((brightness / 255 - 0.5) * options.contrast + 0.5) * 255;
+      brightness = Math.max(0, Math.min(255, brightness));
+
+      // Apply threshold: below threshold = pink, above = white/transparent
+      if (brightness < options.threshold) {
+        // Dark areas -> Pink (#FF6B9D)
+        const intensity = 1 - (brightness / options.threshold);
+        data[i] = 255;
+        data[i + 1] = Math.round(107 + (1 - intensity) * 80);
+        data[i + 2] = Math.round(157 + (1 - intensity) * 60);
+        data[i + 3] = Math.min(a, Math.round(180 + intensity * 75));
+      } else {
+        // Bright areas -> very subtle white or transparent
+        const fade = (brightness - options.threshold) / (255 - options.threshold);
+        data[i] = 255;
+        data[i + 1] = Math.round(200 + fade * 55);
+        data[i + 2] = Math.round(220 + fade * 35);
+        data[i + 3] = Math.min(a, Math.round(120 * (1 - fade * 0.8)));
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    callback(canvas.toDataURL('image/png'));
+  };
+  img.src = originalDataUrl;
+}
+
+export const CardCollection: React.FC<CardCollectionProps> = ({
+  cards,
+  favorites,
+  onToggleFavorite,
+  onAddCustomCard,
+  onUpdateCard,
+  mode = 'developer',
+  unlockedCardIds,
+  onDeleteCard,
+  backDestination = 'home',
+  onBack,
+}) => {
+  const prefersReducedMotion = useReducedMotion();
+  const [activeTab, setActiveTab] = useState<CollectionTab>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+  const [pendingDeleteCardId, setPendingDeleteCardId] = useState<string | null>(null);
+
+  // Add Custom Card Modal State
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingCard, setEditingCard] = useState<CardItem | null>(null);
+  const [customType, setCustomType] = useState<CardType>('truth');
+  const [customLevel, setCustomLevel] = useState<CardLevel>('gentle');
+  const [customContent, setCustomContent] = useState('');
+  const [customHint, setCustomHint] = useState('');
+  const [customIcon, setCustomIcon] = useState('heart');
+  const [customClothingEffect, setCustomClothingEffect] = useState<ClothingEffectSelection>('none');
+  const [clothingEffectTouched, setClothingEffectTouched] = useState(false);
+
+  // Image upload & editor state
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [processedImage, setProcessedImage] = useState<string | null>(null);
+  const [imgThreshold, setImgThreshold] = useState(140);
+  const [imgContrast, setImgContrast] = useState(1.5);
+  const [imgZoom, setImgZoom] = useState(1);
+  const [imgOffsetX, setImgOffsetX] = useState(0);
+  const [imgOffsetY, setImgOffsetY] = useState(0);
+  const [imgRemoveBackground, setImgRemoveBackground] = useState(true);
+  const [imgBackgroundTolerance, setImgBackgroundTolerance] = useState(55);
+  const [imageError, setImageError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const deleteCancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  const isDeveloper = mode === 'developer';
+  const unlockedCardIdSet = useMemo(
+    () => new Set(
+      unlockedCardIds === undefined ? cards.map((card) => card.id) : unlockedCardIds,
+    ),
+    [cards, unlockedCardIds],
+  );
+  const unlockedCount = cards.reduce(
+    (count, card) => count + (unlockedCardIdSet.has(card.id) ? 1 : 0),
+    0,
+  );
+  const unlockPercentage = cards.length === 0
+    ? 0
+    : Math.round((unlockedCount / cards.length) * 100);
+  const visibleFavorites = isDeveloper
+    ? favorites
+    : favorites.filter((cardId) => unlockedCardIdSet.has(cardId));
+
+  // Filter logic
+  const filteredCards = cards
+    .filter((card) => {
+      const isUnlocked = unlockedCardIdSet.has(card.id);
+      if (
+        searchQuery &&
+        (
+          (!isDeveloper && !isUnlocked) ||
+          (
+            !card.content.toLowerCase().includes(searchQuery.toLowerCase()) &&
+            !(card.hint && card.hint.toLowerCase().includes(searchQuery.toLowerCase()))
+          )
+        )
+      ) {
+        return false;
+      }
+      if (activeTab === 'all') return true;
+      if (activeTab === 'truth') return card.type === 'truth';
+      if (activeTab === 'dare') return card.type === 'dare';
+      if (activeTab === 'favorites') return visibleFavorites.includes(card.id);
+      return card.level === activeTab;
+    })
+    .sort((firstCard, secondCard) => {
+      const levelDifference = LEVEL_SORT_ORDER[firstCard.level] - LEVEL_SORT_ORDER[secondCard.level];
+      if (levelDifference !== 0) return levelDifference;
+      return TYPE_SORT_ORDER[firstCard.type] - TYPE_SORT_ORDER[secondCard.type];
+    });
+
+  const loadImageFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setImageError('Vui lòng chọn tệp ảnh PNG, JPG hoặc WEBP.');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setImageError('Ảnh cần nhỏ hơn 8 MB để lưu ổn định trên trình duyệt.');
+      return;
+    }
+    setImageError('');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setOriginalImage(dataUrl);
+      setImgZoom(1);
+      setImgOffsetX(0);
+      setImgOffsetY(0);
+      setImgRemoveBackground(true);
+      setImgBackgroundTolerance(55);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) loadImageFile(file);
+  }, [loadImageFile]);
+
+  useEffect(() => {
+    if (!originalImage) return;
+    renderCardIcon(originalImage, {
+      threshold: imgThreshold,
+      contrast: imgContrast,
+      zoom: imgZoom,
+      offsetX: imgOffsetX,
+      offsetY: imgOffsetY,
+      removeBackground: imgRemoveBackground,
+      backgroundTolerance: imgBackgroundTolerance,
+    }, (result) => {
+      setProcessedImage(result);
+    });
+  }, [originalImage, imgThreshold, imgContrast, imgZoom, imgOffsetX, imgOffsetY, imgRemoveBackground, imgBackgroundTolerance]);
+
+  const handleClearImage = useCallback(() => {
+    setOriginalImage(null);
+    setProcessedImage(null);
+    setImageError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
+  const resetEditor = useCallback(() => {
+    setEditingCard(null);
+    setCustomType('truth');
+    setCustomLevel('gentle');
+    setCustomContent('');
+    setCustomHint('');
+    setCustomIcon('heart');
+    setCustomClothingEffect('none');
+    setClothingEffectTouched(false);
+    setImgZoom(1);
+    setImgOffsetX(0);
+    setImgOffsetY(0);
+    setImgRemoveBackground(true);
+    setImgBackgroundTolerance(55);
+    setImgThreshold(140);
+    setImgContrast(1.5);
+    handleClearImage();
+  }, [handleClearImage]);
+
+  useEffect(() => {
+    if (isDeveloper) return;
+    if (isAdding) {
+      setIsAdding(false);
+      resetEditor();
+    }
+    if (selectedCard && !unlockedCardIdSet.has(selectedCard.id)) {
+      setSelectedCard(null);
+      setPendingDeleteCardId(null);
+    }
+  }, [isDeveloper, isAdding, resetEditor, selectedCard, unlockedCardIdSet]);
+
+  useEffect(() => {
+    if (!selectedCard && !isAdding) return;
+    const previousOverflow = document.body.style.overflow;
+    const previouslyFocusedElement = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (isAdding) {
+          setIsAdding(false);
+          resetEditor();
+        } else {
+          setSelectedCard(null);
+          setPendingDeleteCardId(null);
+        }
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        const dialog = document.querySelector<HTMLElement>('[data-card-collection-dialog="true"]');
+        if (!dialog) return;
+        const focusableElements = Array.from(dialog.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+        ));
+        if (focusableElements.length === 0) return;
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+        if (event.shiftKey && document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    const focusFrame = window.requestAnimationFrame(() => {
+      const dialog = document.querySelector<HTMLElement>('[data-card-collection-dialog="true"]');
+      dialog?.querySelector<HTMLElement>('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled])')?.focus();
+    });
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+      previouslyFocusedElement?.focus();
+    };
+  }, [selectedCard, isAdding, resetEditor]);
+
+  useEffect(() => {
+    if (!pendingDeleteCardId) return;
+    const focusFrame = window.requestAnimationFrame(() => deleteCancelButtonRef.current?.focus());
+    return () => window.cancelAnimationFrame(focusFrame);
+  }, [pendingDeleteCardId]);
+
+  const openCreateEditor = () => {
+    resetEditor();
+    setIsAdding(true);
+  };
+
+  const openEditEditor = (card: CardItem) => {
+    setEditingCard(card);
+    setCustomType(card.type);
+    setCustomLevel(card.level);
+    setCustomContent(card.content);
+    setCustomHint(card.hint || '');
+    setCustomIcon(card.icon || autoAssignIcon(card.content));
+    setCustomClothingEffect(card.clothingEffect?.target || 'none');
+    setClothingEffectTouched(false);
+    setOriginalImage(card.customImage || null);
+    setProcessedImage(card.customImage || null);
+    setImgRemoveBackground(false);
+    setImageError('');
+    setIsAdding(true);
+    setSelectedCard(null);
+  };
+
+  const handleCreateCustomCard = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customContent.trim()) return;
+
+    soundEngine.playCompleteSound();
+    const nextCard: CardItem = {
+      ...editingCard,
+      id: editingCard?.id || `custom-${Date.now()}`,
+      type: customType,
+      level: customLevel,
+      content: customContent.trim(),
+      hint: customHint.trim() || undefined,
+      icon: processedImage ? undefined : customIcon,
+      isCustom: editingCard ? editingCard.isCustom : true,
+      customImage: processedImage || undefined,
+    };
+
+    // `undefined` keeps system-card gameplay metadata during hydration/merge.
+    // `null` is only written after the player explicitly chooses "Không tác động".
+    if (clothingEffectTouched) {
+      nextCard.clothingEffect = customClothingEffect === 'none'
+        ? null
+        : { kind: 'remove_garment', target: customClothingEffect };
+    }
+
+    if (editingCard) {
+      onUpdateCard(nextCard, { clothingEffectTouched });
+    } else {
+      onAddCustomCard(nextCard);
+    }
+    resetEditor();
+    setIsAdding(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!isDeveloper || !selectedCard || !onDeleteCard) return;
+    soundEngine.playTick();
+    onDeleteCard(selectedCard);
+    setPendingDeleteCardId(null);
+    setSelectedCard(null);
+  };
+
+  return (
+    <div className="relative z-10 max-w-6xl mx-auto px-4 py-6 text-white min-h-screen flex flex-col">
+      {/* Header Bar */}
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-4 mb-6 pb-4 border-b border-rose-500/20">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300 hover:text-white transition-colors cursor-pointer"
+        >
+          {backDestination === 'game'
+            ? <ArrowLeft className="w-4 h-4" />
+            : <Home className="w-4 h-4" />}
+          <span>{backDestination === 'game' ? 'Trở lại bàn chơi' : 'Về trang chủ'}</span>
+        </button>
+
+        <h2 className="font-serif-romantic text-lg sm:text-3xl text-center font-bold text-gold-gradient leading-tight">
+          Bộ Sưu Tập Bài Tình Yêu
+        </h2>
+
+        <div className="flex items-center justify-end gap-2">
+          <span
+            className={`hidden items-center gap-1 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] sm:flex ${
+              isDeveloper
+                ? 'border-amber-300/30 bg-amber-300/10 text-amber-200'
+                : 'border-white/10 bg-white/[0.04] text-neutral-400'
+            }`}
+            aria-label={isDeveloper ? 'Chế độ Developer' : 'Chế độ Player'}
+          >
+            {isDeveloper ? (
+              <Code2 className="h-3 w-3" aria-hidden="true" />
+            ) : (
+              <LockKeyhole className="h-3 w-3" aria-hidden="true" />
+            )}
+            {isDeveloper ? 'Developer' : 'Player'}
+          </span>
+
+          {isDeveloper && (
+            <button
+              aria-label="Thêm bài riêng"
+              onClick={() => {
+                soundEngine.playTick();
+                openCreateEditor();
+              }}
+              className="flex cursor-pointer items-center gap-1.5 rounded-full bg-rose-600/80 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 motion-reduce:transition-none"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden md:inline">Thêm bài riêng</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <section
+        aria-labelledby="collection-progress-title"
+        className="mx-auto mb-6 w-full max-w-2xl border-b border-white/10 pb-5"
+      >
+        <div className="mb-2 flex items-end justify-between gap-4">
+          <div>
+            <h3 id="collection-progress-title" className="text-sm font-semibold text-neutral-100">
+              Tiến độ mở khóa
+            </h3>
+            <p className="mt-0.5 text-[11px] text-neutral-500">
+              {isDeveloper
+                ? 'Developer thấy toàn bộ; tiến độ vẫn ghi nhận các lá đã hoàn thành.'
+                : 'Hoàn thành thành công một lá trong ván chơi để nhìn thấy nội dung.'}
+            </p>
+          </div>
+          <p className="shrink-0 text-sm font-semibold text-rose-200" aria-live="polite">
+            {unlockedCount}/{cards.length}
+          </p>
+        </div>
+        <div
+          role="progressbar"
+          aria-label="Tiến độ mở khóa lá bài"
+          aria-valuemin={0}
+          aria-valuemax={cards.length}
+          aria-valuenow={unlockedCount}
+          aria-valuetext={`${unlockedCount} trên ${cards.length} lá đã mở khóa`}
+          className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]"
+        >
+          <div
+            className="h-full rounded-full bg-rose-400 transition-[width] duration-500 motion-reduce:transition-none"
+            style={{ width: `${unlockPercentage}%` }}
+          />
+        </div>
+      </section>
+
+      {/* Search Bar & Filter Tabs */}
+      <div className="space-y-4 mb-6">
+        <div className="relative w-full max-w-md mx-auto">
+          <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Tìm kiếm trong bộ sưu tập"
+            placeholder={isDeveloper
+              ? 'Tìm kiếm nội dung câu hỏi hoặc thử thách...'
+              : 'Tìm trong các lá bài đã mở khóa...'}
+            className="input-shimmer input-focus-glow w-full bg-neutral-900/90 border border-neutral-700/60 focus:border-amber-400 focus:outline-none rounded-full pl-10 pr-4 py-2 text-xs sm:text-sm text-white transition-all duration-300"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+          {[
+            { id: 'all', label: 'Tất cả' },
+            { id: 'truth', label: '🔍 Sự Thật' },
+            { id: 'dare', label: '⚡ Thử Thách' },
+            { id: 'gentle', label: '🌸 Nhẹ nhàng' },
+            { id: 'intimate', label: '🔥 Thân mật' },
+            { id: 'passionate', label: '💋 Nồng nhiệt' },
+            { id: 'favorites', label: `♥ Đã thích (${visibleFavorites.length})` },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              aria-pressed={activeTab === tab.id}
+              onClick={() => {
+                soundEngine.playTick();
+                setActiveTab(tab.id as CollectionTab);
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 motion-reduce:transition-none ${
+                activeTab === tab.id
+                  ? 'bg-amber-400 text-neutral-950 font-bold shadow-md'
+                  : 'bg-neutral-900/60 text-neutral-300 hover:text-white border border-neutral-800'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* CARD GRID */}
+      {filteredCards.length === 0 ? (
+        <div className="my-auto py-16 text-center text-neutral-400 font-light">
+          <p className="text-base mb-2">Chưa tìm thấy lá bài phù hợp nào.</p>
+          <p className="text-xs text-neutral-500">
+            Thử thay đổi từ khóa tìm kiếm hoặc chọn bộ lọc khác.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+          {filteredCards.map((card, index) => {
+            const isUnlocked = unlockedCardIdSet.has(card.id);
+            if (!isDeveloper && !isUnlocked) {
+              return <LockedCollectionCard key={card.id} position={index + 1} />;
+            }
+
+            return (
+              <GameCard
+                key={card.id}
+                card={card}
+                size="sm"
+                isFavorited={favorites.includes(card.id)}
+                onToggleFavorite={onToggleFavorite}
+                onClick={() => {
+                  setPendingDeleteCardId(null);
+                  setSelectedCard(card);
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* CARD DETAIL POPUP */}
+      <AnimatePresence>
+        {selectedCard && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Chi tiết lá bài"
+            data-card-collection-dialog="true"
+          >
+            <motion.div
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94 }}
+              transition={{ duration: prefersReducedMotion ? 0.12 : 0.2 }}
+              className="relative w-full max-w-sm"
+            >
+              <button
+                onClick={() => {
+                  setSelectedCard(null);
+                  setPendingDeleteCardId(null);
+                }}
+                aria-label="Đóng chi tiết lá bài"
+                className="absolute -top-3 -right-3 z-50 w-8 h-8 rounded-full bg-neutral-800 border border-neutral-600 text-neutral-300 hover:text-white flex items-center justify-center shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <GameCard
+                card={selectedCard}
+                size="lg"
+                isFavorited={favorites.includes(selectedCard.id)}
+                onToggleFavorite={onToggleFavorite}
+              />
+              {isDeveloper && pendingDeleteCardId !== selectedCard.id && (
+                <div className={`mt-3 grid gap-2 ${onDeleteCard ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  <button
+                    onClick={() => openEditEditor(selectedCard)}
+                    className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-rose-400/40 bg-rose-600/20 px-3 text-sm font-semibold text-rose-200 transition-colors hover:bg-rose-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 motion-reduce:transition-none"
+                  >
+                    <Pencil className="w-4 h-4" /> Chỉnh sửa
+                  </button>
+                  {onDeleteCard && (
+                    <button
+                      onClick={() => setPendingDeleteCardId(selectedCard.id)}
+                      className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-neutral-600/70 bg-neutral-950/70 px-3 text-sm font-semibold text-neutral-300 transition-colors hover:border-red-400/50 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 motion-reduce:transition-none"
+                    >
+                      <Trash2 className="h-4 w-4" /> Xóa
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {isDeveloper && onDeleteCard && pendingDeleteCardId === selectedCard.id && (
+                <div className="mt-3 rounded-2xl border border-red-400/30 bg-neutral-950/95 p-3" aria-live="polite">
+                  <p className="text-center text-xs leading-relaxed text-neutral-300">
+                    Xóa lá bài này khỏi bộ sưu tập?
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      ref={deleteCancelButtonRef}
+                      type="button"
+                      onClick={() => setPendingDeleteCardId(null)}
+                      className="min-h-10 rounded-full border border-neutral-700 text-xs font-semibold text-neutral-300 hover:border-neutral-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-300"
+                    >
+                      Giữ lại
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleConfirmDelete}
+                      className="min-h-10 rounded-full bg-red-500/90 text-xs font-bold text-white hover:bg-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                    >
+                      Xác nhận xóa
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ADD CUSTOM CARD MODAL WITH IMAGE EDITOR */}
+      <AnimatePresence>
+        {isAdding && isDeveloper && (
+          <div
+            className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-black/80 backdrop-blur-md"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="card-editor-title"
+            data-card-collection-dialog="true"
+          >
+            <motion.div
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+              transition={{ duration: prefersReducedMotion ? 0.12 : 0.2 }}
+              className="relative w-full max-w-lg max-h-[calc(100svh-2rem)] overflow-y-auto glass-dark rounded-3xl p-5 sm:p-6 border border-rose-500/40 shadow-2xl"
+            >
+              <button
+                onClick={() => { setIsAdding(false); resetEditor(); }}
+                aria-label="Đóng trình chỉnh sửa"
+                className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h3 id="card-editor-title" className="font-serif-romantic text-2xl font-bold text-gold-gradient mb-1 pr-10">
+                {editingCard ? 'Chỉnh Sửa Lá Bài' : 'Thêm Lá Bài Riêng'}
+              </h3>
+              <p className="text-xs text-neutral-400 mb-5">
+                {editingCard ? 'Thay đổi nội dung, cấp độ và biểu tượng của lá bài.' : 'Tự viết câu hỏi hoặc thử thách bí mật. Có thể thêm ảnh minh hoạ!'}
+              </p>
+
+              <form onSubmit={handleCreateCustomCard} className="space-y-4">
+                {/* Type & Level */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-neutral-300 mb-1 block">Thể loại</label>
+                    <select
+                      value={customType}
+                      onChange={(e) => setCustomType(e.target.value as CardType)}
+                      className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-rose-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300"
+                    >
+                      <option value="truth">🔍 Sự Thật</option>
+                      <option value="dare">⚡ Thử Thách</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-300 mb-1 block">Cấp độ</label>
+                    <select
+                      value={customLevel}
+                      onChange={(e) => setCustomLevel(e.target.value as CardLevel)}
+                      className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-amber-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300"
+                    >
+                      <option value="gentle">🌸 Nhẹ nhàng</option>
+                      <option value="intimate">🔥 Thân mật</option>
+                      <option value="passionate">💋 Nồng nhiệt</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div>
+                  <label className="text-xs text-neutral-300 mb-1 block">Nội dung lá bài</label>
+                  <textarea
+                    value={customContent}
+                    onChange={(e) => setCustomContent(e.target.value)}
+                    rows={3}
+                    required
+                    placeholder="Nhập câu hỏi hoặc thử thách ngọt ngào..."
+                    className="input-shimmer input-focus-glow w-full bg-neutral-900/90 border border-neutral-700 text-xs sm:text-sm text-white rounded-xl p-3 focus:border-rose-400 focus:outline-none transition-all duration-300"
+                  />
+                </div>
+
+                {/* Gameplay effect */}
+                <div>
+                  <label htmlFor="card-clothing-effect" className="text-xs text-neutral-300 mb-1 block">
+                    Tác động trang phục
+                  </label>
+                  <select
+                    id="card-clothing-effect"
+                    value={customClothingEffect}
+                    onChange={(event) => {
+                      setCustomClothingEffect(event.target.value as ClothingEffectSelection);
+                      setClothingEffectTouched(true);
+                    }}
+                    className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-rose-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300 focus:border-rose-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/40"
+                  >
+                    <option value="none">Không tác động</option>
+                    <option value="self">Người đang lượt bỏ 1 món</option>
+                    <option value="opponent">Đối phương bỏ 1 món</option>
+                  </select>
+                  <p className="mt-1.5 text-[10px] leading-relaxed text-neutral-500">
+                    Khi hoàn thành thẻ, trò chơi sẽ mở bước chọn và xác nhận món đồ phù hợp.
+                  </p>
+                </div>
+
+                {/* Hint */}
+                <div>
+                  <label className="text-xs text-neutral-300 mb-1 block">
+                    Gợi ý thêm (Không bắt buộc)
+                  </label>
+                  <input
+                    type="text"
+                    value={customHint}
+                    onChange={(e) => setCustomHint(e.target.value)}
+                    placeholder="Gợi ý nhỏ..."
+                    className="input-shimmer input-focus-glow w-full bg-neutral-900/90 border border-neutral-700 text-xs text-white rounded-xl p-2.5 focus:border-rose-400 focus:outline-none transition-all duration-300"
+                  />
+                </div>
+
+                {/* Built-in icon picker */}
+                {!originalImage && (
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="text-xs text-neutral-300">Biểu tượng trên thẻ</label>
+                      <span className="text-[10px] text-neutral-500">{CARD_ICON_NAMES.length} lựa chọn</span>
+                    </div>
+                    <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 max-h-40 overflow-y-auto rounded-xl border border-neutral-800 bg-neutral-950/60 p-2">
+                      {CARD_ICON_NAMES.map((iconName) => {
+                        const Icon = getCardIcon(iconName);
+                        if (!Icon) return null;
+                        return (
+                          <button
+                            key={iconName}
+                            type="button"
+                            title={iconName}
+                            aria-label={`Chọn biểu tượng ${iconName}`}
+                            onClick={() => setCustomIcon(iconName)}
+                            className={`aspect-square rounded-lg p-1.5 transition-all hover:-translate-y-0.5 hover:bg-rose-500/15 ${customIcon === iconName ? 'bg-rose-500/20 ring-1 ring-rose-400' : 'bg-white/[0.03]'}`}
+                          >
+                            <Icon className="w-full h-full text-rose-400" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ========= IMAGE UPLOAD & EDITOR ========= */}
+                <div className="border border-dashed border-rose-500/30 rounded-2xl p-4 space-y-3">
+                  <label className="text-xs text-neutral-300 flex items-center gap-1.5">
+                    <Upload className="w-3.5 h-3.5" />
+                    Ảnh minh hoạ (không bắt buộc)
+                  </label>
+
+                  {/* Upload button */}
+                  {!originalImage ? (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        const file = event.dataTransfer.files[0];
+                        if (file) loadImageFile(file);
+                      }}
+                      className="w-full py-8 flex flex-col items-center justify-center gap-2 bg-neutral-900/60 rounded-xl border border-neutral-700/50 cursor-pointer hover:border-rose-500/40 hover:bg-neutral-900/80 transition-all"
+                    >
+                      <Upload className="w-8 h-8 text-neutral-500" />
+                      <span className="text-xs text-neutral-400">
+                        Bấm để chọn ảnh hoặc kéo thả
+                      </span>
+                      <span className="text-[10px] text-neutral-500">
+                        PNG, JPG, WEBP — Ảnh sẽ được chuyển thành icon hồng-trắng
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Preview: Original vs Processed */}
+                      <div className="flex gap-3 items-start">
+                        {/* Original */}
+                        <div className="flex-1 text-center">
+                          <p className="text-[10px] text-neutral-500 mb-1.5">Ảnh gốc</p>
+                          <div className="w-full aspect-square rounded-xl overflow-hidden bg-neutral-900 border border-neutral-700/40 flex items-center justify-center">
+                            <img
+                              src={originalImage}
+                              alt="original"
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Arrow */}
+                        <div className="flex items-center pt-8 text-neutral-500 text-lg">→</div>
+
+                        {/* Processed (pink/white) */}
+                        <div className="flex-1 text-center">
+                          <p className="text-[10px] text-rose-400 mb-1.5">Icon trên thẻ</p>
+                          <div className="transparency-grid w-full aspect-square rounded-xl overflow-hidden border border-rose-500/30 flex items-center justify-center">
+                            {processedImage ? (
+                              <img
+                                src={processedImage}
+                                alt="processed"
+                                className="w-full h-full object-contain"
+                                style={{ filter: 'drop-shadow(0 0 6px rgba(255,107,157,0.4))' }}
+                              />
+                            ) : (
+                              <span className="text-xs text-neutral-500">Đang xử lý...</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Editor Controls */}
+                      <div className="space-y-3 pt-3 border-t border-neutral-800">
+                        <div className="flex items-center justify-between gap-3 rounded-xl bg-neutral-900/70 border border-neutral-800 p-2.5">
+                          <div className="flex items-center gap-2">
+                            <Eraser className="w-4 h-4 text-rose-300" />
+                            <div>
+                              <div className="text-[11px] text-neutral-200 font-medium">Xóa nền tự động</div>
+                              <div className="text-[9px] text-neutral-500">Nhận diện màu nền từ các góc ảnh</div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={imgRemoveBackground}
+                            onClick={() => setImgRemoveBackground((enabled) => !enabled)}
+                            className={`w-10 h-5 rounded-full p-0.5 transition-colors flex items-center ${imgRemoveBackground ? 'bg-rose-500 justify-end' : 'bg-neutral-700 justify-start'}`}
+                          >
+                            <span className="w-4 h-4 rounded-full bg-white shadow" />
+                          </button>
+                        </div>
+                        {imgRemoveBackground && (
+                          <div className="flex items-center gap-3">
+                            <Eraser className="w-3.5 h-3.5 text-rose-300" />
+                            <label className="text-[10px] text-neutral-400 w-14 shrink-0">Độ xóa</label>
+                            <input type="range" min="10" max="180" value={imgBackgroundTolerance} onChange={(e) => setImgBackgroundTolerance(Number(e.target.value))} className="flex-1 h-1 accent-rose-500" />
+                            <span className="text-[10px] text-neutral-500 w-9 text-right">{imgBackgroundTolerance}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3">
+                          <ZoomIn className="w-3.5 h-3.5 text-rose-300" />
+                          <label className="text-[10px] text-neutral-400 w-14 shrink-0">Scale icon</label>
+                          <input type="range" min="100" max="300" step="10" value={imgZoom * 100} onChange={(e) => setImgZoom(Number(e.target.value) / 100)} className="flex-1 h-1 accent-rose-500" />
+                          <span className="text-[10px] text-neutral-500 w-9 text-right">{imgZoom.toFixed(1)}×</span>
+                        </div>
+                        <p className="text-[9px] text-neutral-500 -mt-1 pl-7">1× luôn hiển thị trọn ảnh; tối đa 3× trong khung icon.</p>
+                        <div className="flex items-center gap-3">
+                          <Move className="w-3.5 h-3.5 text-rose-300" />
+                          <label className="text-[10px] text-neutral-400 w-14 shrink-0">Ngang</label>
+                          <input type="range" min="-50" max="50" value={imgOffsetX} onChange={(e) => setImgOffsetX(Number(e.target.value))} className="flex-1 h-1 accent-rose-500" />
+                          <span className="text-[10px] text-neutral-500 w-9 text-right">{imgOffsetX}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Move className="w-3.5 h-3.5 rotate-90 text-rose-300" />
+                          <label className="text-[10px] text-neutral-400 w-14 shrink-0">Dọc</label>
+                          <input type="range" min="-50" max="50" value={imgOffsetY} onChange={(e) => setImgOffsetY(Number(e.target.value))} className="flex-1 h-1 accent-rose-500" />
+                          <span className="text-[10px] text-neutral-500 w-9 text-right">{imgOffsetY}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <label className="text-[10px] text-neutral-400 w-16 shrink-0">Ngưỡng sáng</label>
+                          <input
+                            type="range"
+                            min="50"
+                            max="220"
+                            value={imgThreshold}
+                            onChange={(e) => setImgThreshold(Number(e.target.value))}
+                            className="flex-1 h-1 accent-rose-500"
+                          />
+                          <span className="text-[10px] text-neutral-500 w-8 text-right">{imgThreshold}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <label className="text-[10px] text-neutral-400 w-16 shrink-0">Tương phản</label>
+                          <input
+                            type="range"
+                            min="50"
+                            max="300"
+                            value={imgContrast * 100}
+                            onChange={(e) => setImgContrast(Number(e.target.value) / 100)}
+                            className="flex-1 h-1 accent-amber-500"
+                          />
+                          <span className="text-[10px] text-neutral-500 w-8 text-right">{imgContrast.toFixed(1)}</span>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => { setImgZoom(1); setImgOffsetX(0); setImgOffsetY(0); setImgThreshold(140); setImgContrast(1.5); setImgRemoveBackground(true); setImgBackgroundTolerance(55); }} className="flex-1 py-1.5 rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-center gap-1.5 hover:bg-rose-600/30 transition-all cursor-pointer">
+                            <RotateCcw className="w-3 h-3" /> Đặt lại
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleClearImage}
+                            className="py-1.5 px-3 rounded-lg bg-neutral-800 border border-neutral-700 text-neutral-400 text-xs flex items-center gap-1.5 hover:text-white transition-all cursor-pointer"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            Xóa ảnh
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  {imageError && <p className="text-[11px] text-rose-300">{imageError}</p>}
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-full font-bold text-sm text-neutral-950 bg-gold-gradient shadow-md hover:shadow-lg transition-all cursor-pointer mt-2"
+                >
+                  {editingCard ? 'Lưu Thay Đổi' : 'Lưu Vào Bộ Sưu Tập'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};

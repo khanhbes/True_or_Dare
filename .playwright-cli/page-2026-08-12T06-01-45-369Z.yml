@@ -1,0 +1,37 @@
+- main [ref=f1e4]:
+  - generic [ref=f1e172]:
+    - generic [ref=f1e173]:
+      - generic [ref=f1e174]:
+        - generic [ref=f1e175]: 👩‍💼
+        - generic [ref=f1e176]:
+          - generic [ref=f1e177]: Đang tới lượt
+          - generic [ref=f1e178]: Em
+      - generic [ref=f1e181]: Lượt 2
+      - generic [ref=f1e190]:
+        - button "Tắt âm thanh" [ref=f1e191]
+        - button "Cách chơi và luật phạt" [ref=f1e196]
+        - button "Bộ sưu tập" [ref=f1e200]
+        - button "Thống kê" [ref=f1e204]
+    - generic [ref=f1e334]:
+      - generic [ref=f1e338] [cursor=pointer]:
+        - generic [ref=f1e339]: ✦
+        - generic [ref=f1e340]: ✦
+        - generic [ref=f1e341]: ✦
+        - generic [ref=f1e342]: ✦
+        - generic [ref=f1e343]:
+          - generic [ref=f1e344]: TRUTH OR DARE
+          - generic [ref=f1e348]: CẶP ĐÔI
+      - paragraph [ref=f1e349]:
+        - generic [ref=f1e350]: Đến lượt
+        - generic [ref=f1e351]: Em
+        - generic [ref=f1e352]: rút lá bài tình yêu
+      - button "Rút Bài Ngay" [ref=f1e353] [cursor=pointer]
+    - generic [ref=f1e237]:
+      - generic [ref=f1e238]:
+        - generic [ref=f1e239]: 👨‍💼
+        - generic [ref=f1e240]: "Anh:"
+        - generic [ref=f1e241]: 0 hoàn thành
+      - generic [ref=f1e243]:
+        - generic [ref=f1e244]: 👩‍💼
+        - generic [ref=f1e245]: "Em:"
+        - generic [ref=f1e246]: 0 hoàn thành

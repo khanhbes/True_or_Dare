@@ -1,0 +1,869 @@
+.outfit-figure {
+  --outfit-accent: #fb7185;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 15rem);
+  margin: 0 auto;
+  isolation: isolate;
+}
+
+.outfit-figure__halo {
+  position: absolute;
+  z-index: -1;
+  width: 82%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(251, 113, 133, .22), rgba(251, 113, 133, 0) 68%);
+  opacity: .45;
+  transform: translateY(-4%);
+}
+
+.outfit-figure--active .outfit-figure__halo {
+  animation: outfit-halo 2.8s ease-in-out infinite;
+}
+
+.outfit-figure__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 28rem;
+  overflow: visible;
+  filter: drop-shadow(0 .8rem 1.2rem rgba(0, 0, 0, .24));
+}
+
+.outfit-figure--compact {
+  width: min(100%, 11rem);
+}
+
+.outfit-figure__ground {
+  fill: rgba(20, 9, 14, .32);
+  filter: blur(2px);
+  transform-origin: center;
+}
+
+.outfit-figure__character {
+  transform-box: fill-box;
+  transform-origin: 50% 96%;
+  animation: outfit-character-sway 7.2s ease-in-out infinite;
+}
+
+.outfit-figure--active .outfit-figure__character {
+  animation-duration: 5.8s;
+}
+
+.outfit-figure__breath {
+  transform-box: fill-box;
+  transform-origin: 50% 86%;
+  animation: outfit-character-breathe 4.6s ease-in-out infinite;
+}
+
+.outfit-figure__eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: outfit-character-blink 6.4s linear infinite;
+}
+
+.outfit-figure__body path,
+.outfit-figure__body ellipse,
+.outfit-figure__body circle {
+  transition: filter .2s ease;
+}
+
+.outfit-figure__garment {
+  animation: outfit-garment-in .32s cubic-bezier(.2, .82, .2, 1);
+  transition: opacity .35s ease, filter .2s ease;
+}
+
+.outfit-figure__garment.is-interactive {
+  cursor: pointer;
+}
+
+.outfit-figure__garment.is-interactive:hover,
+.outfit-figure__garment.is-interactive:focus-visible,
+.outfit-figure__garment.is-interactive.is-selected {
+  filter: brightness(1.07) saturate(1.04) drop-shadow(0 .12rem .26rem rgba(255, 255, 255, .38));
+  outline: none;
+}
+
+.outfit-figure__selection-outline,
+.outfit-figure__hit-area {
+  fill: transparent;
+  stroke: transparent;
+  vector-effect: non-scaling-stroke;
+}
+
+.outfit-figure__selection-outline {
+  pointer-events: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+  transition: stroke .2s ease, filter .2s ease;
+}
+
+.outfit-figure__hit-area {
+  pointer-events: all;
+  stroke-width: 12;
+}
+
+.outfit-figure__garment.is-interactive:hover .outfit-figure__selection-outline,
+.outfit-figure__garment.is-interactive:focus-visible .outfit-figure__selection-outline,
+.outfit-figure__garment.is-interactive.is-selected .outfit-figure__selection-outline {
+  stroke: rgba(255, 255, 255, .78);
+  filter: drop-shadow(0 0 .18rem rgba(251, 113, 133, .78));
+}
+
+.outfit-figure__garment.is-preview-removed {
+  animation: none;
+  opacity: .16;
+  transform: translateY(11px) rotate(2.5deg);
+  filter: saturate(.25);
+}
+
+.outfit-figure__garment.is-dimmed {
+  opacity: .25;
+  pointer-events: none;
+}
+
+.outfit-figure__name {
+  max-width: 100%;
+  margin-top: -.4rem;
+  overflow: hidden;
+  color: #fff7ed;
+  font-size: .8rem;
+  font-weight: 700;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outfit-configurator {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(251, 113, 133, .22);
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, rgba(54, 20, 34, .8), rgba(18, 15, 18, .94));
+  box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, .2);
+  color: #fff;
+}
+
+.outfit-configurator::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .42), transparent);
+  content: '';
+}
+
+.outfit-configurator__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem .2rem;
+}
+
+.outfit-configurator__eyebrow {
+  margin: 0 0 .15rem;
+  color: #fda4af;
+  font-size: .67rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.outfit-configurator__header h4 {
+  margin: 0;
+  color: #fff7ed;
+  font-size: .98rem;
+}
+
+.outfit-configurator__count {
+  display: inline-flex;
+  min-width: 4.2rem;
+  min-height: 2.2rem;
+  align-items: center;
+  justify-content: center;
+  gap: .38rem;
+  border: 1px solid rgba(253, 164, 175, .25);
+  border-radius: 999px;
+  background: rgba(136, 19, 55, .22);
+  color: #fecdd3;
+  font-size: .75rem;
+  font-weight: 800;
+}
+
+.outfit-configurator__count svg {
+  width: .9rem;
+  height: .9rem;
+}
+
+.outfit-configurator__workspace {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, .78fr) minmax(0, 1.22fr);
+  align-items: center;
+  gap: .75rem;
+  padding: .6rem 1rem 1rem;
+}
+
+.outfit-configurator__controls {
+  min-width: 0;
+}
+
+.outfit-configurator__slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .45rem;
+}
+
+.outfit-slot-button {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: .4rem;
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: .75rem;
+  background: rgba(255, 255, 255, .035);
+  padding: .55rem .62rem;
+  color: #a3a3a3;
+  font: inherit;
+  font-size: .73rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, color .2s ease, transform .2s ease;
+}
+
+.outfit-slot-button:hover,
+.outfit-slot-button:focus-visible {
+  border-color: rgba(253, 164, 175, .55);
+  color: #fff;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.outfit-slot-button.is-included {
+  color: #fff1f2;
+  background: rgba(190, 24, 93, .17);
+}
+
+.outfit-slot-button.is-editing {
+  border-color: rgba(251, 113, 133, .72);
+  box-shadow: 0 0 0 2px rgba(251, 113, 133, .1);
+}
+
+.outfit-slot-button__action {
+  display: grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .09);
+}
+
+.outfit-slot-button__action svg {
+  width: .82rem;
+  height: .82rem;
+}
+
+.outfit-configurator__editor {
+  margin-top: .8rem;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  padding-top: .75rem;
+}
+
+.outfit-configurator__editor.is-disabled {
+  min-height: 3.1rem;
+}
+
+.outfit-configurator__field + .outfit-configurator__field {
+  margin-top: .8rem;
+}
+
+.outfit-configurator__field-label {
+  display: block;
+  margin-bottom: .42rem;
+  color: #d4d4d4;
+  font-size: .68rem;
+  font-weight: 700;
+}
+
+.outfit-configurator__styles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+
+.outfit-configurator__styles button,
+.outfit-configurator__add {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: .28rem;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: .62rem;
+  background: rgba(255, 255, 255, .045);
+  padding: .42rem .58rem;
+  color: #bdbdbd;
+  font: inherit;
+  font-size: .65rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.outfit-configurator__styles button:hover,
+.outfit-configurator__styles button:focus-visible,
+.outfit-configurator__styles button.is-selected,
+.outfit-configurator__add:hover,
+.outfit-configurator__add:focus-visible {
+  border-color: rgba(253, 164, 175, .62);
+  background: rgba(190, 24, 93, .18);
+  color: #fff;
+  outline: none;
+}
+
+.outfit-configurator__styles svg,
+.outfit-configurator__add svg {
+  width: .75rem;
+  height: .75rem;
+}
+
+.outfit-configurator__palette {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+}
+
+.outfit-configurator__palette > button {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 999px;
+  background: transparent;
+  padding: .48rem;
+  cursor: pointer;
+}
+
+.outfit-configurator__palette > button span {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--swatch-color);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+
+.outfit-configurator__palette > button:hover,
+.outfit-configurator__palette > button:focus-visible,
+.outfit-configurator__palette > button.is-selected {
+  border-color: #fff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(251, 113, 133, .45);
+  transform: scale(1.08);
+}
+
+.outfit-configurator__custom-color {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: .35rem;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 999px;
+  padding: .24rem .3rem .24rem .55rem;
+  color: #d4d4d4;
+  font-size: .62rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.outfit-configurator__custom-color input {
+  width: 2rem;
+  height: 2rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.outfit-configurator button:disabled,
+.outfit-configurator input:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.garment-dialog {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  background: rgba(7, 5, 7, .78);
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+  backdrop-filter: blur(10px);
+  animation: outfit-backdrop-in .2s ease both;
+}
+
+.garment-dialog__panel {
+  width: min(100%, 43rem);
+  max-height: calc(100svh - 2rem);
+  overflow-y: auto;
+  border: 1px solid rgba(251, 113, 133, .28);
+  border-radius: 1.5rem;
+  background: linear-gradient(145deg, #2a151d, #120f12 74%);
+  box-shadow: 0 2rem 6rem rgba(0, 0, 0, .55);
+  color: #fff;
+  animation: outfit-dialog-in .28s cubic-bezier(.2, .85, .25, 1) both;
+  scrollbar-color: rgba(251, 113, 133, .45) transparent;
+}
+
+.garment-dialog__panel:focus {
+  outline: none;
+}
+
+.garment-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.garment-dialog__source {
+  display: inline-block;
+  margin-bottom: .3rem;
+  color: #fda4af;
+  font-size: .67rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.garment-dialog__header h2 {
+  margin: 0;
+  color: #fff7ed;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.25rem, 4vw, 1.7rem);
+}
+
+.garment-dialog__header p {
+  max-width: 34rem;
+  margin: .45rem 0 0;
+  color: #a3a3a3;
+  font-size: .78rem;
+  line-height: 1.55;
+}
+
+.garment-dialog__close {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: .85rem;
+  background: rgba(255, 255, 255, .04);
+  color: #d4d4d4;
+  cursor: pointer;
+}
+
+.garment-dialog__close:hover,
+.garment-dialog__close:focus-visible {
+  border-color: rgba(253, 164, 175, .55);
+  color: #fff;
+  outline: none;
+}
+
+.garment-dialog__close svg {
+  width: 1.1rem;
+}
+
+.garment-dialog__content {
+  display: grid;
+  grid-template-columns: minmax(11rem, .9fr) minmax(13rem, 1.1fr);
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.garment-dialog__figure {
+  min-width: 0;
+}
+
+.garment-dialog__preview-note {
+  min-height: 1.2rem;
+  margin: -.2rem 0 0;
+  color: #fda4af;
+  font-size: .72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.garment-dialog__choices {
+  display: grid;
+  gap: .55rem;
+}
+
+.garment-choice {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: .9rem;
+  background: rgba(255, 255, 255, .035);
+  padding: .65rem .8rem;
+  color: #e5e5e5;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.garment-choice:hover:not(:disabled),
+.garment-choice:focus-visible:not(:disabled) {
+  border-color: rgba(253, 164, 175, .6);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.garment-choice.is-selected {
+  border-color: #fb7185;
+  background: rgba(190, 24, 93, .2);
+  box-shadow: 0 0 0 2px rgba(251, 113, 133, .1);
+}
+
+.garment-choice:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.garment-choice span:first-child {
+  display: grid;
+  gap: .16rem;
+}
+
+.garment-choice strong {
+  font-size: .82rem;
+}
+
+.garment-choice small {
+  color: #8e8e8e;
+  font-size: .67rem;
+}
+
+.garment-choice > svg,
+.garment-choice__dot {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: 0 0 auto;
+}
+
+.garment-choice__dot {
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 999px;
+}
+
+.garment-dialog__empty {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  border: 1px solid rgba(251, 191, 36, .22);
+  border-radius: .9rem;
+  background: rgba(120, 53, 15, .14);
+  padding: .8rem;
+  color: #fde68a;
+}
+
+.garment-dialog__empty svg {
+  width: 1.1rem;
+  flex: 0 0 auto;
+}
+
+.garment-dialog__empty p {
+  margin: 0;
+  font-size: .74rem;
+  line-height: 1.5;
+}
+
+.garment-dialog__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: .65rem;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  background: rgba(18, 15, 18, .94);
+  padding: .9rem 1.25rem calc(.9rem + env(safe-area-inset-bottom));
+  backdrop-filter: blur(10px);
+}
+
+.garment-dialog__footer button {
+  min-height: 3rem;
+  border-radius: 999px;
+  padding: .65rem 1rem;
+  font: inherit;
+  font-size: .76rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.game-table-stage {
+  display: grid;
+  width: 100%;
+  grid-template-columns: clamp(9rem, 15vw, 12rem) minmax(20rem, 28rem) clamp(9rem, 15vw, 12rem);
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+}
+
+.game-table-stage__center {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-outfit-desktop {
+  display: block;
+  min-width: 0;
+}
+
+.game-outfit-mobile {
+  display: none;
+}
+
+.game-player-outfit {
+  width: 100%;
+}
+
+.game-outfit-side {
+  width: min(100%, 9.5rem);
+}
+
+.game-outfit-dock {
+  width: 4.8rem;
+}
+
+.garment-dialog__secondary {
+  border: 1px solid rgba(255, 255, 255, .12);
+  background: transparent;
+  color: #d4d4d4;
+}
+
+.garment-dialog__confirm {
+  border: 1px solid rgba(253, 164, 175, .4);
+  background: linear-gradient(135deg, #fb7185, #fda4af);
+  color: #2d0c16;
+  box-shadow: 0 .6rem 1.7rem rgba(244, 63, 94, .2);
+}
+
+.garment-dialog__footer button:hover:not(:disabled),
+.garment-dialog__footer button:focus-visible:not(:disabled) {
+  outline: none;
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.garment-dialog__footer button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+  filter: grayscale(.5);
+}
+
+@keyframes outfit-halo {
+  0%, 100% { opacity: .42; transform: translateY(-4%) scale(.92); }
+  50% { opacity: .86; transform: translateY(-4%) scale(1.08); }
+}
+
+@keyframes outfit-character-sway {
+  0%, 100% { transform: rotate(-.45deg) translateX(-.35px); }
+  50% { transform: rotate(.45deg) translateX(.35px); }
+}
+
+@keyframes outfit-character-breathe {
+  0%, 100% { transform: translateY(0) scaleX(1); }
+  50% { transform: translateY(-.7px) scaleX(1.004); }
+}
+
+@keyframes outfit-character-blink {
+  0%, 46%, 48%, 84%, 86%, 100% { transform: scaleY(1); }
+  47%, 85% { transform: scaleY(.08); }
+}
+
+@keyframes outfit-garment-in {
+  from { opacity: 0; transform: translateY(5px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes outfit-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes outfit-dialog-in {
+  from { opacity: 0; transform: translateY(12px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 640px) {
+  .outfit-configurator__workspace {
+    grid-template-columns: minmax(6.5rem, .68fr) minmax(0, 1.32fr);
+    gap: .45rem;
+    padding-inline: .75rem;
+  }
+
+  .outfit-configurator__header {
+    padding-inline: .8rem;
+  }
+
+  .outfit-configurator__slots {
+    grid-template-columns: 1fr;
+  }
+
+  .outfit-slot-button {
+    min-height: 3rem;
+  }
+
+  .garment-dialog {
+    align-items: end;
+    padding: 0;
+  }
+
+  .garment-dialog__panel {
+    width: 100%;
+    max-height: min(92svh, 50rem);
+    border-width: 1px 0 0;
+    border-radius: 1.4rem 1.4rem 0 0;
+  }
+
+  .garment-dialog__header {
+    padding: 1rem;
+  }
+
+  .garment-dialog__content {
+    grid-template-columns: minmax(7.5rem, .75fr) minmax(0, 1.25fr);
+    gap: .7rem;
+    padding: .8rem 1rem 1rem;
+  }
+
+  .garment-dialog__figure .outfit-figure {
+    width: min(100%, 9.5rem);
+  }
+
+  .garment-dialog__footer {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr;
+    padding-inline: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .game-table-stage {
+    display: block;
+  }
+
+  .game-outfit-desktop {
+    display: none;
+  }
+
+  .game-outfit-mobile {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+    margin-top: .75rem;
+  }
+
+  .game-player-outfit--mobile {
+    display: grid;
+    min-height: 7.2rem;
+    grid-template-columns: 4.9rem minmax(0, 1fr);
+    align-items: center;
+    padding: .35rem .55rem;
+    text-align: left;
+  }
+
+  .game-player-outfit--mobile .outfit-figure__name {
+    display: none;
+  }
+
+  .game-player-outfit--mobile > div:last-child {
+    min-width: 0;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .outfit-configurator__workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .outfit-configurator__workspace .outfit-figure {
+    width: 7.4rem;
+  }
+
+  .outfit-configurator__slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .garment-dialog__content {
+    grid-template-columns: 6.8rem minmax(0, 1fr);
+  }
+
+  .garment-choice {
+    min-height: 3.25rem;
+    padding: .5rem .62rem;
+  }
+
+  .game-outfit-mobile {
+    gap: .4rem;
+  }
+
+  .game-player-outfit--mobile {
+    min-height: 6.5rem;
+    grid-template-columns: 3.8rem minmax(0, 1fr);
+    padding-inline: .4rem;
+  }
+
+  .game-outfit-dock {
+    width: 3.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outfit-figure--active .outfit-figure__halo,
+  .outfit-figure__character,
+  .outfit-figure__breath,
+  .outfit-figure__eyes,
+  .outfit-figure__garment,
+  .garment-dialog,
+  .garment-dialog__panel {
+    animation: none;
+  }
+
+  .outfit-figure__garment,
+  .outfit-slot-button,
+  .garment-choice,
+  .garment-dialog__footer button {
+    transition-duration: .08s;
+  }
+
+  .outfit-figure__garment.is-interactive:hover,
+  .outfit-figure__garment.is-interactive:focus-visible,
+  .outfit-figure__garment.is-selected,
+  .outfit-figure__garment.is-preview-removed,
+  .outfit-slot-button:hover,
+  .garment-choice:hover:not(:disabled),
+  .garment-dialog__footer button:hover:not(:disabled) {
+    transform: none;
+  }
+}

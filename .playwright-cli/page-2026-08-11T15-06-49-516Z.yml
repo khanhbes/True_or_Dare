@@ -1,0 +1,65 @@
+- main [ref=e4]:
+  - generic [ref=e48]:
+    - generic [ref=e49]:
+      - button "Quay lại" [ref=e50]
+      - heading "Thiết Lập Trò Chơi" [level=2] [ref=e54]
+    - generic [ref=e55]:
+      - generic [ref=e56]:
+        - heading "Tên 2 Người Chơi" [level=3] [ref=e57]
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: Người chơi 1
+            - generic [ref=e66]:
+              - button "Chọn biểu tượng người chơi" [ref=e68] [cursor=pointer]:
+                - generic [ref=e69]: 👨‍💼
+              - textbox "Nhập tên..." [ref=e72]: Anh
+          - generic [ref=e73]:
+            - generic [ref=e74]: Người chơi 2
+            - generic [ref=e76]:
+              - button "Chọn biểu tượng người chơi" [ref=e78] [cursor=pointer]:
+                - generic [ref=e79]: 👩‍💼
+              - textbox "Nhập tên..." [ref=e82]: Em
+      - generic [ref=e83]:
+        - generic [ref=e84]:
+          - generic [ref=e87]: Chọn Cấp Độ Thách
+          - generic [ref=e88]: (Có thể chọn nhiều cấp độ)
+        - generic [ref=e89]:
+          - generic [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]: 🌸
+            - generic [ref=e96]: Nhẹ nhàng
+            - paragraph [ref=e97]: Làm quen, câu hỏi vui, kỷ niệm ngọt ngào và thử thách dễ thương.
+          - generic [ref=e102] [cursor=pointer]:
+            - generic [ref=e103]: 🔥
+            - generic [ref=e104]: Thân mật
+            - paragraph [ref=e105]: Tăng sự gắn kết, tán tỉnh, cử chỉ lãng mạn và kết nối cảm xúc sâu sắc.
+          - generic [ref=e110] [cursor=pointer]:
+            - generic [ref=e111]: 💋
+            - generic [ref=e112]: Nồng nhiệt
+            - paragraph [ref=e113]: Quyến rũ, riêng tư, nồng nàn dành riêng cho cặp đôi gắn bó.
+      - generic [ref=e114]:
+        - heading "Tùy Chỉnh Lượt Chơi & Bảo Mật" [level=3] [ref=e115]
+        - generic [ref=e116]:
+          - generic [ref=e117]:
+            - generic [ref=e118]: Chế độ số lượt chơi
+            - generic [ref=e119]: Giới hạn số lượt hoặc chơi thoải mái
+          - generic [ref=e120]:
+            - button "Không giới hạn" [ref=e121]
+            - button "Cố định" [ref=e122]
+        - generic [ref=e123]:
+          - generic [ref=e130]:
+            - generic [ref=e131]: Chế độ bảo mật câu hỏi
+            - generic [ref=e132]: Che nội dung lá bài cho tới khi người chơi bấm "Xem nội dung"
+          - button [ref=e133]
+        - generic [ref=e135]:
+          - generic [ref=e143]:
+            - generic [ref=e144]: Cách chọn thể loại bài
+            - generic [ref=e145]: Chọn trước Sự Thật/Thách hay để hệ thống ngẫu nhiên
+          - generic [ref=e146]:
+            - button "Ngẫu nhiên cả hai" [ref=e147]
+            - button "Tự chọn trước" [ref=e148]
+        - generic [ref=e149]:
+          - generic [ref=e154]:
+            - generic [ref=e155]: Đếm ngược cho thử thách
+            - generic [ref=e156]: Hiển thị đồng hồ đếm ngược cho các lá bài Thử Thách
+          - button [ref=e157]
+      - button "Vào Bàn Chơi Ngay" [ref=e159] [cursor=pointer]
