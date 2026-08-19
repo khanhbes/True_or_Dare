@@ -120,6 +120,22 @@ test('a clothing-effect card becomes ineligible when its target is empty', () =>
   assert.equal(isCardEligibleForOutfits(cards[3], 0, [outfits[0], target]), false);
 });
 
+test('swap effects require one removable garment from both players', () => {
+  const swapCard: CardItem = {
+    id: 'swap',
+    type: 'dare',
+    level: 'intimate',
+    content: 'Đổi một món đồ cho nhau.',
+    clothingEffect: { kind: 'swap_garments' },
+  };
+  const outfits = dressedOutfits();
+
+  assert.equal(isClothingEffect(swapCard.clothingEffect), true);
+  assert.equal(isCardEligibleForOutfits(swapCard, 0, outfits), true);
+  assert.equal(isCardEligibleForOutfits(swapCard, 1, [outfits[0], emptyOutfit(1)]), false);
+  assert.equal(isCardEligibleForOutfits(swapCard, 0, [emptyOutfit(0), outfits[1]]), false);
+});
+
 test('base probabilities are 50/50 by type and 70/20/10 by level', () => {
   const probabilities = getCardDrawProbabilities({ outfits: dressedOutfits() });
   assert.deepEqual(probabilities.types, { truth: 0.5, dare: 0.5 });

@@ -3,7 +3,7 @@ import { CardItem, CardLevel } from '../types';
 import { getCardIcon, autoAssignIcon } from './CardIcons';
 import { LEVEL_INFO } from '../data/cards';
 import { Heart } from 'lucide-react';
-import { deriveDifficultyStars, getCardAudience, getCardDeck } from '../utils/progression';
+import { deriveDifficultyStars, derivePositionDifficultyStars, getCardAudience, getCardDeck } from '../utils/progression';
 
 interface GameCardProps {
   card: CardItem;
@@ -36,7 +36,9 @@ export const GameCard: React.FC<GameCardProps> = ({
     ? ({ male: 'Nam nhận', female: 'Nữ nhận', both: 'Cả hai' } as const)[card.position.recipient]
     : ({ male: 'Nam', female: 'Nữ', both: 'Cả hai' } as const)[getCardAudience(card)];
   const familyLabel = card.position
-    ? ({ oral: 'ORAL SEX', blowjob: 'BLOWJOB', handjob: 'HANDJOB', have_sex: 'HAVE SEX' } as const)[card.position.family]
+    ? card.position.family === 'other'
+      ? (card.position.customLabel?.trim() || 'TƯ THẾ KHÁC').toUpperCase()
+      : ({ oral: 'ORAL SEX', blowjob: 'BLOW', handjob: 'HAND', have_sex: 'HAVE SEX' } as const)[card.position.family]
     : null;
 
   // Card level class
@@ -149,7 +151,7 @@ export const GameCard: React.FC<GameCardProps> = ({
         {/* Center: Icon (custom image or SVG) */}
         <div className="flex-1 flex flex-col items-center justify-center">
           {card.customImage ? (
-            <div className={`${s.iconWrapper} card-custom-icon-wrapper mb-3`}>
+            <div className={`${s.iconWrapper} card-custom-icon-wrapper ${isRarePosition ? 'mythic-icon-aura' : ''} mb-3`}>
               <img
                 src={card.customImage}
                 alt=""
@@ -157,7 +159,7 @@ export const GameCard: React.FC<GameCardProps> = ({
               />
             </div>
           ) : IconComponent ? (
-            <div className={`${s.iconWrapper} card-icon-color mb-3`}>
+            <div className={`${s.iconWrapper} card-icon-color ${isRarePosition ? 'mythic-icon-aura' : ''} mb-3`}>
               <IconComponent className="w-full h-full" />
             </div>
           ) : null}
@@ -181,7 +183,7 @@ export const GameCard: React.FC<GameCardProps> = ({
         <div className="mt-auto pt-2">
           <div className="mb-1.5 flex items-center justify-center gap-1.5 text-[9px] text-neutral-400">
             <span className="rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-2 py-0.5 text-amber-200">
-              {deriveDifficultyStars(card)}★
+              {isPosition ? derivePositionDifficultyStars(card) : deriveDifficultyStars(card)}★
             </span>
             <span className="rounded-full border border-white/10 bg-white/[0.035] px-2 py-0.5">
               {audienceLabel}

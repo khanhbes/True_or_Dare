@@ -17,6 +17,7 @@ import {
   LockKeyhole,
   Timer,
   SlidersHorizontal,
+  Crop,
 } from 'lucide-react';
 import {
   CardAudience,
@@ -31,12 +32,14 @@ import {
   PositionRarity,
   PositionRecipient,
   ProgressionConfig,
+  LuxuryProgressionConfig,
+  PositionDifficultyStars,
 } from '../types';
 import { soundEngine } from '../utils/audio';
 import { GameCard } from './GameCard';
 import { CARD_ICON_NAMES, autoAssignIcon, getCardIcon } from './CardIcons';
 import { ProgressionConfigModal } from './ProgressionConfigModal';
-import { deriveDifficultyStars, getCardAudience, getCardDeck } from '../utils/progression';
+import { deriveDifficultyStars, derivePositionDifficultyStars, getCardAudience, getCardDeck, POSITION_DIFFICULTY_STARS } from '../utils/progression';
 
 export type CardCollectionMode = 'player' | 'developer';
 
@@ -65,6 +68,8 @@ export interface CardCollectionProps {
   backDestination?: 'home' | 'game';
   progressionConfig: ProgressionConfig;
   onProgressionConfigChange: (config: ProgressionConfig) => void;
+  luxuryProgressionConfig: LuxuryProgressionConfig;
+  onLuxuryProgressionConfigChange: (config: LuxuryProgressionConfig) => void;
   onBack: () => void;
 }
 
@@ -79,9 +84,10 @@ const TYPE_SORT_ORDER: Record<CardType, number> = {
   dare: 1,
 };
 
-type ClothingEffectSelection = 'none' | ClothingEffect['target'];
+type ClothingEffectSelection = 'none' | 'self' | 'opponent' | 'swap';
 type CollectionTab = 'all' | 'truth' | 'dare' | 'favorites' | CardLevel;
 type StageSelection = 'any' | OutfitStage;
+type CardTimerMode = 'inherit' | 'disabled' | 'custom';
 
 const CARD_TIMER_PRESETS = [10, 15, 30, 45, 60] as const;
 const DEFAULT_CARD_TIMER_SECONDS = 30;
@@ -115,7 +121,16 @@ const LockedCollectionCard: React.FC<LockedCollectionCardProps> = ({ position })
   </div>
 );
 
-// Crop and recolor an upload to the same pink/white language as the built-in icons.
+type IconPalette = 'standard' | 'position' | 'mythic';
+
+const ICON_PALETTES: Record<IconPalette, { shadow: [number, number, number]; light: [number, number, number] }> = {
+  standard: { shadow: [255, 107, 157], light: [255, 246, 249] },
+  position: { shadow: [216, 180, 92], light: [255, 248, 231] },
+  mythic: { shadow: [224, 145, 158], light: [229, 231, 235] },
+};
+
+// Detect the foreground, crop around it, remove a flat corner background and
+// recolor the result to the visual language of the selected card deck.
 function renderCardIcon(
   originalDataUrl: string,
   options: {
@@ -126,44 +141,33 @@ function renderCardIcon(
     offsetY: number;
     removeBackground: boolean;
     backgroundTolerance: number;
+    autoCrop: boolean;
+    palette: IconPalette;
   },
   callback: (dataUrl: string) => void
 ) {
   const img = new Image();
   img.onload = () => {
-    const canvas = document.createElement('canvas');
     const size = 256;
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d')!;
-    // At 1x the whole image is always visible. Higher values zoom safely inside the square canvas.
-    const containScale = Math.min(size / img.width, size / img.height) * options.zoom;
-    const width = img.width * containScale;
-    const height = img.height * containScale;
-    const x = (size - width) / 2 + (options.offsetX / 100) * size;
-    const y = (size - height) / 2 + (options.offsetY / 100) * size;
-    ctx.clearRect(0, 0, size, size);
-    ctx.drawImage(img, x, y, width, height);
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-
-    // Estimate a flat background color from the four corners of the original image.
+    const sampleSize = 128;
     const sampleCanvas = document.createElement('canvas');
-    sampleCanvas.width = 32;
-    sampleCanvas.height = 32;
+    sampleCanvas.width = sampleSize;
+    sampleCanvas.height = sampleSize;
     const sampleCtx = sampleCanvas.getContext('2d')!;
-    sampleCtx.drawImage(img, 0, 0, 32, 32);
-    const sampleData = sampleCtx.getImageData(0, 0, 32, 32).data;
-    const cornerOrigins = [[0, 0], [29, 0], [0, 29], [29, 29]];
+    sampleCtx.clearRect(0, 0, sampleSize, sampleSize);
+    sampleCtx.drawImage(img, 0, 0, sampleSize, sampleSize);
+    const sampleData = sampleCtx.getImageData(0, 0, sampleSize, sampleSize).data;
+
+    const cornerSize = 6;
+    const cornerOrigins = [[0, 0], [sampleSize - cornerSize, 0], [0, sampleSize - cornerSize], [sampleSize - cornerSize, sampleSize - cornerSize]];
     let backgroundR = 0;
     let backgroundG = 0;
     let backgroundB = 0;
     let backgroundSamples = 0;
     cornerOrigins.forEach(([originX, originY]) => {
-      for (let sampleY = originY; sampleY < originY + 3; sampleY += 1) {
-        for (let sampleX = originX; sampleX < originX + 3; sampleX += 1) {
-          const sampleIndex = (sampleY * 32 + sampleX) * 4;
+      for (let sampleY = originY; sampleY < originY + cornerSize; sampleY += 1) {
+        for (let sampleX = originX; sampleX < originX + cornerSize; sampleX += 1) {
+          const sampleIndex = (sampleY * sampleSize + sampleX) * 4;
           if (sampleData[sampleIndex + 3] < 20) continue;
           backgroundR += sampleData[sampleIndex];
           backgroundG += sampleData[sampleIndex + 1];
@@ -177,6 +181,62 @@ function renderCardIcon(
       backgroundG /= backgroundSamples;
       backgroundB /= backgroundSamples;
     }
+
+    let sourceX = 0;
+    let sourceY = 0;
+    let sourceWidth = img.width;
+    let sourceHeight = img.height;
+    if (options.autoCrop) {
+      let minX = sampleSize;
+      let minY = sampleSize;
+      let maxX = -1;
+      let maxY = -1;
+      for (let sampleY = 0; sampleY < sampleSize; sampleY += 1) {
+        for (let sampleX = 0; sampleX < sampleSize; sampleX += 1) {
+          const sampleIndex = (sampleY * sampleSize + sampleX) * 4;
+          const alpha = sampleData[sampleIndex + 3];
+          if (alpha < 24) continue;
+          const distance = Math.sqrt(
+            ((sampleData[sampleIndex] - backgroundR) ** 2)
+            + ((sampleData[sampleIndex + 1] - backgroundG) ** 2)
+            + ((sampleData[sampleIndex + 2] - backgroundB) ** 2),
+          );
+          if (options.removeBackground && backgroundSamples > 0 && distance <= options.backgroundTolerance + 12) continue;
+          minX = Math.min(minX, sampleX);
+          minY = Math.min(minY, sampleY);
+          maxX = Math.max(maxX, sampleX);
+          maxY = Math.max(maxY, sampleY);
+        }
+      }
+      if (maxX >= minX && maxY >= minY) {
+        const padding = Math.max(3, Math.round(Math.max(maxX - minX, maxY - minY) * 0.08));
+        minX = Math.max(0, minX - padding);
+        minY = Math.max(0, minY - padding);
+        maxX = Math.min(sampleSize - 1, maxX + padding);
+        maxY = Math.min(sampleSize - 1, maxY + padding);
+        sourceX = (minX / sampleSize) * img.width;
+        sourceY = (minY / sampleSize) * img.height;
+        sourceWidth = ((maxX - minX + 1) / sampleSize) * img.width;
+        sourceHeight = ((maxY - minY + 1) / sampleSize) * img.height;
+      }
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    const containScale = Math.min(size / sourceWidth, size / sourceHeight) * options.zoom;
+    const width = sourceWidth * containScale;
+    const height = sourceHeight * containScale;
+    const x = (size - width) / 2 + (options.offsetX / 100) * size;
+    const y = (size - height) / 2 + (options.offsetY / 100) * size;
+    ctx.clearRect(0, 0, size, size);
+    ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    const palette = ICON_PALETTES[options.palette];
 
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i];
@@ -210,21 +270,21 @@ function renderCardIcon(
       brightness = ((brightness / 255 - 0.5) * options.contrast + 0.5) * 255;
       brightness = Math.max(0, Math.min(255, brightness));
 
-      // Apply threshold: below threshold = pink, above = white/transparent
+      // Map luminance to the selected two-color card palette.
       if (brightness < options.threshold) {
-        // Dark areas -> Pink (#FF6B9D)
         const intensity = 1 - (brightness / options.threshold);
-        data[i] = 255;
-        data[i + 1] = Math.round(107 + (1 - intensity) * 80);
-        data[i + 2] = Math.round(157 + (1 - intensity) * 60);
+        const blend = (1 - intensity) * 0.42;
+        data[i] = Math.round(palette.shadow[0] + (palette.light[0] - palette.shadow[0]) * blend);
+        data[i + 1] = Math.round(palette.shadow[1] + (palette.light[1] - palette.shadow[1]) * blend);
+        data[i + 2] = Math.round(palette.shadow[2] + (palette.light[2] - palette.shadow[2]) * blend);
         data[i + 3] = Math.min(a, Math.round(180 + intensity * 75));
       } else {
-        // Bright areas -> very subtle white or transparent
         const fade = (brightness - options.threshold) / (255 - options.threshold);
-        data[i] = 255;
-        data[i + 1] = Math.round(200 + fade * 55);
-        data[i + 2] = Math.round(220 + fade * 35);
-        data[i + 3] = Math.min(a, Math.round(120 * (1 - fade * 0.8)));
+        const blend = 0.42 + fade * 0.58;
+        data[i] = Math.round(palette.shadow[0] + (palette.light[0] - palette.shadow[0]) * blend);
+        data[i + 1] = Math.round(palette.shadow[1] + (palette.light[1] - palette.shadow[1]) * blend);
+        data[i + 2] = Math.round(palette.shadow[2] + (palette.light[2] - palette.shadow[2]) * blend);
+        data[i + 3] = Math.min(a, Math.round(205 - fade * 55));
       }
     }
 
@@ -246,6 +306,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   backDestination = 'home',
   progressionConfig,
   onProgressionConfigChange,
+  luxuryProgressionConfig,
+  onLuxuryProgressionConfigChange,
   onBack,
 }) => {
   const prefersReducedMotion = useReducedMotion();
@@ -255,7 +317,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [pendingDeleteCardId, setPendingDeleteCardId] = useState<string | null>(null);
   const [showProgressionConfig, setShowProgressionConfig] = useState(false);
   const [deckFilter, setDeckFilter] = useState<'all' | CardDeck>('all');
-  const [starFilter, setStarFilter] = useState<'all' | DifficultyStars>('all');
+  const [starFilter, setStarFilter] = useState<'all' | PositionDifficultyStars>('all');
   const [audienceFilter, setAudienceFilter] = useState<'all' | CardAudience>('all');
 
   // Add Custom Card Modal State
@@ -269,17 +331,18 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [customClothingEffect, setCustomClothingEffect] = useState<ClothingEffectSelection>('none');
   const [clothingEffectTouched, setClothingEffectTouched] = useState(false);
   const [illustrationTouched, setIllustrationTouched] = useState(false);
-  const [customTimerEnabled, setCustomTimerEnabled] = useState(false);
+  const [customTimerMode, setCustomTimerMode] = useState<CardTimerMode>('inherit');
   const [customTimerSeconds, setCustomTimerSeconds] = useState(String(DEFAULT_CARD_TIMER_SECONDS));
   const [timerTouched, setTimerTouched] = useState(false);
   const [customDeck, setCustomDeck] = useState<CardDeck>('standard');
-  const [customStars, setCustomStars] = useState<DifficultyStars>(1);
+  const [customStars, setCustomStars] = useState<PositionDifficultyStars>(1);
   const [customAudience, setCustomAudience] = useState<CardAudience>('both');
   const [customGainEnabled, setCustomGainEnabled] = useState(false);
   const [customGain, setCustomGain] = useState('4');
   const [customActorStage, setCustomActorStage] = useState<StageSelection>('any');
   const [customPartnerStage, setCustomPartnerStage] = useState<StageSelection>('any');
   const [customPositionFamily, setCustomPositionFamily] = useState<PositionFamily>('oral');
+  const [customPositionLabel, setCustomPositionLabel] = useState('');
   const [customPositionRecipient, setCustomPositionRecipient] = useState<PositionRecipient>('both');
   const [customPositionOrder, setCustomPositionOrder] = useState<1 | 2 | 3 | 4>(1);
   const [customPositionRarity, setCustomPositionRarity] = useState<PositionRarity>('luxury');
@@ -287,8 +350,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [positionTouched, setPositionTouched] = useState(false);
 
   const parsedCustomTimerSeconds = Number(customTimerSeconds);
-  const hasValidCustomTimer = customType !== 'dare'
-    || !customTimerEnabled
+  const hasValidCustomTimer = customTimerMode !== 'custom'
     || (
       Number.isInteger(parsedCustomTimerSeconds)
       && parsedCustomTimerSeconds >= 1
@@ -298,6 +360,12 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const hasValidCustomGain = !customGainEnabled || (
     Number.isFinite(parsedCustomGain) && parsedCustomGain >= 0 && parsedCustomGain <= 100
   );
+  const suggestedClothingEffect = useMemo<ClothingEffectSelection | null>(() => {
+    const content = customContent.toLocaleLowerCase('vi');
+    if (/đổi[^.!?\n]{0,48}(đồ|trang phục|quần|áo)|đổi[^.!?\n]{0,48}cho nhau/.test(content)) return 'swap';
+    if (!/(cởi|bỏ|tháo)/.test(content)) return null;
+    return /(đối phương|người ấy|của anh|của em)/.test(content) ? 'opponent' : 'self';
+  }, [customContent]);
 
   // Image upload & editor state
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -307,11 +375,30 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [imgZoom, setImgZoom] = useState(1);
   const [imgOffsetX, setImgOffsetX] = useState(0);
   const [imgOffsetY, setImgOffsetY] = useState(0);
+  const [imgAutoCrop, setImgAutoCrop] = useState(true);
   const [imgRemoveBackground, setImgRemoveBackground] = useState(true);
   const [imgBackgroundTolerance, setImgBackgroundTolerance] = useState(55);
   const [imageError, setImageError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const deleteCancelButtonRef = useRef<HTMLButtonElement>(null);
+  const imagePalette: IconPalette = customDeck === 'position'
+    ? (customPositionFamily === 'have_sex' || customPositionRarity === 'mythic' ? 'mythic' : 'position')
+    : 'standard';
+  const imagePaletteLabel = imagePalette === 'standard'
+    ? 'Hồng · trắng'
+    : imagePalette === 'position'
+      ? 'Champagne · ivory'
+      : 'Rose-gold · platinum';
+  const imagePreviewToneClass = imagePalette === 'standard'
+    ? 'border-rose-500/30 text-rose-300'
+    : imagePalette === 'position'
+      ? 'border-amber-300/35 text-amber-200'
+      : 'border-violet-300/35 text-violet-200';
+  const imagePreviewShadow = imagePalette === 'standard'
+    ? 'drop-shadow(0 0 6px rgba(255,107,157,0.4))'
+    : imagePalette === 'position'
+      ? 'drop-shadow(0 0 7px rgba(216,180,92,0.45))'
+      : 'drop-shadow(0 0 8px rgba(224,145,158,0.48))';
 
   const isDeveloper = mode === 'developer';
   const unlockedCardIdSet = useMemo(
@@ -354,7 +441,11 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       return card.level === activeTab;
     })
     .filter((card) => deckFilter === 'all' || getCardDeck(card) === deckFilter)
-    .filter((card) => starFilter === 'all' || deriveDifficultyStars(card) === starFilter)
+    .filter((card) => starFilter === 'all' || (
+      getCardDeck(card) === 'position'
+        ? derivePositionDifficultyStars(card) === starFilter
+        : deriveDifficultyStars(card) === starFilter
+    ))
     .filter((card) => {
       if (audienceFilter === 'all') return true;
       return getCardDeck(card) === 'position'
@@ -385,6 +476,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       setImgZoom(1);
       setImgOffsetX(0);
       setImgOffsetY(0);
+      setImgAutoCrop(true);
       setImgRemoveBackground(true);
       setImgBackgroundTolerance(55);
     };
@@ -406,10 +498,12 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       offsetY: imgOffsetY,
       removeBackground: imgRemoveBackground,
       backgroundTolerance: imgBackgroundTolerance,
+      autoCrop: imgAutoCrop,
+      palette: imagePalette,
     }, (result) => {
       setProcessedImage(result);
     });
-  }, [originalImage, imgThreshold, imgContrast, imgZoom, imgOffsetX, imgOffsetY, imgRemoveBackground, imgBackgroundTolerance]);
+  }, [originalImage, imgThreshold, imgContrast, imgZoom, imgOffsetX, imgOffsetY, imgAutoCrop, imgRemoveBackground, imgBackgroundTolerance, imagePalette]);
 
   const handleClearImage = useCallback(() => {
     setOriginalImage(null);
@@ -429,7 +523,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setCustomClothingEffect('none');
     setClothingEffectTouched(false);
     setIllustrationTouched(false);
-    setCustomTimerEnabled(false);
+    setCustomTimerMode('inherit');
     setCustomTimerSeconds(String(DEFAULT_CARD_TIMER_SECONDS));
     setTimerTouched(false);
     setCustomDeck('standard');
@@ -440,6 +534,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setCustomActorStage('any');
     setCustomPartnerStage('any');
     setCustomPositionFamily('oral');
+    setCustomPositionLabel('');
     setCustomPositionRecipient('both');
     setCustomPositionOrder(1);
     setCustomPositionRarity('luxury');
@@ -448,6 +543,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setImgZoom(1);
     setImgOffsetX(0);
     setImgOffsetY(0);
+    setImgAutoCrop(true);
     setImgRemoveBackground(true);
     setImgBackgroundTolerance(55);
     setImgThreshold(140);
@@ -538,7 +634,13 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setCustomContent(card.content);
     setCustomHint(card.hint || '');
     setCustomIcon(card.icon || autoAssignIcon(card.content));
-    setCustomClothingEffect(card.clothingEffect?.target || 'none');
+    setCustomClothingEffect(
+      card.clothingEffect?.kind === 'swap_garments'
+        ? 'swap'
+        : card.clothingEffect?.kind === 'remove_garment'
+          ? card.clothingEffect.target
+          : 'none',
+    );
     setClothingEffectTouched(false);
     setIllustrationTouched(false);
     const existingTimer = typeof card.timerSeconds === 'number'
@@ -547,18 +649,21 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       && card.timerSeconds <= MAX_CARD_TIMER_SECONDS
       ? card.timerSeconds
       : null;
-    setCustomTimerEnabled(card.type === 'dare' && existingTimer !== null);
+    setCustomTimerMode(existingTimer !== null ? 'custom' : card.timerSeconds === null ? 'disabled' : 'inherit');
     setCustomTimerSeconds(String(existingTimer ?? DEFAULT_CARD_TIMER_SECONDS));
     setTimerTouched(false);
     setCustomDeck(getCardDeck(card));
-    setCustomStars(deriveDifficultyStars(card));
+    setCustomStars(getCardDeck(card) === 'position' ? derivePositionDifficultyStars(card) : deriveDifficultyStars(card));
     setCustomAudience(getCardAudience(card));
-    const existingGain = card.progression?.intimacyGain;
+    const existingGain = getCardDeck(card) === 'position'
+      ? card.position?.luxuryGain
+      : card.progression?.intimacyGain;
     setCustomGainEnabled(typeof existingGain === 'number');
     setCustomGain(String(existingGain ?? 4));
     setCustomActorStage(card.progression?.actorStages?.[0] ?? 'any');
     setCustomPartnerStage(card.progression?.partnerStages?.[0] ?? 'any');
     setCustomPositionFamily(card.position?.family ?? 'oral');
+    setCustomPositionLabel(card.position?.customLabel ?? '');
     setCustomPositionRecipient(card.position?.recipient ?? 'both');
     setCustomPositionOrder(card.position?.orderGroup ?? 1);
     setCustomPositionRarity(card.position?.rarity ?? 'luxury');
@@ -566,6 +671,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setPositionTouched(false);
     setOriginalImage(card.customImage || null);
     setProcessedImage(card.customImage || null);
+    setImgAutoCrop(true);
     setImgRemoveBackground(false);
     setImageError('');
     setIsAdding(true);
@@ -587,23 +693,30 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       icon: processedImage ? undefined : customIcon,
       isCustom: editingCard ? editingCard.isCustom : true,
       customImage: processedImage || undefined,
-      timerSeconds: customDeck === 'standard' && customType === 'dare' && customTimerEnabled
+      timerSeconds: customTimerMode === 'custom'
         ? parsedCustomTimerSeconds
-        : null,
+        : customTimerMode === 'disabled'
+          ? null
+          : undefined,
       deck: customDeck,
       progression: {
-        difficultyStars: customStars,
+        difficultyStars: Math.min(customStars, 5) as DifficultyStars,
         audience: customDeck === 'position' ? 'both' : customAudience,
-        intimacyGain: customGainEnabled ? parsedCustomGain : undefined,
+        intimacyGain: customDeck === 'standard' && customGainEnabled ? parsedCustomGain : undefined,
         actorStages: customActorStage === 'any' ? undefined : [customActorStage],
         partnerStages: customPartnerStage === 'any' ? undefined : [customPartnerStage],
       },
       position: customDeck === 'position'
         ? {
             family: customPositionFamily,
+            customLabel: customPositionFamily === 'other'
+              ? customPositionLabel.trim() || 'Tư thế khác'
+              : undefined,
             recipient: customPositionRecipient,
             orderGroup: customPositionFamily === 'have_sex' ? 4 : customPositionOrder,
             rarity: customPositionFamily === 'have_sex' ? 'mythic' : customPositionRarity,
+            difficultyStars: customPositionFamily === 'have_sex' ? 10 : customStars,
+            luxuryGain: customDeck === 'position' && customGainEnabled ? parsedCustomGain : undefined,
           }
         : null,
     };
@@ -613,7 +726,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     if (clothingEffectTouched) {
       nextCard.clothingEffect = customClothingEffect === 'none'
         ? null
-        : { kind: 'remove_garment', target: customClothingEffect };
+        : customClothingEffect === 'swap'
+          ? { kind: 'swap_garments' }
+          : { kind: 'remove_garment', target: customClothingEffect };
     }
 
     if (editingCard) {
@@ -798,11 +913,11 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
             Độ khó
             <select
               value={starFilter}
-              onChange={(event) => setStarFilter(event.target.value === 'all' ? 'all' : Number(event.target.value) as DifficultyStars)}
+              onChange={(event) => setStarFilter(event.target.value === 'all' ? 'all' : Number(event.target.value) as PositionDifficultyStars)}
               className="mt-1 min-h-10 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-2 text-xs text-neutral-200 outline-none focus:border-amber-300/50"
             >
               <option value="all">Mọi sao</option>
-              {[1, 2, 3, 4, 5].map((star) => <option key={star} value={star}>{star}★</option>)}
+              {POSITION_DIFFICULTY_STARS.map((star) => <option key={star} value={star}>{star}★</option>)}
             </select>
           </label>
           <label className="text-[10px] text-neutral-500">
@@ -981,8 +1096,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                       if (nextDeck === 'position') {
                         setCustomType('dare');
                         setCustomLevel('passionate');
-                        setCustomTimerEnabled(false);
-                        setTimerTouched(true);
+                        setCustomStars(customPositionFamily === 'have_sex' ? 10 : customPositionFamily === 'handjob' ? 7 : customPositionFamily === 'blowjob' ? 5 : 3);
                       }
                     }}
                     className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-amber-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300"
@@ -1002,10 +1116,6 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                       onChange={(event) => {
                         const nextType = event.target.value as CardType;
                         setCustomType(nextType);
-                        if (nextType === 'truth' && customTimerEnabled) {
-                          setCustomTimerEnabled(false);
-                          setTimerTouched(true);
-                        }
                       }}
                       className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-rose-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
                     >
@@ -1036,13 +1146,18 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                   </div>
                   <div>
                     <span className="text-[10px] text-neutral-400">Độ khó</span>
-                    <div className="mt-1.5 grid grid-cols-5 gap-1.5">
-                      {([1, 2, 3, 4, 5] as DifficultyStars[]).map((star) => (
+                    <div className={`mt-1.5 grid grid-cols-5 gap-1.5 ${customDeck === 'position' ? 'sm:grid-cols-10' : ''}`}>
+                      {(customDeck === 'position' ? POSITION_DIFFICULTY_STARS : ([1, 2, 3, 4, 5] as DifficultyStars[])).map((star) => (
                         <button
                           key={star}
                           type="button"
                           aria-pressed={customStars === star}
-                          onClick={() => { setCustomStars(star); setProgressionTouched(true); }}
+                          disabled={customDeck === 'position' && customPositionFamily === 'have_sex' && star !== 10}
+                          onClick={() => {
+                            setCustomStars(star);
+                            if (customDeck === 'position') setPositionTouched(true);
+                            else setProgressionTouched(true);
+                          }}
                           className={`min-h-11 rounded-xl border text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 ${
                             customStars === star
                               ? 'border-amber-200/60 bg-amber-200/15 text-amber-100'
@@ -1077,16 +1192,18 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                           onChange={(event) => {
                             const family = event.target.value as PositionFamily;
                             setCustomPositionFamily(family);
-                            setCustomPositionOrder(family === 'oral' ? 1 : family === 'blowjob' ? 2 : family === 'handjob' ? 3 : 4);
+                            setCustomPositionOrder(family === 'oral' ? 1 : family === 'blowjob' ? 2 : family === 'handjob' ? 3 : family === 'have_sex' ? 4 : 1);
                             setCustomPositionRarity(family === 'have_sex' ? 'mythic' : 'luxury');
+                            setCustomStars(family === 'have_sex' ? 10 : family === 'handjob' ? 7 : family === 'blowjob' ? 5 : 3);
                             setPositionTouched(true);
                           }}
                           className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none focus:border-amber-300/50"
                         >
                           <option value="oral">Oral sex</option>
-                          <option value="blowjob">Blowjob</option>
-                          <option value="handjob">Handjob</option>
+                          <option value="blowjob">Blow</option>
+                          <option value="handjob">Hand</option>
                           <option value="have_sex">Have sex</option>
+                          <option value="other">Khác / Tùy chỉnh…</option>
                         </select>
                       </label>
                       <label className="text-[10px] text-neutral-400">
@@ -1101,6 +1218,19 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                           <option value="both">Cả hai</option>
                         </select>
                       </label>
+                      {customPositionFamily === 'other' && (
+                        <label className="col-span-2 text-[10px] text-neutral-400">
+                          Tên dạng Tư thế
+                          <input
+                            type="text"
+                            maxLength={40}
+                            value={customPositionLabel}
+                            onChange={(event) => { setCustomPositionLabel(event.target.value); setPositionTouched(true); }}
+                            placeholder="Ví dụ: Massage, Roleplay…"
+                            className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 text-xs text-white outline-none focus:border-amber-300/50"
+                          />
+                        </label>
+                      )}
                       <label className="text-[10px] text-neutral-400">
                         Thứ tự nhóm
                         <select
@@ -1164,14 +1294,18 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                       type="button"
                       role="switch"
                       aria-checked={customGainEnabled}
-                      onClick={() => { setCustomGainEnabled((value) => !value); setProgressionTouched(true); }}
+                      onClick={() => {
+                        setCustomGainEnabled((value) => !value);
+                        if (customDeck === 'position') setPositionTouched(true);
+                        else setProgressionTouched(true);
+                      }}
                       className={`relative h-11 w-[68px] shrink-0 rounded-full border ${customGainEnabled ? 'border-rose-300/50 bg-rose-400/20' : 'border-neutral-700 bg-neutral-900'}`}
                     >
                       <span className={`absolute top-1/2 h-7 w-7 -translate-y-1/2 rounded-full bg-white transition-[left] motion-reduce:transition-none ${customGainEnabled ? 'left-[34px]' : 'left-1'}`} />
-                      <span className="sr-only">Dùng điểm thân mật riêng</span>
+                      <span className="sr-only">Dùng điểm {customDeck === 'position' ? 'Luxury' : 'thân mật'} riêng</span>
                     </button>
                     <label className="flex-1 text-[10px] text-neutral-400">
-                      Điểm thân mật riêng
+                      Điểm {customDeck === 'position' ? 'Luxury' : 'thân mật'} riêng
                       <div className="relative mt-1">
                         <input
                           type="number"
@@ -1179,7 +1313,11 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                           max={100}
                           disabled={!customGainEnabled}
                           value={customGain}
-                          onChange={(event) => { setCustomGain(event.target.value); setProgressionTouched(true); }}
+                          onChange={(event) => {
+                            setCustomGain(event.target.value);
+                            if (customDeck === 'position') setPositionTouched(true);
+                            else setProgressionTouched(true);
+                          }}
                           className="min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 pr-9 text-xs text-white outline-none disabled:opacity-40"
                         />
                         <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-600">%</span>
@@ -1219,76 +1357,75 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                     <option value="none">Không tác động</option>
                     <option value="self">Người đang lượt bỏ 1 món</option>
                     <option value="opponent">Đối phương bỏ 1 món</option>
+                    <option value="swap">Hai người đổi 1 món cho nhau</option>
                   </select>
                   <p className="mt-1.5 text-[10px] leading-relaxed text-neutral-500">
                     Khi hoàn thành thẻ, trò chơi sẽ mở bước chọn và xác nhận món đồ phù hợp.
                   </p>
+                  {suggestedClothingEffect && suggestedClothingEffect !== customClothingEffect && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomClothingEffect(suggestedClothingEffect);
+                        setClothingEffectTouched(true);
+                      }}
+                      className="mt-2 min-h-11 w-full rounded-xl border border-amber-300/25 bg-amber-300/[0.06] px-3 text-left text-[10px] font-semibold text-amber-100 transition hover:border-amber-200/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/50"
+                    >
+                      Gợi ý từ nội dung: áp dụng “{suggestedClothingEffect === 'swap' ? 'Hai người đổi đồ' : suggestedClothingEffect === 'opponent' ? 'Đối phương bỏ 1 món' : 'Người đang lượt bỏ 1 món'}”
+                    </button>
+                  )}
                 </div>
 
-                {/* Per-card countdown (Dare only) */}
-                {customDeck === 'standard' && customType === 'dare' && (
-                  <section
-                    aria-labelledby="card-timer-label"
-                    className="overflow-hidden rounded-2xl border border-amber-300/20 bg-amber-400/[0.04]"
-                  >
-                    <div className="flex min-h-14 items-center justify-between gap-4 px-3.5 py-2.5">
-                      <div className="flex min-w-0 items-center gap-2.5">
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-300/10 text-amber-200">
-                          <Timer className="h-[18px] w-[18px]" aria-hidden="true" />
-                        </span>
-                        <div className="min-w-0">
-                          <p id="card-timer-label" className="text-xs font-semibold text-neutral-100">
-                            Thời gian đếm ngược
-                          </p>
-                          <p className="mt-0.5 text-[10px] leading-relaxed text-neutral-500">
-                            {customTimerEnabled
-                              ? `${customTimerSeconds || '—'} giây cho riêng lá này`
-                              : 'Lá bài này không có đếm ngược'}
-                          </p>
-                        </div>
+                {/* Per-card countdown for Truth, Action and Position cards */}
+                <section
+                  aria-labelledby="card-timer-label"
+                  className="overflow-hidden rounded-2xl border border-amber-300/20 bg-amber-400/[0.04]"
+                >
+                  <div className="space-y-3 px-3.5 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-300/10 text-amber-200">
+                        <Timer className="h-[18px] w-[18px]" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p id="card-timer-label" className="text-xs font-semibold text-neutral-100">Thời gian đếm ngược</p>
+                        <p className="mt-0.5 text-[10px] leading-relaxed text-neutral-500">
+                          Áp dụng cho cả Sự thật, Hành động và bài Tư thế.
+                        </p>
                       </div>
-
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={customTimerEnabled}
-                        aria-labelledby="card-timer-label"
-                        aria-controls="card-timer-options"
-                        onClick={() => {
-                          const nextEnabled = !customTimerEnabled;
-                          setCustomTimerEnabled(nextEnabled);
-                          setTimerTouched(true);
-                          if (
-                            nextEnabled
-                            && !(
-                              Number.isInteger(parsedCustomTimerSeconds)
-                              && parsedCustomTimerSeconds >= 1
-                              && parsedCustomTimerSeconds <= MAX_CARD_TIMER_SECONDS
-                            )
-                          ) {
-                            setCustomTimerSeconds(String(DEFAULT_CARD_TIMER_SECONDS));
-                          }
-                        }}
-                        className={`relative h-11 w-[68px] shrink-0 rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/60 motion-reduce:transition-none ${
-                          customTimerEnabled
-                            ? 'border-amber-200/60 bg-amber-300/25'
-                            : 'border-neutral-600 bg-neutral-800'
-                        }`}
-                      >
-                        <span className="sr-only">Đếm ngược cho lá này</span>
-                        <span
-                          aria-hidden="true"
-                          className={`absolute top-1/2 h-7 w-7 -translate-y-1/2 rounded-full shadow-sm transition-[left,background-color] duration-200 motion-reduce:transition-none ${
-                            customTimerEnabled
-                              ? 'left-[34px] bg-amber-100'
-                              : 'left-1 bg-neutral-400'
-                          }`}
-                        />
-                      </button>
                     </div>
+                    <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-labelledby="card-timer-label">
+                      {([
+                        ['inherit', 'Theo ván'],
+                        ['disabled', 'Không đếm'],
+                        ['custom', 'Thời gian riêng'],
+                      ] as const).map(([mode, label]) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          role="radio"
+                          aria-checked={customTimerMode === mode}
+                          onClick={() => {
+                            setCustomTimerMode(mode);
+                            setTimerTouched(true);
+                            if (
+                              mode === 'custom'
+                              && !(Number.isInteger(parsedCustomTimerSeconds)
+                                && parsedCustomTimerSeconds >= 1
+                                && parsedCustomTimerSeconds <= MAX_CARD_TIMER_SECONDS)
+                            ) {
+                              setCustomTimerSeconds(String(DEFAULT_CARD_TIMER_SECONDS));
+                            }
+                          }}
+                          className={`min-h-11 rounded-xl border px-2 text-[10px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/60 ${customTimerMode === mode ? 'border-amber-200/60 bg-amber-200/15 text-amber-100' : 'border-neutral-700 bg-neutral-950/55 text-neutral-400 hover:text-white'}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                     <AnimatePresence initial={false}>
-                      {customTimerEnabled && (
+                      {customTimerMode === 'custom' && (
                         <motion.div
                           id="card-timer-options"
                           initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0, y: -4 }}
@@ -1339,7 +1476,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                                   min={1}
                                   max={MAX_CARD_TIMER_SECONDS}
                                   step={1}
-                                  required={customTimerEnabled}
+                                  required
                                   value={customTimerSeconds}
                                   aria-invalid={!hasValidCustomTimer}
                                   aria-describedby="card-timer-help"
@@ -1374,7 +1511,6 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                       )}
                     </AnimatePresence>
                   </section>
-                )}
 
                 {/* Hint */}
                 <div>
@@ -1445,7 +1581,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         Bấm để chọn ảnh hoặc kéo thả
                       </span>
                       <span className="text-[10px] text-neutral-500">
-                        PNG, JPG, WEBP — Ảnh sẽ được chuyển thành icon hồng-trắng
+                        PNG, JPG, WEBP — Tự crop, xóa nền và đồng bộ màu theo thẻ
                       </span>
                     </div>
                   ) : (
@@ -1469,14 +1605,14 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
 
                         {/* Processed (pink/white) */}
                         <div className="flex-1 text-center">
-                          <p className="text-[10px] text-rose-400 mb-1.5">Icon trên thẻ</p>
-                          <div className="transparency-grid w-full aspect-square rounded-xl overflow-hidden border border-rose-500/30 flex items-center justify-center">
+                          <p className={`mb-1.5 text-[10px] ${imagePreviewToneClass}`}>Icon · {imagePaletteLabel}</p>
+                          <div className={`transparency-grid flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border ${imagePreviewToneClass}`}>
                             {processedImage ? (
                               <img
                                 src={processedImage}
                                 alt="processed"
                                 className="w-full h-full object-contain"
-                                style={{ filter: 'drop-shadow(0 0 6px rgba(255,107,157,0.4))' }}
+                                style={{ filter: imagePreviewShadow }}
                               />
                             ) : (
                               <span className="text-xs text-neutral-500">Đang xử lý...</span>
@@ -1487,6 +1623,25 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
 
                       {/* Editor Controls */}
                       <div className="space-y-3 pt-3 border-t border-neutral-800">
+                        <div className="flex items-center justify-between gap-3 rounded-xl bg-neutral-900/70 border border-neutral-800 p-2.5">
+                          <div className="flex items-center gap-2">
+                            <Crop className="w-4 h-4 text-amber-200" />
+                            <div>
+                              <div className="text-[11px] text-neutral-200 font-medium">Tự crop theo chủ thể</div>
+                              <div className="text-[9px] text-neutral-500">Căn chủ thể vào giữa rồi vẫn cho phép scale và dịch chuyển</div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={imgAutoCrop}
+                            aria-label="Tự crop ảnh theo chủ thể"
+                            onClick={() => setImgAutoCrop((enabled) => !enabled)}
+                            className={`flex h-8 w-12 items-center rounded-full p-1 transition-colors ${imgAutoCrop ? 'justify-end bg-amber-500' : 'justify-start bg-neutral-700'}`}
+                          >
+                            <span className="h-6 w-6 rounded-full bg-white shadow" />
+                          </button>
+                        </div>
                         <div className="flex items-center justify-between gap-3 rounded-xl bg-neutral-900/70 border border-neutral-800 p-2.5">
                           <div className="flex items-center gap-2">
                             <Eraser className="w-4 h-4 text-rose-300" />
@@ -1558,7 +1713,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         </div>
 
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => { setImgZoom(1); setImgOffsetX(0); setImgOffsetY(0); setImgThreshold(140); setImgContrast(1.5); setImgRemoveBackground(true); setImgBackgroundTolerance(55); }} className="flex-1 py-1.5 rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-center gap-1.5 hover:bg-rose-600/30 transition-all cursor-pointer">
+                          <button type="button" onClick={() => { setImgZoom(1); setImgOffsetX(0); setImgOffsetY(0); setImgThreshold(140); setImgContrast(1.5); setImgAutoCrop(true); setImgRemoveBackground(true); setImgBackgroundTolerance(55); }} className="flex-1 py-1.5 rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-center gap-1.5 hover:bg-rose-600/30 transition-all cursor-pointer">
                             <RotateCcw className="w-3 h-3" /> Đặt lại
                           </button>
                           <button
@@ -1603,6 +1758,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
           <ProgressionConfigModal
             config={progressionConfig}
             onChange={onProgressionConfigChange}
+            luxuryConfig={luxuryProgressionConfig}
+            onLuxuryChange={onLuxuryProgressionConfigChange}
             onClose={() => setShowProgressionConfig(false)}
           />
         )}

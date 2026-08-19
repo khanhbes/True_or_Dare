@@ -29,6 +29,7 @@ import {
   GameSettings,
   IntimacyEvent,
   JourneyPhase,
+  LuxuryProgressionConfig,
   OutfitState,
   Player,
   PlayerIndex,
@@ -39,6 +40,7 @@ import { soundEngine } from '../utils/audio';
 import { getCardIcon, autoAssignIcon } from './CardIcons';
 import { PenaltyPrompt } from './PenaltyPrompt';
 import { GarmentRemovalDialog } from './GarmentRemovalDialog';
+import { GarmentSwapDialog } from './GarmentSwapDialog';
 import { OutfitFigure } from './OutfitFigure';
 import {
   getTargetIndex,
@@ -46,21 +48,26 @@ import {
 import {
   GARMENT_LABELS,
   getOutfitStage,
+  getEquippedGarment,
   getPresentGarmentSlots,
   getRemovableGarments,
   removeGarment,
+  swapGarments,
 } from '../utils/wardrobe';
 import { resolveCardTimerSeconds } from '../utils/cardTimer';
 import {
   DIFFICULTY_STARS,
   calculateCompletedCardIntimacy,
+  calculateCompletedPositionLuxury,
   deriveDifficultyStars,
+  derivePositionDifficultyStars,
   getCardAudience,
   getCardDeck,
   getJourneyDrawProbabilities,
   isStandardJourneyCardEligible,
   selectJourneyCard,
-  selectNextPositionCard,
+  POSITION_DIFFICULTY_STARS,
+  selectLuxuryPositionCard,
 } from '../utils/progression';
 
 interface GameTableProps {
@@ -84,13 +91,17 @@ interface GameTableProps {
   onUnlockCard: (cardId: string) => void;
   onNextTurn: () => void;
   progressionConfig: ProgressionConfig;
+  luxuryProgressionConfig: LuxuryProgressionConfig;
   intimacyPercent: number;
+  luxuryIntimacyPercent: number;
   journeyPhase: JourneyPhase;
   sessionPositionCardIds: string[];
   onIntimacyPercentChange: (value: number) => void;
+  onLuxuryIntimacyPercentChange: (value: number) => void;
   onAddIntimacyEvents: (events: IntimacyEvent[]) => void;
   onJourneyPhaseChange: (phase: JourneyPhase) => void;
   onRevealPositionCard: (cardId: string) => void;
+  onSessionPositionCardIdsChange: (cardIds: string[]) => void;
 }
 
 interface PlayerOutfitStatusProps {
@@ -110,10 +121,18 @@ const AUDIENCE_LABELS = { male: 'Nam', female: 'Nữ', both: 'Cả hai' } as con
 const POSITION_RECIPIENT_LABELS = { male: 'Nam nhận', female: 'Nữ nhận', both: 'Cả hai' } as const;
 const POSITION_FAMILY_LABELS = {
   oral: 'Oral sex',
-  blowjob: 'Blowjob',
-  handjob: 'Handjob',
+  blowjob: 'Blow',
+  handjob: 'Hand',
   have_sex: 'Have sex',
+  other: 'Tư thế khác',
 } as const;
+
+const getPositionFamilyLabel = (card: CardItem) =>
+  card.position?.family === 'other'
+    ? card.position.customLabel?.trim() || POSITION_FAMILY_LABELS.other
+    : card.position
+      ? POSITION_FAMILY_LABELS[card.position.family]
+      : '';
 
 const PlayerOutfitStatus: React.FC<PlayerOutfitStatusProps> = ({
   player,
@@ -172,13 +191,17 @@ export const GameTable: React.FC<GameTableProps> = ({
   onUnlockCard,
   onNextTurn,
   progressionConfig,
+  luxuryProgressionConfig,
   intimacyPercent,
+  luxuryIntimacyPercent,
   journeyPhase,
   sessionPositionCardIds,
   onIntimacyPercentChange,
+  onLuxuryIntimacyPercentChange,
   onAddIntimacyEvents,
   onJourneyPhaseChange,
   onRevealPositionCard,
+  onSessionPositionCardIdsChange,
 }) => {
   const [isMusicOn, setIsMusicOn] = useState(soundEngine.isMusicOn());
   const [isMuted, setIsMuted] = useState(soundEngine.getMuted());
@@ -193,6 +216,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     source: 'card' | 'penalty';
     targetIndex: PlayerIndex;
   } | null>(null);
+  const [showSwapDialog, setShowSwapDialog] = useState(false);
 
   // Card draw state machine
   const [drawState, setDrawState] = useState<
@@ -223,6 +247,15 @@ export const GameTable: React.FC<GameTableProps> = ({
     intimacyPercent,
     config: progressionConfig,
   });
+  const luxuryDrawProbabilities = selectLuxuryPositionCard({
+    cards: availableCards,
+    actorIndex: currentPlayerIndex,
+    outfits: outfitStates,
+    usedCardIds: sessionPositionCardIds,
+    luxuryPercent: luxuryIntimacyPercent,
+    config: luxuryProgressionConfig,
+    random: () => 0,
+  }).probabilities;
   const chance = (value: number) => `${Math.round(value * 100)}%`;
 
   // Countdown uses one disposable timeout per second. The alarm is handled by
@@ -285,7 +318,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   const handleTimerControl = () => {
     if (timerSeconds === 0) {
-      const resetSeconds = resolveCardTimerSeconds(activeCard, settings.enableTimer);
+      const resetSeconds = resolveCardTimerSeconds(activeCard, settings);
       if (resetSeconds === null) return;
 
       soundEngine.stopTimerAlarm();
@@ -355,9 +388,9 @@ export const GameTable: React.FC<GameTableProps> = ({
         soundEngine.playCardFlip();
         setDrawState('drawn');
 
-        // The global option is a master switch; individual cards opt in with
-        // their own valid duration. Cards without one do not receive a fallback.
-        const cardTimerSeconds = resolveCardTimerSeconds(randomCard, settings.enableTimer);
+        // A card may override, disable or inherit the configured duration for
+        // its Truth/Action type.
+        const cardTimerSeconds = resolveCardTimerSeconds(randomCard, settings);
         if (cardTimerSeconds !== null) {
           soundEngine.stopTimerAlarm();
           didPlayTimerAlarmRef.current = false;
@@ -410,6 +443,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         cardId: activeCard.id,
         amount: appliedBase,
         source: 'completed_card',
+        track: 'standard',
         round: currentRound,
         timestamp: now,
       });
@@ -419,6 +453,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         cardId: activeCard.id,
         amount: appliedRemoval,
         source: 'card_clothing_removal',
+        track: 'standard',
         round: currentRound,
         timestamp: now,
       });
@@ -453,6 +488,39 @@ export const GameTable: React.FC<GameTableProps> = ({
     advanceNextTurn();
   };
 
+  const finalizeCompletedPosition = () => {
+    if (!activeCard || completionCommittedRef.current) return;
+    completionCommittedRef.current = true;
+    fireCompletionFeedback();
+    if (!unlockedCardIds.includes(activeCard.id)) {
+      onUnlockCard(activeCard.id);
+      setUnlockNotice('Đã mở khóa lá Tư thế mới trong Bộ sưu tập');
+    }
+    const gain = calculateCompletedPositionLuxury(
+      luxuryIntimacyPercent,
+      activeCard,
+      luxuryProgressionConfig,
+    );
+    onLuxuryIntimacyPercentChange(gain.nextPercent);
+    if (gain.totalApplied > 0) {
+      onAddIntimacyEvents([{
+        cardId: activeCard.id,
+        amount: gain.totalApplied,
+        source: 'completed_card',
+        track: 'luxury',
+        round: currentRound,
+        timestamp: Date.now(),
+      }]);
+    }
+    setIntimacyGainNotice(`+${gain.totalApplied}% Luxury · ${derivePositionDifficultyStars(activeCard)}★`);
+    revealPositionCard([activeCard.id], gain.nextPercent);
+  };
+
+  const finalizeCardCompletion = (includeCardRemovalBonus = false) => {
+    if (activeCard && getCardDeck(activeCard) === 'position') finalizeCompletedPosition();
+    else finalizeCompletedTurn(includeCardRemovalBonus);
+  };
+
   const finalizeSkippedTurn = () => {
     setShowPenaltyPrompt(false);
     if (currentPlayerIndex === 0) {
@@ -473,14 +541,18 @@ export const GameTable: React.FC<GameTableProps> = ({
   const handleComplete = () => {
     soundEngine.stopTimerAlarm();
     setIsTimerRunning(false);
-    if (activeCard?.clothingEffect) {
+    if (activeCard?.clothingEffect?.kind === 'swap_garments') {
+      setShowSwapDialog(true);
+      return;
+    }
+    if (activeCard?.clothingEffect?.kind === 'remove_garment') {
       const targetIndex = getTargetIndex(activeCard.clothingEffect, currentPlayerIndex);
       if (getRemovableGarments(outfitStates[targetIndex]).length > 0) {
         setRemovalRequest({ source: 'card', targetIndex });
         return;
       }
     }
-    finalizeCompletedTurn();
+    finalizeCardCompletion();
   };
 
   // Action: Skip Challenge
@@ -499,13 +571,14 @@ export const GameTable: React.FC<GameTableProps> = ({
   const handleCancelRemoval = () => {
     const wasPenalty = removalRequest?.source === 'penalty';
     setRemovalRequest(null);
+    setShowSwapDialog(false);
     if (wasPenalty) setShowPenaltyPrompt(true);
   };
 
   const handleConfirmRemoval = (slot: GarmentSlot) => {
     if (!removalRequest) return;
     const targetState = outfitStates[removalRequest.targetIndex];
-    const garment = targetState.initial.garments[slot];
+    const garment = getEquippedGarment(targetState, slot);
     const nextTargetState = removeGarment(targetState, slot);
     if (!garment || nextTargetState === targetState) return;
 
@@ -520,7 +593,9 @@ export const GameTable: React.FC<GameTableProps> = ({
       actorPlayerIndex: currentPlayerIndex,
       targetPlayerIndex: removalRequest.targetIndex,
       garmentSlot: slot,
-      garment: { ...garment },
+      garment: { styleId: garment.styleId, color: garment.color },
+      garmentId: garment.id,
+      action: 'removed',
       source: removalRequest.source,
       cardId: removalRequest.source === 'card' ? activeCard?.id : undefined,
       round: currentRound,
@@ -529,7 +604,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
     const source = removalRequest.source;
     setRemovalRequest(null);
-    if (source === 'card') finalizeCompletedTurn(true);
+    if (source === 'card') finalizeCardCompletion(true);
     else finalizeSkippedTurn();
   };
 
@@ -537,8 +612,53 @@ export const GameTable: React.FC<GameTableProps> = ({
     if (!removalRequest) return;
     const source = removalRequest.source;
     setRemovalRequest(null);
-    if (source === 'card') finalizeCompletedTurn();
+    if (source === 'card') finalizeCardCompletion();
     else finalizeSkippedTurn();
+  };
+
+  const handleConfirmSwap = (firstSlot: GarmentSlot, secondSlot: GarmentSlot) => {
+    if (!activeCard) return;
+    const result = swapGarments(outfitStates, firstSlot, secondSlot);
+    if (!result) {
+      setLiveMessage('Không thể đổi hai món đã chọn. Trang phục được giữ nguyên.');
+      return;
+    }
+    onUpdateOutfits(result.outfits);
+    const now = Date.now();
+    result.transferred.forEach((garment, fromIndex) => {
+      const targetPlayerIndex = fromIndex as PlayerIndex;
+      onAddClothingRemovalEvent({
+        actorPlayerIndex: currentPlayerIndex,
+        targetPlayerIndex,
+        toPlayerIndex: (targetPlayerIndex === 0 ? 1 : 0),
+        garmentSlot: garment.slot,
+        garment: { styleId: garment.styleId, color: garment.color },
+        garmentId: garment.id,
+        action: 'transferred',
+        source: 'card',
+        cardId: activeCard.id,
+        round: currentRound,
+        timestamp: now,
+      });
+    });
+    result.replaced.forEach((garment, targetIndex) => {
+      if (!garment) return;
+      onAddClothingRemovalEvent({
+        actorPlayerIndex: currentPlayerIndex,
+        targetPlayerIndex: targetIndex as PlayerIndex,
+        garmentSlot: garment.slot,
+        garment: { styleId: garment.styleId, color: garment.color },
+        garmentId: garment.id,
+        action: 'replaced',
+        source: 'card',
+        cardId: activeCard.id,
+        round: currentRound,
+        timestamp: now,
+      });
+    });
+    setShowSwapDialog(false);
+    setLiveMessage(`${player1.name} và ${player2.name} đã đổi ${GARMENT_LABELS[firstSlot].toLocaleLowerCase('vi')} với ${GARMENT_LABELS[secondSlot].toLocaleLowerCase('vi')}.`);
+    finalizeCardCompletion(true);
   };
 
   const advanceNextTurn = () => {
@@ -559,25 +679,37 @@ export const GameTable: React.FC<GameTableProps> = ({
     onNextTurn();
   };
 
-  const revealPositionCard = (additionalExcludedIds: readonly string[] = []) => {
-    const nextCard = selectNextPositionCard(
-      availableCards,
-      unlockedCardIds,
-      [...sessionPositionCardIds, ...additionalExcludedIds],
-    );
+  const revealPositionCard = (
+    additionalExcludedIds: readonly string[] = [],
+    luxuryOverride = luxuryIntimacyPercent,
+  ) => {
+    const selection = selectLuxuryPositionCard({
+      cards: availableCards,
+      actorIndex: currentPlayerIndex,
+      outfits: outfitStates,
+      usedCardIds: [...sessionPositionCardIds, ...additionalExcludedIds],
+      luxuryPercent: luxuryOverride,
+      config: luxuryProgressionConfig,
+    });
+    const nextCard = selection.card;
     if (!nextCard) {
-      setDrawError('Bộ Tư thế chưa có lá kết thúc phù hợp. Ván sẽ được tổng kết an toàn.');
-      onFinishGame();
+      setActiveCard(null);
+      setDrawState('idle');
+      setDrawError(selection.missingFinalCard
+        ? 'Tim Luxury đã đầy nhưng chưa có lá Have Sex 10★. Bạn có thể mở Developer hoặc kết thúc ván.'
+        : 'Không còn lá Tư thế phù hợp với trang phục hiện tại.');
       return;
     }
     soundEngine.stopTimerAlarm();
     completionCommittedRef.current = false;
-    setTimerSeconds(null);
+    setTimerSeconds(resolveCardTimerSeconds(nextCard, settings));
     setIsTimerRunning(false);
     setActiveCard(nextCard);
     setIsRevealed(true);
     setCardFlipped(false);
     setDrawState('drawing');
+    setDrawError(null);
+    onSessionPositionCardIdsChange(selection.nextUsedCardIds);
     onRevealPositionCard(nextCard.id);
     onJourneyPhaseChange(nextCard.position?.family === 'have_sex' ? 'final' : 'position');
     soundEngine.playShuffle();
@@ -592,8 +724,11 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   const handlePositionAdvance = (completed: boolean) => {
     if (!activeCard) return;
-    if (completed) fireCompletionFeedback();
-    else soundEngine.playTick();
+    if (completed) {
+      handleComplete();
+      return;
+    }
+    soundEngine.playTick();
     revealPositionCard([activeCard.id]);
   };
 
@@ -610,6 +745,11 @@ export const GameTable: React.FC<GameTableProps> = ({
   const activeDeck = activeCard ? getCardDeck(activeCard) : 'standard';
   const isPositionCard = activeDeck === 'position';
   const isFinalPositionCard = activeCard?.position?.family === 'have_sex';
+  const completionActionLabel = activeCard?.clothingEffect?.kind === 'swap_garments'
+    ? 'Chọn 2 món để đổi'
+    : activeCard?.clothingEffect?.kind === 'remove_garment'
+      ? `Chọn 1 món của ${getTargetIndex(activeCard.clothingEffect, currentPlayerIndex) === 0 ? player1.name : player2.name}`
+      : 'Đã hoàn thành';
   const canApplyPenaltyGarment = getRemovableGarments(outfitStates[currentPlayerIndex]).length > 0;
 
   return (
@@ -701,34 +841,51 @@ export const GameTable: React.FC<GameTableProps> = ({
         </div>
       </div>
 
-      <section
-        aria-label={`Mức thân mật ${intimacyPercent} phần trăm`}
-        className="mt-3 px-1"
-      >
+      <section className="mt-3 px-1" aria-label="Tiến trình thân mật hai giai đoạn">
         <div className="mb-1.5 flex items-end justify-between gap-3">
-          <div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rose-200/75">
-              Hành trình thân mật
+          <div className="flex items-center gap-2">
+            <span className="relative grid h-8 w-8 place-items-center" aria-hidden="true">
+              <Heart className="absolute h-7 w-7 fill-rose-500/80 text-rose-300" />
+              {journeyPhase !== 'standard' && (
+                <Heart className="absolute h-5 w-5 fill-[#d7b1ff]/35 text-[#f0d7ff] drop-shadow-[0_0_7px_rgba(232,164,140,.55)]" />
+              )}
             </span>
-            <p className="mt-0.5 text-[10px] text-neutral-500">
-              {journeyPhase === 'standard' ? 'Hoàn thành để tăng độ thân mật' : 'Đã mở khóa bộ Tư thế'}
-            </p>
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rose-200/75">Hành trình thân mật</span>
+              <p className="mt-0.5 text-[10px] text-neutral-500">
+                {journeyPhase === 'standard' ? 'Hoàn thành để mở Tim Luxury' : 'Tim hồng đã đầy · đang tích lũy Luxury'}
+              </p>
+            </div>
           </div>
-          <strong className="font-serif-romantic text-xl text-amber-200">{intimacyPercent}%</strong>
+          <strong className={`font-serif-romantic text-xl ${journeyPhase === 'standard' ? 'text-rose-200' : 'text-[#f1d6ff]'}`}>
+            {journeyPhase === 'standard' ? intimacyPercent : luxuryIntimacyPercent}%
+          </strong>
         </div>
-        <div
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={intimacyPercent}
-          className="relative h-2.5 overflow-hidden rounded-full border border-white/10 bg-black/35"
-        >
+        <div className="relative h-3 overflow-hidden rounded-full border border-white/10 bg-black/35">
           <motion.div
             initial={false}
             animate={{ width: `${intimacyPercent}%` }}
             transition={{ duration: shouldReduceMotion ? 0.08 : 0.7, ease: 'easeOut' }}
+            role="progressbar"
+            aria-label={`Tim hồng ${intimacyPercent} phần trăm`}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={intimacyPercent}
             className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#fb7185,#f9a8d4,#e2c275)] shadow-[0_0_18px_rgba(251,113,133,.35)]"
           />
+          {journeyPhase !== 'standard' && (
+            <motion.div
+              initial={false}
+              animate={{ width: `${luxuryIntimacyPercent}%` }}
+              transition={{ duration: shouldReduceMotion ? 0.08 : 0.8, ease: 'easeOut' }}
+              role="progressbar"
+              aria-label={`Tim Luxury ${luxuryIntimacyPercent} phần trăm`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={luxuryIntimacyPercent}
+              className="luxury-heart-fill absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#e8a48c,#d7b1ff,#f4e8ff,#cda95c)] shadow-[0_0_20px_rgba(215,177,255,.5)]"
+            />
+          )}
         </div>
       </section>
 
@@ -741,12 +898,20 @@ export const GameTable: React.FC<GameTableProps> = ({
           <span>Tỉ lệ lượt này</span>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:justify-end">
-          <span>Sự thật <strong className="text-blue-200">{chance(drawProbabilities.types.truth)}</strong></span>
-          <span>Thử thách <strong className="text-rose-200">{chance(drawProbabilities.types.dare)}</strong></span>
-          <span aria-hidden="true" className="hidden text-white/15 sm:inline">|</span>
-          {DIFFICULTY_STARS.map((star) => (
-            <span key={star} className={drawProbabilities.stars[star] <= 0 ? 'opacity-35' : ''}>
-              {star}★ <strong className="text-amber-200">{chance(drawProbabilities.stars[star])}</strong>
+          {journeyPhase === 'standard' ? (
+            <>
+              <span>Sự thật <strong className="text-blue-200">{chance(drawProbabilities.types.truth)}</strong></span>
+              <span>Thử thách <strong className="text-rose-200">{chance(drawProbabilities.types.dare)}</strong></span>
+              <span aria-hidden="true" className="hidden text-white/15 sm:inline">|</span>
+              {DIFFICULTY_STARS.map((star) => (
+                <span key={star} className={drawProbabilities.stars[star] <= 0 ? 'opacity-35' : ''}>
+                  {star}★ <strong className="text-amber-200">{chance(drawProbabilities.stars[star])}</strong>
+                </span>
+              ))}
+            </>
+          ) : POSITION_DIFFICULTY_STARS.map((star) => (
+            <span key={star} className={luxuryDrawProbabilities.stars[star] <= 0 ? 'opacity-25' : ''}>
+              {star}★ <strong className="text-[#ead2ff]">{chance(luxuryDrawProbabilities.stars[star])}</strong>
             </span>
           ))}
         </div>
@@ -823,6 +988,18 @@ export const GameTable: React.FC<GameTableProps> = ({
             </div>
             <p className="mt-4 text-[10px] font-medium text-[#f7e7b0]/65">Nghe “Dừng” là dừng ngay.</p>
           </motion.section>
+        )}
+
+        {(journeyPhase === 'position' || journeyPhase === 'final') && !activeCard && drawState === 'idle' && (
+          <section className="w-full max-w-md rounded-[1.5rem] border border-[#d7b1ff]/25 bg-[linear-gradient(160deg,rgba(10,12,25,.96),rgba(35,20,46,.9))] p-6 text-center" aria-labelledby="position-empty-title">
+            <Heart className="mx-auto h-10 w-10 text-[#e8a48c]" aria-hidden="true" />
+            <h2 id="position-empty-title" className="mt-3 font-serif-romantic text-2xl font-bold text-[#f1d6ff]">Chưa có lá phù hợp</h2>
+            <p className="mt-2 text-xs leading-relaxed text-neutral-400">{drawError || 'Bạn có thể bổ sung thẻ Tư thế trong Developer hoặc kết thúc ván an toàn.'}</p>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <button type="button" onClick={onOpenCollection} className="min-h-12 rounded-full border border-[#d7b1ff]/25 px-4 text-xs font-semibold text-[#ead2ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b1ff]">Mở Developer</button>
+              <button type="button" onClick={onFinishGame} className="min-h-12 rounded-full bg-[linear-gradient(135deg,#f4e8ff,#e8a48c)] px-4 text-xs font-bold text-[#120717] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f4e8ff]">Kết thúc ván</button>
+            </div>
+          </section>
         )}
 
         {/* MODE A: IDLE / DRAW DECK VIEW */}
@@ -998,10 +1175,17 @@ export const GameTable: React.FC<GameTableProps> = ({
                         {isPositionCard && activeCard.position ? (
                           <>
                             <span className="rounded-full border border-[#e2c275]/45 bg-[#e2c275]/10 px-3 py-1 text-xs font-bold text-[#f7e7b0]">
-                              ✦ {POSITION_FAMILY_LABELS[activeCard.position.family].toUpperCase()}
+                              ✦ {getPositionFamilyLabel(activeCard).toUpperCase()}
                             </span>
                             <span className="rounded-full border border-white/15 bg-black/20 px-2.5 py-1 text-[10px] text-slate-200">
                               {POSITION_RECIPIENT_LABELS[activeCard.position.recipient]}
+                            </span>
+                            <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${
+                              isFinalPositionCard
+                                ? 'border-[#e8a48c]/55 bg-[#d7b1ff]/10 text-[#f4e8ff]'
+                                : 'border-[#e2c275]/35 bg-[#e2c275]/10 text-[#f7e7b0]'
+                            }`}>
+                              {derivePositionDifficultyStars(activeCard)}★
                             </span>
                           </>
                         ) : (
@@ -1019,7 +1203,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                               {LEVEL_INFO[activeCard.level].icon} {LEVEL_INFO[activeCard.level].name}
                             </span>
                             <span className="rounded-full border border-amber-300/25 bg-amber-300/[0.07] px-2 py-1 text-[10px] font-semibold text-amber-200">
-                              {deriveDifficultyStars(activeCard)}★
+                              {isPositionCard ? derivePositionDifficultyStars(activeCard) : deriveDifficultyStars(activeCard)}★
                             </span>
                             <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] text-neutral-300">
                               {AUDIENCE_LABELS[getCardAudience(activeCard)]}
@@ -1083,7 +1267,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                         >
                           {/* Card Icon (custom image or SVG) */}
                           {activeCard.customImage ? (
-                            <div className="card-icon-wrapper-lg card-custom-icon-wrapper">
+                            <div className={`card-icon-wrapper-lg card-custom-icon-wrapper ${isFinalPositionCard ? 'mythic-icon-aura' : ''}`}>
                               <img
                                 src={activeCard.customImage}
                                 alt="icon"
@@ -1094,7 +1278,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                             const iconName = activeCard.icon || autoAssignIcon(activeCard.content);
                             const IconComp = getCardIcon(iconName);
                             return IconComp ? (
-                              <div className="card-icon-wrapper-lg card-icon-color">
+                              <div className={`card-icon-wrapper-lg card-icon-color ${isFinalPositionCard ? 'mythic-icon-aura' : ''}`}>
                                 <IconComp className="w-full h-full" />
                               </div>
                             ) : null;
@@ -1172,7 +1356,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                       onClick={() => handlePositionAdvance(true)}
                       className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#f7e7b0,#cda95c)] px-4 text-xs font-bold text-[#08101f] shadow-[0_0_20px_rgba(226,194,117,.22)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f7e7b0] motion-reduce:transform-none"
                     >
-                      <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Đã hoàn thành
+                      <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> {completionActionLabel}
                     </button>
                   </>
                 ) : (
@@ -1190,7 +1374,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                       className="flex-1 py-3 px-4 rounded-full bg-gold-gradient text-neutral-950 font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_25px_rgba(255,107,157,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4 fill-neutral-950 text-gold-gradient" />
-                      <span>Hoàn Thành</span>
+                      <span>{completionActionLabel}</span>
                     </button>
                   </>
                 )}
@@ -1242,6 +1426,14 @@ export const GameTable: React.FC<GameTableProps> = ({
           onConfirm={handleConfirmRemoval}
           onCancel={handleCancelRemoval}
           onContinueWithoutRemoval={handleContinueWithoutRemoval}
+        />
+      )}
+      {showSwapDialog && (
+        <GarmentSwapDialog
+          playerNames={[player1.name, player2.name]}
+          outfitStates={outfitStates}
+          onConfirm={handleConfirmSwap}
+          onCancel={() => setShowSwapDialog(false)}
         />
       )}
     </div>

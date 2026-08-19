@@ -6,7 +6,7 @@ import {
   OutfitState,
   PlayerIndex,
 } from '../types';
-import { getRemovableGarments } from './wardrobe';
+import { getPresentGarmentSlots, getRemovableGarments } from './wardrobe';
 
 export interface SelectEligibleCardOptions {
   cards: readonly CardItem[];
@@ -68,7 +68,7 @@ const CARD_LEVELS: readonly CardLevel[] = ['gentle', 'intimate', 'passionate'];
 
 export const areBothPlayersLowOnClothing = (
   outfits: readonly [OutfitState, OutfitState],
-): boolean => outfits.every((outfit) => outfit.remainingSlots.length <= 1);
+): boolean => outfits.every((outfit) => getPresentGarmentSlots(outfit).length <= 1);
 
 const normalizeRecord = <Key extends string>(
   keys: readonly Key[],
@@ -131,14 +131,13 @@ export const getCardDrawProbabilities = ({
 export const isClothingEffect = (value: unknown): value is ClothingEffect => {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Partial<ClothingEffect>;
-  return (
-    candidate.kind === 'remove_garment' &&
-    (candidate.target === 'self' || candidate.target === 'opponent')
-  );
+  if (candidate.kind === 'swap_garments') return true;
+  return candidate.kind === 'remove_garment' &&
+    (candidate.target === 'self' || candidate.target === 'opponent');
 };
 
 export const getTargetIndex = (
-  effect: ClothingEffect,
+  effect: Extract<ClothingEffect, { kind: 'remove_garment' }>,
   currentIndex: PlayerIndex,
 ): PlayerIndex => (effect.target === 'self' ? currentIndex : currentIndex === 0 ? 1 : 0);
 
@@ -149,6 +148,9 @@ export const isCardEligibleForOutfits = (
 ): boolean => {
   if (card.clothingEffect === undefined || card.clothingEffect === null) return true;
   if (!isClothingEffect(card.clothingEffect)) return false;
+  if (card.clothingEffect.kind === 'swap_garments') {
+    return outfits.every((outfit) => getRemovableGarments(outfit).length > 0);
+  }
   const targetIndex = getTargetIndex(card.clothingEffect, actorIndex);
   return getRemovableGarments(outfits[targetIndex]).length > 0;
 };

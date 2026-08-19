@@ -3,8 +3,9 @@ export type CardType = 'truth' | 'dare';
 export type PlayerIndex = 0 | 1;
 export type CardDeck = 'standard' | 'position';
 export type DifficultyStars = 1 | 2 | 3 | 4 | 5;
+export type PositionDifficultyStars = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 export type CardAudience = 'male' | 'female' | 'both';
-export type PositionFamily = 'oral' | 'blowjob' | 'handjob' | 'have_sex';
+export type PositionFamily = 'oral' | 'blowjob' | 'handjob' | 'have_sex' | 'other';
 export type PositionRecipient = 'male' | 'female' | 'both';
 export type PositionRarity = 'luxury' | 'mythic';
 
@@ -17,6 +18,13 @@ export interface GarmentConfig {
   color: string;
 }
 
+export interface EquippedGarment extends GarmentConfig {
+  id: string;
+  slot: GarmentSlot;
+  originPresentation: PlayerPresentation;
+  originalOwnerIndex?: PlayerIndex;
+}
+
 export interface OutfitConfig {
   presentation: PlayerPresentation;
   garments: Partial<Record<GarmentSlot, GarmentConfig>>;
@@ -24,13 +32,14 @@ export interface OutfitConfig {
 
 export interface OutfitState {
   initial: OutfitConfig;
+  equippedGarments: EquippedGarment[];
+  /** Derived compatibility field. Runtime logic uses equippedGarments. */
   remainingSlots: GarmentSlot[];
 }
 
-export interface ClothingEffect {
-  kind: 'remove_garment';
-  target: 'self' | 'opponent';
-}
+export type ClothingEffect =
+  | { kind: 'remove_garment'; target: 'self' | 'opponent' }
+  | { kind: 'swap_garments' };
 
 export interface CardProgressionMetadata {
   difficultyStars: DifficultyStars;
@@ -44,10 +53,16 @@ export interface CardProgressionMetadata {
 
 export interface PositionMetadata {
   family: PositionFamily;
+  /** Developer-defined label when family is `other`. */
+  customLabel?: string;
   recipient: PositionRecipient;
   /** Oral=1, blowjob=2, handjob=3, final rare card=4. */
   orderGroup: 1 | 2 | 3 | 4;
   rarity: PositionRarity;
+  /** Position cards use an independent 1–10 star ladder. */
+  difficultyStars?: PositionDifficultyStars;
+  /** Overrides the Luxury gain for this position card. */
+  luxuryGain?: number;
 }
 
 export interface ProgressionBand {
@@ -63,12 +78,24 @@ export interface ProgressionConfig {
   cardRemovalBonus: number;
 }
 
+export interface LuxuryProgressionBand {
+  minPercent: number;
+  maxPercent: number;
+  starWeights: Record<PositionDifficultyStars, number>;
+}
+
+export interface LuxuryProgressionConfig {
+  bands: LuxuryProgressionBand[];
+  starGains: Record<PositionDifficultyStars, number>;
+}
+
 export type JourneyPhase = 'standard' | 'position_consent' | 'position' | 'final';
 
 export interface IntimacyEvent {
   cardId: string;
   amount: number;
   source: 'completed_card' | 'card_clothing_removal';
+  track?: 'standard' | 'luxury';
   round: number;
   timestamp: number;
 }
@@ -81,6 +108,9 @@ export interface ClothingRemovalEvent {
   garmentSlot: GarmentSlot;
   garment: GarmentConfig;
   source: ClothingRemovalSource;
+  action?: 'removed' | 'transferred' | 'replaced';
+  garmentId?: string;
+  toPlayerIndex?: PlayerIndex;
   cardId?: string;
   round: number;
   timestamp: number;
@@ -93,7 +123,7 @@ export interface CardItem {
   content: string;
   hint?: string;
   /**
-   * Optional per-card countdown for dares.
+   * Optional per-card countdown for truths, dares and position cards.
    * `undefined` inherits built-in metadata during edit merging, while `null`
    * records that a developer explicitly disabled the timer for this card.
    */
@@ -125,6 +155,11 @@ export interface GameSettings {
   privacyDefault: boolean; // Hide content until click
   enableTimer: boolean;
   timerDuration: number; // in seconds
+  /** Per-type countdown settings. Legacy enableTimer/timerDuration hydrate into dare values. */
+  truthTimerEnabled: boolean;
+  truthTimerDuration: number;
+  dareTimerEnabled: boolean;
+  dareTimerDuration: number;
   drawMode: 'random' | 'choose'; // Allow player to pick Truth or Dare first or complete random
   outfits: [OutfitConfig, OutfitConfig];
   penaltyClothingEnabled: boolean;

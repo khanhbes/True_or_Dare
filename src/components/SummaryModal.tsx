@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Trophy, Heart, RotateCcw, X, CheckCircle2, Layers3 } from 'lucide-react';
 import { ClothingRemovalEvent, IntimacyEvent, JourneyPhase, OutfitState, Player } from '../types';
+import { getPresentGarmentSlots } from '../utils/wardrobe';
 
 interface SummaryModalProps {
   player1: Player;
@@ -11,6 +12,7 @@ interface SummaryModalProps {
   outfitStates?: [OutfitState, OutfitState];
   removalEvents?: ClothingRemovalEvent[];
   intimacyPercent?: number;
+  luxuryIntimacyPercent?: number;
   intimacyEvents?: IntimacyEvent[];
   positionCardsRevealed?: number;
   journeyPhase?: JourneyPhase;
@@ -26,7 +28,7 @@ const getRemovalCount = (
   targetPlayerIndex: 0 | 1,
   source: ClothingRemovalEvent['source']
 ) => events?.filter(
-  (event) => event.targetPlayerIndex === targetPlayerIndex && event.source === source
+  (event) => event.targetPlayerIndex === targetPlayerIndex && event.source === source && event.action !== 'transferred'
 ).length ?? 0;
 
 const FOCUSABLE_SELECTOR = [
@@ -46,6 +48,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   outfitStates,
   removalEvents,
   intimacyPercent,
+  luxuryIntimacyPercent = 0,
   intimacyEvents,
   positionCardsRevealed = 0,
   journeyPhase,
@@ -59,11 +62,16 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   const legacyIntimacyScore = Math.min(100, Math.round((totalCompleted / Math.max(1, totalRounds)) * 100));
   const intimacyScore = intimacyPercent ?? legacyIntimacyScore;
   const cardGain = intimacyEvents
-    ?.filter((event) => event.source === 'completed_card')
+    ?.filter((event) => event.source === 'completed_card' && event.track !== 'luxury')
     .reduce((total, event) => total + event.amount, 0) ?? 0;
   const clothingGain = intimacyEvents
     ?.filter((event) => event.source === 'card_clothing_removal')
     .reduce((total, event) => total + event.amount, 0) ?? 0;
+  const luxuryGain = intimacyEvents
+    ?.filter((event) => event.source === 'completed_card' && event.track === 'luxury')
+    .reduce((total, event) => total + event.amount, 0) ?? 0;
+  const swapCount = Math.floor((removalEvents?.filter((event) => event.action === 'transferred').length ?? 0) / 2);
+  const replacedCount = removalEvents?.filter((event) => event.action === 'replaced').length ?? 0;
 
   let intimacyBadge = 'Gắn Kết Nhẹ Nhàng 🌸';
   if (intimacyScore > 75) intimacyBadge = 'Cặp Đôi Bùng Nổ Nồng Nhiệt 💋';
@@ -122,7 +130,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
     if (!outfitState) return null;
 
     const initialCount = getInitialGarmentCount(outfitState);
-    const remainingCount = outfitState.remainingSlots.length;
+    const remainingCount = getPresentGarmentSlots(outfitState).length;
     const removedCount = Math.max(0, initialCount - remainingCount);
     const cardRemovalCount = getRemovalCount(removalEvents, playerIndex, 'card');
     const penaltyRemovalCount = getRemovalCount(removalEvents, playerIndex, 'penalty');
@@ -208,14 +216,21 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
           <div className="text-xs text-neutral-400 uppercase tracking-wider">
             Chỉ số thấu hiểu & kết nối
           </div>
-          <div className="text-3xl font-bold font-serif-romantic text-amber-300">
-            {intimacyScore}%
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-rose-500/[0.06] p-2">
+              <div className="text-[9px] uppercase tracking-wider text-rose-200/65">Tim hồng</div>
+              <div className="text-2xl font-bold font-serif-romantic text-rose-200">{intimacyScore}%</div>
+            </div>
+            <div className="rounded-xl bg-violet-400/[0.07] p-2">
+              <div className="text-[9px] uppercase tracking-wider text-violet-200/65">Tim Luxury</div>
+              <div className="text-2xl font-bold font-serif-romantic text-violet-200">{luxuryIntimacyPercent}%</div>
+            </div>
           </div>
           <div className="inline-block px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/40 text-xs text-rose-300 font-medium">
             {intimacyBadge}
           </div>
           {intimacyEvents && (
-            <div className="grid grid-cols-3 gap-1.5 pt-2 text-center">
+            <div className="grid grid-cols-2 gap-1.5 pt-2 text-center sm:grid-cols-4">
               <div className="rounded-lg bg-white/[0.04] px-1 py-1.5">
                 <div className="text-[9px] text-neutral-500">Hoàn thành</div>
                 <div className="text-xs font-bold text-white">+{cardGain}%</div>
@@ -228,7 +243,14 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
                 <div className="text-[9px] text-neutral-500">Tư thế đã mở</div>
                 <div className="text-xs font-bold text-amber-300">{positionCardsRevealed}</div>
               </div>
+              <div className="rounded-lg bg-violet-500/[0.07] px-1 py-1.5">
+                <div className="text-[9px] text-neutral-500">Luxury</div>
+                <div className="text-xs font-bold text-violet-200">+{luxuryGain}%</div>
+              </div>
             </div>
+          )}
+          {removalEvents && (
+            <p className="pt-1 text-[10px] text-neutral-400">Đổi đồ: <strong className="text-neutral-200">{swapCount}</strong> · Món bị thay: <strong className="text-neutral-200">{replacedCount}</strong></p>
           )}
           {journeyPhase === 'final' && (
             <p className="pt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-200">

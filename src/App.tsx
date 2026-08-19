@@ -13,6 +13,7 @@ import {
   GameSettings,
   IntimacyEvent,
   JourneyPhase,
+  LuxuryProgressionConfig,
   OutfitState,
   Player,
   ProgressionConfig,
@@ -20,7 +21,7 @@ import {
 import { INITIAL_CARDS } from './data/cards';
 import { mergeEditedSystemCard } from './utils/cardSelection';
 import { createOutfitState, hydrateGameSettings } from './utils/wardrobe';
-import { getCardDeck, hydrateProgressionConfig } from './utils/progression';
+import { getCardDeck, hydrateLuxuryProgressionConfig, hydrateProgressionConfig } from './utils/progression';
 
 const STORAGE_KEYS = {
   CUSTOM_CARDS: 'tod_couples_custom_cards',
@@ -33,6 +34,7 @@ const STORAGE_KEYS = {
   UNLOCKED_CARDS: 'tod_couples_unlocked_cards',
   DELETED_SYSTEM_CARDS: 'tod_couples_deleted_system_cards',
   PROGRESSION_CONFIG: 'tod_couples_progression_config',
+  LUXURY_PROGRESSION_CONFIG: 'tod_couples_luxury_progression_config',
 };
 
 type AppMode = 'player' | 'developer';
@@ -49,7 +51,7 @@ const CARD_LEVELS = new Set(['gentle', 'intimate', 'passionate']);
 const CARD_TYPES = new Set(['truth', 'dare']);
 const CARD_DECKS = new Set(['standard', 'position']);
 const CARD_AUDIENCES = new Set(['male', 'female', 'both']);
-const POSITION_FAMILIES = new Set(['oral', 'blowjob', 'handjob', 'have_sex']);
+const POSITION_FAMILIES = new Set(['oral', 'blowjob', 'handjob', 'have_sex', 'other']);
 const POSITION_RECIPIENTS = new Set(['male', 'female', 'both']);
 const OUTFIT_STAGES = new Set(['dressed', 'underwear_only', 'empty']);
 const MAX_CARD_TIMER_SECONDS = 3600;
@@ -67,9 +69,11 @@ const isStoredCard = (value: unknown): value is CardItem => {
   const hasValidEffect =
     effect === undefined ||
     effect === null ||
-    (isRecord(effect) &&
-      effect.kind === 'remove_garment' &&
-      (effect.target === 'self' || effect.target === 'opponent'));
+    (isRecord(effect) && (
+      effect.kind === 'swap_garments' ||
+      (effect.kind === 'remove_garment' &&
+        (effect.target === 'self' || effect.target === 'opponent'))
+    ));
   const hasValidTimer =
     value.timerSeconds === undefined ||
     value.timerSeconds === null ||
@@ -102,9 +106,16 @@ const isStoredCard = (value: unknown): value is CardItem => {
     position === null ||
     (isRecord(position) &&
       typeof position.family === 'string' && POSITION_FAMILIES.has(position.family) &&
+      isOptionalString(position.customLabel) &&
       typeof position.recipient === 'string' && POSITION_RECIPIENTS.has(position.recipient) &&
       typeof position.orderGroup === 'number' && [1, 2, 3, 4].includes(position.orderGroup) &&
-      (position.rarity === 'luxury' || position.rarity === 'mythic'));
+      (position.rarity === 'luxury' || position.rarity === 'mythic') &&
+      (position.difficultyStars === undefined ||
+        (typeof position.difficultyStars === 'number' && Number.isInteger(position.difficultyStars) &&
+          position.difficultyStars >= 1 && position.difficultyStars <= 10)) &&
+      (position.luxuryGain === undefined ||
+        (typeof position.luxuryGain === 'number' && Number.isFinite(position.luxuryGain) &&
+          position.luxuryGain >= 0 && position.luxuryGain <= 100)));
 
   return (
     typeof value.id === 'string' &&
@@ -247,19 +258,29 @@ export default function App() {
       return hydrateProgressionConfig(null);
     }
   });
+  const [luxuryProgressionConfig, setLuxuryProgressionConfig] = useState<LuxuryProgressionConfig>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.LUXURY_PROGRESSION_CONFIG);
+      return hydrateLuxuryProgressionConfig(saved ? JSON.parse(saved) : null);
+    } catch {
+      return hydrateLuxuryProgressionConfig(null);
+    }
+  });
 
   // Current turn state
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<0 | 1>(0);
   const [currentRound, setCurrentRound] = useState<number>(1);
   const [outfitStates, setOutfitStates] = useState<[OutfitState, OutfitState]>(() => [
-    createOutfitState(settings.outfits[0]),
-    createOutfitState(settings.outfits[1]),
+    createOutfitState(settings.outfits[0], 0),
+    createOutfitState(settings.outfits[1], 1),
   ]);
   const [clothingRemovalEvents, setClothingRemovalEvents] = useState<ClothingRemovalEvent[]>([]);
   const [intimacyPercent, setIntimacyPercent] = useState(0);
+  const [luxuryIntimacyPercent, setLuxuryIntimacyPercent] = useState(0);
   const [intimacyEvents, setIntimacyEvents] = useState<IntimacyEvent[]>([]);
   const [journeyPhase, setJourneyPhase] = useState<JourneyPhase>('standard');
   const [sessionPositionCardIds, setSessionPositionCardIds] = useState<string[]>([]);
+  const [sessionPositionRevealCount, setSessionPositionRevealCount] = useState(0);
 
   // Combine built-in cards + custom cards
   const editedCardMap = new Map<string, CardItem>(
@@ -332,6 +353,12 @@ export default function App() {
       localStorage.setItem(STORAGE_KEYS.PROGRESSION_CONFIG, JSON.stringify(progressionConfig));
     } catch {}
   }, [progressionConfig]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LUXURY_PROGRESSION_CONFIG, JSON.stringify(luxuryProgressionConfig));
+    } catch {}
+  }, [luxuryProgressionConfig]);
 
   // Favorite toggle
   const handleToggleFavorite = (cardId: string) => {
@@ -458,14 +485,16 @@ export default function App() {
     setCurrentPlayerIndex(0);
     setCurrentRound(1);
     setOutfitStates([
-      createOutfitState(newSettings.outfits[0]),
-      createOutfitState(newSettings.outfits[1]),
+      createOutfitState(newSettings.outfits[0], 0),
+      createOutfitState(newSettings.outfits[1], 1),
     ]);
     setClothingRemovalEvents([]);
     setIntimacyPercent(0);
+    setLuxuryIntimacyPercent(0);
     setIntimacyEvents([]);
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
+    setSessionPositionRevealCount(0);
     setScreen('game');
   };
 
@@ -482,14 +511,16 @@ export default function App() {
     setCurrentPlayerIndex(0);
     setCurrentRound(1);
     setOutfitStates([
-      createOutfitState(settings.outfits[0]),
-      createOutfitState(settings.outfits[1]),
+      createOutfitState(settings.outfits[0], 0),
+      createOutfitState(settings.outfits[1], 1),
     ]);
     setClothingRemovalEvents([]);
     setIntimacyPercent(0);
+    setLuxuryIntimacyPercent(0);
     setIntimacyEvents([]);
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
+    setSessionPositionRevealCount(0);
     setShowSummary(false);
     setScreen('setup');
   };
@@ -549,16 +580,20 @@ export default function App() {
             onUnlockCard={handleUnlockCard}
             onNextTurn={handleNextTurn}
             progressionConfig={progressionConfig}
+            luxuryProgressionConfig={luxuryProgressionConfig}
             intimacyPercent={intimacyPercent}
+            luxuryIntimacyPercent={luxuryIntimacyPercent}
             journeyPhase={journeyPhase}
             sessionPositionCardIds={sessionPositionCardIds}
             onIntimacyPercentChange={setIntimacyPercent}
+            onLuxuryIntimacyPercentChange={setLuxuryIntimacyPercent}
             onAddIntimacyEvents={(events) => setIntimacyEvents((current) => [...current, ...events])}
             onJourneyPhaseChange={setJourneyPhase}
             onRevealPositionCard={(cardId) => {
-              setSessionPositionCardIds((current) => current.includes(cardId) ? current : [...current, cardId]);
               handleUnlockCard(cardId);
+              setSessionPositionRevealCount((count) => count + 1);
             }}
+            onSessionPositionCardIdsChange={setSessionPositionCardIds}
           />
         )}
 
@@ -575,6 +610,8 @@ export default function App() {
             onDeleteCard={handleDeleteCard}
             progressionConfig={progressionConfig}
             onProgressionConfigChange={setProgressionConfig}
+            luxuryProgressionConfig={luxuryProgressionConfig}
+            onLuxuryProgressionConfigChange={setLuxuryProgressionConfig}
             onBack={() => setScreen(collectionReturnScreen)}
           />
         )}
@@ -590,8 +627,9 @@ export default function App() {
           outfitStates={outfitStates}
           removalEvents={clothingRemovalEvents}
           intimacyPercent={intimacyPercent}
+          luxuryIntimacyPercent={luxuryIntimacyPercent}
           intimacyEvents={intimacyEvents}
-          positionCardsRevealed={sessionPositionCardIds.length}
+          positionCardsRevealed={sessionPositionRevealCount}
           journeyPhase={journeyPhase}
           onRestart={handleRestartSession}
           onClose={() => setShowSummary(false)}

@@ -680,6 +680,67 @@
   filter: grayscale(.5);
 }
 
+.garment-swap__panel {
+  width: min(900px, calc(100vw - 2rem));
+}
+
+.garment-swap__steps {
+  display: none;
+}
+
+.garment-swap__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0 1.25rem 1rem;
+}
+
+.garment-swap__person {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(150px, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.garment-swap__figure .outfit-figure {
+  width: min(100%, 180px);
+  margin-inline: auto;
+}
+
+.garment-swap__choices {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.garment-swap__summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0 1.25rem 1rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(226, 194, 117, 0.24);
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, rgba(226, 194, 117, 0.09), rgba(229, 164, 140, 0.06));
+  color: #e8e2d8;
+  font-size: 0.78rem;
+}
+
+.garment-swap__summary > svg {
+  width: 1.1rem;
+  flex: 0 0 auto;
+  color: #f1d995;
+}
+
+.garment-swap__summary strong {
+  color: #f7e7b0;
+}
+
+.garment-swap__summary p {
+  margin-top: 0.25rem;
+  color: #d9b9ae;
+}
+
 @keyframes outfit-halo {
   0%, 100% { opacity: .42; transform: translateY(-4%) scale(.92); }
   50% { opacity: .86; transform: translateY(-4%) scale(1.08); }
@@ -764,6 +825,74 @@
     display: grid;
     grid-template-columns: 1fr 1.25fr;
     padding-inline: 1rem;
+  }
+
+  .garment-swap__panel {
+    width: 100%;
+  }
+
+  .garment-swap__grid {
+    grid-template-columns: 1fr;
+    padding-inline: 0.85rem;
+  }
+
+  .garment-swap__steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0 0.85rem 0.8rem;
+  }
+
+  .garment-swap__steps button {
+    display: flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.22);
+    color: #cfc7cb;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .garment-swap__steps button > span {
+    display: grid;
+    width: 1.35rem;
+    height: 1.35rem;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.68rem;
+  }
+
+  .garment-swap__steps button > svg {
+    width: 0.9rem;
+  }
+
+  .garment-swap__steps button.is-active {
+    border-color: rgba(241, 217, 149, 0.52);
+    color: #f7e7b0;
+    box-shadow: 0 0 18px rgba(241, 217, 149, 0.08);
+  }
+
+  .garment-swap__person[data-mobile-visible='false'] {
+    display: none;
+  }
+
+  .garment-swap__person {
+    grid-template-columns: minmax(90px, 0.6fr) minmax(150px, 1fr);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    padding-bottom: 0.75rem;
+  }
+
+  .garment-swap__figure .outfit-figure {
+    width: min(100%, 120px);
+  }
+
+  .garment-swap__summary {
+    margin-inline: 0.85rem;
   }
 }
 

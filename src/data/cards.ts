@@ -428,7 +428,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Có thể bỏ qua bất cứ lúc nào mà không bị phạt.',
     icon: 'position_oral',
     progression: { difficultyStars: 3, audience: 'both', intimacyGain: 0 },
-    position: { family: 'oral', recipient: 'male', orderGroup: 1, rarity: 'luxury' },
+    position: { family: 'oral', recipient: 'male', orderGroup: 1, rarity: 'luxury', difficultyStars: 3 },
   },
   {
     id: 'pos-oral-female',
@@ -439,7 +439,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Có thể bỏ qua bất cứ lúc nào mà không bị phạt.',
     icon: 'position_oral',
     progression: { difficultyStars: 3, audience: 'both', intimacyGain: 0 },
-    position: { family: 'oral', recipient: 'female', orderGroup: 1, rarity: 'luxury' },
+    position: { family: 'oral', recipient: 'female', orderGroup: 1, rarity: 'luxury', difficultyStars: 3 },
   },
   {
     id: 'pos-oral-both',
@@ -450,7 +450,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Nghe “Dừng” là dừng ngay.',
     icon: 'position_oral',
     progression: { difficultyStars: 3, audience: 'both', intimacyGain: 0 },
-    position: { family: 'oral', recipient: 'both', orderGroup: 1, rarity: 'luxury' },
+    position: { family: 'oral', recipient: 'both', orderGroup: 1, rarity: 'luxury', difficultyStars: 3 },
   },
 
   // ==================== ✦ BỘ TƯ THẾ — BLOWJOB ====================
@@ -463,7 +463,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Chỉ tiếp tục khi cả hai cùng đồng ý ở hiện tại.',
     icon: 'position_blowjob',
     progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
-    position: { family: 'blowjob', recipient: 'male', orderGroup: 2, rarity: 'luxury' },
+    position: { family: 'blowjob', recipient: 'male', orderGroup: 2, rarity: 'luxury', difficultyStars: 5 },
   },
   {
     id: 'pos-blowjob-female',
@@ -474,7 +474,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Không thoải mái có thể bỏ qua ngay.',
     icon: 'position_blowjob',
     progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
-    position: { family: 'blowjob', recipient: 'female', orderGroup: 2, rarity: 'luxury' },
+    position: { family: 'blowjob', recipient: 'female', orderGroup: 2, rarity: 'luxury', difficultyStars: 5 },
   },
   {
     id: 'pos-blowjob-both',
@@ -485,7 +485,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Bỏ qua không làm mất quyền tiếp tục trò chơi.',
     icon: 'position_blowjob',
     progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
-    position: { family: 'blowjob', recipient: 'both', orderGroup: 2, rarity: 'luxury' },
+    position: { family: 'blowjob', recipient: 'both', orderGroup: 2, rarity: 'luxury', difficultyStars: 5 },
   },
 
   // ==================== ✦ BỘ TƯ THẾ — HANDJOB ====================
@@ -498,7 +498,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Mỗi người đều có quyền đổi ý.',
     icon: 'position_handjob',
     progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
-    position: { family: 'handjob', recipient: 'male', orderGroup: 3, rarity: 'luxury' },
+    position: { family: 'handjob', recipient: 'male', orderGroup: 3, rarity: 'luxury', difficultyStars: 7 },
   },
   {
     id: 'pos-handjob-female',
@@ -509,7 +509,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Mỗi người đều có quyền đổi ý.',
     icon: 'position_handjob',
     progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
-    position: { family: 'handjob', recipient: 'female', orderGroup: 3, rarity: 'luxury' },
+    position: { family: 'handjob', recipient: 'female', orderGroup: 3, rarity: 'luxury', difficultyStars: 7 },
   },
   {
     id: 'pos-handjob-both',
@@ -520,7 +520,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Dừng ngay khi một người nói “Dừng”.',
     icon: 'position_handjob',
     progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
-    position: { family: 'handjob', recipient: 'both', orderGroup: 3, rarity: 'luxury' },
+    position: { family: 'handjob', recipient: 'both', orderGroup: 3, rarity: 'luxury', difficultyStars: 7 },
   },
 
   // ==================== ◆ LÁ HIẾM KẾT THÚC ====================
@@ -533,7 +533,7 @@ const BASE_CARDS: CardItem[] = [
     hint: 'Mở lá bài không tạo nghĩa vụ phải thực hiện.',
     icon: 'position_final',
     progression: { difficultyStars: 5, audience: 'both', intimacyGain: 0 },
-    position: { family: 'have_sex', recipient: 'both', orderGroup: 4, rarity: 'mythic' },
+    position: { family: 'have_sex', recipient: 'both', orderGroup: 4, rarity: 'mythic', difficultyStars: 10 },
   },
 ];
 
