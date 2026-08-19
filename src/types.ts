@@ -4,7 +4,7 @@ export type PlayerIndex = 0 | 1;
 export type CardDeck = 'standard' | 'position';
 export type DifficultyStars = 1 | 2 | 3 | 4 | 5;
 export type PositionDifficultyStars = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-export type CardAudience = 'male' | 'female' | 'both';
+export type CardAudience = 'male' | 'female' | 'both' | 'current' | 'opponent';
 export type PositionFamily = 'oral' | 'blowjob' | 'handjob' | 'have_sex' | 'other';
 export type PositionRecipient = 'male' | 'female' | 'both';
 export type PositionRarity = 'luxury' | 'mythic';
@@ -46,7 +46,7 @@ export type ClothingEffect =
 
 export interface CardProgressionMetadata {
   difficultyStars: DifficultyStars;
-  /** Standard-card eligibility for the player whose turn it is. */
+  /** Gender eligibility, or an explicit performer relative to the current turn. */
   audience: CardAudience;
   /** Overrides the global gain for this star rating when supplied. */
   intimacyGain?: number;
@@ -66,6 +66,13 @@ export interface PositionMetadata {
   difficultyStars?: PositionDifficultyStars;
   /** Overrides the Luxury gain for this position card. */
   luxuryGain?: number;
+}
+
+export interface CardAppearance {
+  /** Display scale applied to either the built-in icon or uploaded illustration. */
+  iconScale?: number;
+  /** Display scale applied to every text group rendered inside the card. */
+  textScale?: number;
 }
 
 export interface ProgressionBand {
@@ -138,6 +145,8 @@ export interface CardItem {
   customImageId?: string;
   /** Marks a deliberate illustration override on an edited built-in card. */
   illustrationOverride?: boolean;
+  /** Optional per-card visual sizing. Missing values use the normal 1× layout. */
+  appearance?: CardAppearance;
   clothingEffect?: ClothingEffect | null;
   /** Missing means a legacy/custom standard card. */
   deck?: CardDeck;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { INITIAL_CARDS } from '../data/cards';
-import { CardItem, DifficultyStars, PositionDifficultyStars } from '../types';
+import { CardAudience, CardItem, DifficultyStars, PositionDifficultyStars } from '../types';
 import { createOutfitState, DEFAULT_GAME_SETTINGS } from './wardrobe';
 import {
   DEFAULT_PROGRESSION_CONFIG,
@@ -11,6 +11,7 @@ import {
   deriveDifficultyStars,
   derivePositionDifficultyStars,
   getCardDeck,
+  getStandardCardPerformerIndex,
   getJourneyDrawProbabilities,
   hydrateProgressionConfig,
   hydrateLuxuryProgressionConfig,
@@ -57,20 +58,49 @@ const makePositionCard = (
     luxuryGain,
   },
 });
-test('all 56 standard cards receive the curated star distribution and both audience', () => {
+test('all 92 standard cards receive the expanded star and audience distribution', () => {
   const standardCards = INITIAL_CARDS.filter((card) => getCardDeck(card) === 'standard');
-  assert.equal(standardCards.length, 56);
+  assert.equal(standardCards.length, 92);
   const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<DifficultyStars, number>;
+  const audiences: Record<CardAudience, number> = {
+    male: 0,
+    female: 0,
+    both: 0,
+    current: 0,
+    opponent: 0,
+  };
   for (const card of standardCards) {
     counts[deriveDifficultyStars(card)] += 1;
-    assert.equal(card.progression?.audience, 'both');
+    const audience = card.progression?.audience ?? 'both';
+    audiences[audience] += 1;
   }
-  assert.deepEqual(counts, { 1: 11, 2: 17, 3: 14, 4: 12, 5: 2 });
+  assert.deepEqual(counts, { 1: 16, 2: 28, 3: 23, 4: 19, 5: 6 });
+  assert.deepEqual(audiences, {
+    male: 6,
+    female: 6,
+    both: 80,
+    current: 0,
+    opponent: 0,
+  });
 });
 
-test('position deck contains nine ordered luxury cards and one reusable mythic final', () => {
+test('relative audiences resolve the correct performer without changing gender audiences', () => {
+  const currentCard = makeCard('current', 'dare', 1);
+  currentCard.progression!.audience = 'current';
+  const opponentCard = makeCard('opponent', 'dare', 1);
+  opponentCard.progression!.audience = 'opponent';
+  const femaleCard = makeCard('female', 'dare', 1, 'female');
+
+  assert.equal(getStandardCardPerformerIndex(currentCard, 0), 0);
+  assert.equal(getStandardCardPerformerIndex(currentCard, 1), 1);
+  assert.equal(getStandardCardPerformerIndex(opponentCard, 0), 1);
+  assert.equal(getStandardCardPerformerIndex(opponentCard, 1), 0);
+  assert.equal(getStandardCardPerformerIndex(femaleCard, 0), 0);
+});
+
+test('position deck covers every star from one to ten and keeps one reusable mythic final', () => {
   const positions = INITIAL_CARDS.filter((card) => getCardDeck(card) === 'position');
-  assert.equal(positions.length, 10);
+  assert.equal(positions.length, 16);
   assert.deepEqual(
     positions.filter((card) => card.position?.family === 'oral').map((card) => card.position?.recipient).sort(),
     ['both', 'female', 'male'],
@@ -91,6 +121,10 @@ test('position deck contains nine ordered luxury cards and one reusable mythic f
   assert.deepEqual(
     positions.filter((card) => card.position?.family === 'handjob').map(derivePositionDifficultyStars),
     [7, 7, 7],
+  );
+  assert.deepEqual(
+    [...new Set(positions.map(derivePositionDifficultyStars))].sort((first, second) => first - second),
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   );
   assert.equal(final && derivePositionDifficultyStars(final), 10);
 });

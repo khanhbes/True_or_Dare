@@ -66,6 +66,7 @@ import {
   derivePositionDifficultyStars,
   getCardAudience,
   getCardDeck,
+  getStandardCardPerformerIndex,
   getJourneyDrawProbabilities,
   isStandardJourneyCardEligible,
   selectJourneyCard,
@@ -122,7 +123,13 @@ const OUTFIT_STAGE_COPY = {
   empty: 'Hết đồ đã chọn',
 } as const;
 
-const AUDIENCE_LABELS = { male: 'Nam', female: 'Nữ', both: 'Cả hai' } as const;
+const AUDIENCE_LABELS = {
+  male: 'Nam',
+  female: 'Nữ',
+  both: 'Cả hai',
+  current: 'Người đang lượt',
+  opponent: 'Đối phương',
+} as const;
 const POSITION_RECIPIENT_LABELS = { male: 'Nam nhận', female: 'Nữ nhận', both: 'Cả hai' } as const;
 const POSITION_FAMILY_LABELS = {
   oral: 'Oral sex',
@@ -243,6 +250,10 @@ export const GameTable: React.FC<GameTableProps> = ({
   const wasTimerRunningBeforeSuspendRef = useRef(false);
 
   const currentPlayer = currentPlayerIndex === 0 ? player1 : player2;
+  const performingPlayerIndex = activeCard
+    ? getStandardCardPerformerIndex(activeCard, currentPlayerIndex)
+    : currentPlayerIndex;
+  const performingPlayer = performingPlayerIndex === 0 ? player1 : player2;
   const availableDrawTypes = (['truth', 'dare'] as const).filter((type) =>
     availableCards.some(
       (card) => card.type === type && isStandardJourneyCardEligible(card, currentPlayerIndex, outfitStates),
@@ -505,7 +516,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     setIntimacyGainNotice(
       `+${appliedTotal}% thân mật${appliedRemoval > 0 ? ` · gồm +${appliedRemoval}% bỏ đồ` : ''}`,
     );
-    if (currentPlayerIndex === 0) {
+    if (performingPlayerIndex === 0) {
       onUpdatePlayers(
         { ...player1, completedCount: player1.completedCount + 1 },
         player2
@@ -567,7 +578,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     if (completionCommittedRef.current) return;
     completionCommittedRef.current = true;
     setShowPenaltyPrompt(false);
-    if (currentPlayerIndex === 0) {
+    if (performingPlayerIndex === 0) {
       onUpdatePlayers(
         { ...player1, skippedCount: player1.skippedCount + 1 },
         player2,
@@ -621,7 +632,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   const handlePenaltyGarmentChoice = () => {
     setShowPenaltyPrompt(false);
-    setRemovalRequest({ source: 'penalty', targetIndex: currentPlayerIndex });
+    setRemovalRequest({ source: 'penalty', targetIndex: performingPlayerIndex });
   };
 
   const handleCancelRemoval = () => {
@@ -837,6 +848,12 @@ export const GameTable: React.FC<GameTableProps> = ({
   const isPositionCard = activeDeck === 'position';
   const isFinalPositionCard = activeCard?.position?.family === 'have_sex';
   const isMythicPositionCard = isPositionCard && activeCard?.position?.rarity === 'mythic';
+  const activeIconScale = Math.min(1.8, Math.max(0.5, activeCard?.appearance?.iconScale ?? 1));
+  const activeTextScale = Math.min(1.5, Math.max(0.75, activeCard?.appearance?.textScale ?? 1));
+  const activeIconScaleStyle = { transform: `scale(${activeIconScale})` };
+  const activeIconSpacingStyle = {
+    marginBlock: `${Math.max(0, activeIconScale - 1) * 34}px`,
+  };
   const removalTargetIndices = activeCard ? getRemovalTargetIndices(activeCard, currentPlayerIndex) : [];
   const completionActionLabel = activeCard?.clothingEffect?.kind === 'swap_garments'
     ? 'Chọn 2 món để đổi'
@@ -845,7 +862,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         ? 'Chọn 2 món để cùng bỏ'
         : `Chọn 1 món của ${removalTargetIndices[0] === 0 ? player1.name : player2.name}`
       : 'Đã hoàn thành';
-  const canApplyPenaltyGarment = getRemovableGarments(outfitStates[currentPlayerIndex]).length > 0;
+  const canApplyPenaltyGarment = getRemovableGarments(outfitStates[performingPlayerIndex]).length > 0;
 
   return (
     <div className="relative z-10 max-w-7xl mx-auto px-4 py-4 min-h-[92vh] flex flex-col justify-between">
@@ -1259,10 +1276,10 @@ export const GameTable: React.FC<GameTableProps> = ({
                   {/* Corner decorations for intimate/passionate */}
                   {!isMythicPositionCard && activeCard.level !== 'gentle' && (
                     <>
-                      <span className="card-corner-deco top-2 left-2.5">♠ ♥</span>
-                      <span className="card-corner-deco top-2 right-2.5">♦ ♣</span>
-                      <span className="card-corner-deco bottom-2 left-2.5">♥ ♠</span>
-                      <span className="card-corner-deco bottom-2 right-2.5">♣ ♦</span>
+                      <span style={{ fontSize: `${10 * activeTextScale}px` }} className="card-corner-deco top-2 left-2.5">♠ ♥</span>
+                      <span style={{ fontSize: `${10 * activeTextScale}px` }} className="card-corner-deco top-2 right-2.5">♦ ♣</span>
+                      <span style={{ fontSize: `${10 * activeTextScale}px` }} className="card-corner-deco bottom-2 left-2.5">♥ ♠</span>
+                      <span style={{ fontSize: `${10 * activeTextScale}px` }} className="card-corner-deco bottom-2 right-2.5">♣ ♦</span>
                     </>
                   )}
 
@@ -1272,13 +1289,13 @@ export const GameTable: React.FC<GameTableProps> = ({
                       <div className="flex flex-wrap items-center gap-1.5">
                         {isPositionCard && activeCard.position ? (
                           <>
-                            <span className="rounded-full border border-[#e2c275]/45 bg-[#e2c275]/10 px-3 py-1 text-xs font-bold text-[#f7e7b0]">
+                            <span style={{ fontSize: `${12 * activeTextScale}px` }} className="rounded-full border border-[#e2c275]/45 bg-[#e2c275]/10 px-3 py-1 font-bold text-[#f7e7b0]">
                               ✦ {getPositionFamilyLabel(activeCard).toUpperCase()}
                             </span>
-                            <span className="rounded-full border border-white/15 bg-black/20 px-2.5 py-1 text-[10px] text-slate-200">
+                            <span style={{ fontSize: `${10 * activeTextScale}px` }} className="rounded-full border border-white/15 bg-black/20 px-2.5 py-1 text-slate-200">
                               {POSITION_RECIPIENT_LABELS[activeCard.position.recipient]}
                             </span>
-                            <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${
+                            <span style={{ fontSize: `${10 * activeTextScale}px` }} className={`rounded-full border px-2.5 py-1 font-bold ${
                               isMythicPositionCard
                                 ? 'border-[#e8a48c]/55 bg-[#d7b1ff]/10 text-[#f4e8ff]'
                                 : 'border-[#e2c275]/35 bg-[#e2c275]/10 text-[#f7e7b0]'
@@ -1289,7 +1306,8 @@ export const GameTable: React.FC<GameTableProps> = ({
                         ) : (
                           <>
                             <span
-                              className={`text-xs px-3 py-1 rounded-full border font-semibold ${
+                              style={{ fontSize: `${12 * activeTextScale}px` }}
+                              className={`px-3 py-1 rounded-full border font-semibold ${
                                 activeCard.type === 'truth'
                                   ? 'bg-blue-950/80 text-blue-300 border-blue-500/40'
                                   : 'bg-rose-950/80 text-rose-300 border-rose-500/40'
@@ -1297,13 +1315,13 @@ export const GameTable: React.FC<GameTableProps> = ({
                             >
                               {activeCard.type === 'truth' ? '🔍 SỰ THẬT' : '⚡ THỬ THÁCH'}
                             </span>
-                            <span className={`text-xs px-2.5 py-1 rounded-full border ${LEVEL_INFO[activeCard.level].badgeBg}`}>
+                            <span style={{ fontSize: `${12 * activeTextScale}px` }} className={`px-2.5 py-1 rounded-full border ${LEVEL_INFO[activeCard.level].badgeBg}`}>
                               {LEVEL_INFO[activeCard.level].icon} {LEVEL_INFO[activeCard.level].name}
                             </span>
-                            <span className="rounded-full border border-amber-300/25 bg-amber-300/[0.07] px-2 py-1 text-[10px] font-semibold text-amber-200">
+                            <span style={{ fontSize: `${10 * activeTextScale}px` }} className="rounded-full border border-amber-300/25 bg-amber-300/[0.07] px-2 py-1 font-semibold text-amber-200">
                               {isPositionCard ? derivePositionDifficultyStars(activeCard) : deriveDifficultyStars(activeCard)}★
                             </span>
-                            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] text-neutral-300">
+                            <span style={{ fontSize: `${10 * activeTextScale}px` }} className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-neutral-300">
                               {AUDIENCE_LABELS[getCardAudience(activeCard)]}
                             </span>
                           </>
@@ -1328,22 +1346,22 @@ export const GameTable: React.FC<GameTableProps> = ({
 
                     {/* Targeted Player Prompt */}
                     <div className="my-2 text-center">
-                      <span className="text-xs text-amber-200/80 uppercase tracking-widest font-medium">
+                      <span style={{ fontSize: `${12 * activeTextScale}px` }} className="text-amber-200/80 uppercase tracking-widest font-medium">
                         {isPositionCard ? 'Thẻ chung:' : 'Lượt thực hiện:'}
                       </span>
-                      <span className="ml-2 font-serif-romantic font-bold text-amber-300 text-base">
+                      <span style={{ fontSize: `${16 * activeTextScale}px` }} className="ml-2 font-serif-romantic font-bold text-amber-300">
                         {isPositionCard && activeCard.position
                           ? POSITION_RECIPIENT_LABELS[activeCard.position.recipient]
-                          : `${currentPlayer.name} ${currentPlayer.avatar}`}
+                          : `${performingPlayer.name} ${performingPlayer.avatar}`}
                       </span>
                     </div>
 
                     {/* Card Content with Icon */}
-                    <div className="my-auto py-4 flex flex-col items-center justify-center text-center">
+                    <div className="my-auto min-h-0 overflow-y-auto overscroll-contain py-4 flex flex-col items-center justify-center text-center">
                       {!isRevealed ? (
                         <div className="flex flex-col items-center py-6 px-4">
                           <EyeOff className="w-10 h-10 text-amber-400 mb-3 opacity-80" />
-                          <p className="text-xs text-neutral-400 mb-4 max-w-xs">
+                          <p style={{ fontSize: `${12 * activeTextScale}px` }} className="text-neutral-400 mb-4 max-w-xs">
                             Nội dung lá bài đã được bảo mật. Bấm vào nút bên dưới khi bạn đã sẵn sàng!
                           </p>
                           <button
@@ -1351,7 +1369,8 @@ export const GameTable: React.FC<GameTableProps> = ({
                               soundEngine.playTick();
                               setIsRevealed(true);
                             }}
-                            className="px-5 py-2.5 rounded-full bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold hover:bg-amber-500/30 transition-all flex items-center gap-2 cursor-pointer"
+                            className="px-5 py-2.5 rounded-full bg-amber-500/20 border border-amber-400 text-amber-200 font-semibold hover:bg-amber-500/30 transition-all flex items-center gap-2 cursor-pointer"
+                            style={{ fontSize: `${12 * activeTextScale}px` }}
                           >
                             <Eye className="w-4 h-4" />
                             <span>Xem Nội Dung</span>
@@ -1365,28 +1384,32 @@ export const GameTable: React.FC<GameTableProps> = ({
                         >
                           {/* Card Icon (custom image or SVG) */}
                           {activeCard.customImage ? (
-                            <div className={`card-icon-wrapper-lg card-custom-icon-wrapper ${isMythicPositionCard ? 'mythic-icon-aura' : ''}`}>
-                              <img
-                                src={activeCard.customImage}
-                                alt="icon"
-                                className="card-custom-icon w-full h-full object-contain"
-                              />
+                            <div style={activeIconSpacingStyle} className={`card-icon-wrapper-lg card-custom-icon-wrapper ${isMythicPositionCard ? 'mythic-icon-aura' : ''}`}>
+                              <div className="h-full w-full transition-transform duration-200 motion-reduce:transition-none" style={activeIconScaleStyle}>
+                                <img
+                                  src={activeCard.customImage}
+                                  alt="icon"
+                                  className="card-custom-icon w-full h-full object-contain"
+                                />
+                              </div>
                             </div>
                           ) : (() => {
                             const iconName = activeCard.icon || autoAssignIcon(activeCard.content);
                             const IconComp = getCardIcon(iconName);
                             return IconComp ? (
-                              <div className={`card-icon-wrapper-lg card-icon-color ${isMythicPositionCard ? 'mythic-icon-aura' : ''}`}>
-                                <IconComp className="w-full h-full" />
+                              <div style={activeIconSpacingStyle} className={`card-icon-wrapper-lg card-icon-color ${isMythicPositionCard ? 'mythic-icon-aura' : ''}`}>
+                                <div className="h-full w-full transition-transform duration-200 motion-reduce:transition-none" style={activeIconScaleStyle}>
+                                  <IconComp className="w-full h-full" />
+                                </div>
                               </div>
                             ) : null;
                           })()}
 
-                          <p className="text-sm sm:text-base text-white font-medium leading-relaxed max-w-sm">
+                          <p style={{ fontSize: `${16 * activeTextScale}px` }} className="text-white font-medium leading-relaxed max-w-sm">
                             {activeCard.content}
                           </p>
                           {activeCard.hint && (
-                            <p className="text-xs text-rose-300/80 italic font-light">
+                            <p style={{ fontSize: `${12 * activeTextScale}px` }} className="text-rose-300/80 italic font-light">
                               💡 Gợi ý: {activeCard.hint}
                             </p>
                           )}
@@ -1398,13 +1421,14 @@ export const GameTable: React.FC<GameTableProps> = ({
                     {timerSeconds !== null && isRevealed && (
                         <div className="pt-2 border-t border-white/10 flex items-center justify-between">
                           <div
-                            className={`flex items-center gap-2 text-xs ${timerSeconds === 0 ? 'text-rose-300' : 'text-amber-300'}`}
+                            style={{ fontSize: `${12 * activeTextScale}px` }}
+                            className={`flex items-center gap-2 ${timerSeconds === 0 ? 'text-rose-300' : 'text-amber-300'}`}
                           >
                             <TimerIcon
                               className={`w-4 h-4 ${timerSeconds === 0 ? 'text-rose-400' : `text-amber-400 ${isTimerRunning && !shouldReduceMotion ? 'animate-pulse' : ''}`}`}
                             />
                             <span>{timerSeconds === 0 ? 'Hết giờ:' : 'Thời gian:'}</span>
-                            <span className={`font-bold text-base ${timerSeconds === 0 ? 'text-rose-200' : 'text-white'}`}>
+                            <span style={{ fontSize: `${16 * activeTextScale}px` }} className={`font-bold ${timerSeconds === 0 ? 'text-rose-200' : 'text-white'}`}>
                               {timerSeconds === 0 ? 'Reng reng!' : timerSeconds !== null ? `${timerSeconds}s` : '--'}
                             </span>
                           </div>
@@ -1413,7 +1437,8 @@ export const GameTable: React.FC<GameTableProps> = ({
                             type="button"
                             onClick={handleTimerControl}
                             aria-label={timerSeconds === 0 ? 'Đếm lại thời gian thử thách' : isTimerRunning ? 'Tạm dừng đếm giờ' : 'Bắt đầu đếm giờ'}
-                            className="flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/60 px-3 py-1 text-xs text-neutral-200 hover:text-white"
+                            style={{ fontSize: `${12 * activeTextScale}px` }}
+                            className="flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/60 px-3 py-1 text-neutral-200 hover:text-white"
                           >
                             {timerSeconds === 0 && <RotateCcw className="h-3 w-3" aria-hidden="true" />}
                             {timerSeconds === 0 ? 'Đếm lại' : isTimerRunning ? 'Tạm dừng' : 'Bắt đầu đếm'}
@@ -1504,8 +1529,8 @@ export const GameTable: React.FC<GameTableProps> = ({
       <AnimatePresence>
         {showPenaltyPrompt && activeCard && (
           <PenaltyPrompt
-            playerName={currentPlayer.name}
-            playerAvatar={currentPlayer.avatar}
+            playerName={performingPlayer.name}
+            playerAvatar={performingPlayer.avatar}
             cardType={activeCard.type}
             penaltyEnabled={settings.penaltyClothingEnabled}
             canRemoveGarment={canApplyPenaltyGarment}

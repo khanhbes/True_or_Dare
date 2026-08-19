@@ -360,6 +360,7 @@ test('system metadata survives legacy edits while explicit overrides stay explic
     ...cards[3],
     icon: 'blindfold_kiss',
     timerSeconds: 45,
+    appearance: { iconScale: 1.25, textScale: 1.1 },
     deck: 'position',
     progression: { difficultyStars: 4, audience: 'both', intimacyGain: 11 },
     position: {
@@ -372,6 +373,7 @@ test('system metadata survives legacy edits while explicit overrides stay explic
   const legacyEdit = { ...system, content: 'Edited', icon: 'kiss_surprise' };
   delete legacyEdit.clothingEffect;
   delete legacyEdit.timerSeconds;
+  delete legacyEdit.appearance;
   delete legacyEdit.deck;
   delete legacyEdit.progression;
   delete legacyEdit.position;
@@ -383,6 +385,10 @@ test('system metadata survives legacy edits while explicit overrides stay explic
   const disabled = mergeEditedSystemCard(system, { ...legacyEdit, clothingEffect: null });
   const timerOverride = mergeEditedSystemCard(system, { ...legacyEdit, timerSeconds: 90 });
   const timerDisabled = mergeEditedSystemCard(system, { ...legacyEdit, timerSeconds: null });
+  const appearanceOverride = mergeEditedSystemCard(system, {
+    ...legacyEdit,
+    appearance: { iconScale: 0.8, textScale: 1.4 },
+  });
   const customIllustration = mergeEditedSystemCard(system, {
     ...legacyEdit,
     icon: 'heart',
@@ -403,6 +409,8 @@ test('system metadata survives legacy edits while explicit overrides stay explic
   assert.equal(inherited.timerSeconds, 45);
   assert.equal(timerOverride.timerSeconds, 90);
   assert.equal(timerDisabled.timerSeconds, null);
+  assert.deepEqual(inherited.appearance, system.appearance);
+  assert.deepEqual(appearanceOverride.appearance, { iconScale: 0.8, textScale: 1.4 });
   assert.equal(inherited.deck, 'position');
   assert.deepEqual(inherited.progression, system.progression);
   assert.deepEqual(inherited.position, system.position);

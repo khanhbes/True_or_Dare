@@ -272,7 +272,15 @@ export const isLuxuryProgressionConfigPlayable = (
 );
 
 const audienceMatches = (audience: CardAudience, actorIndex: PlayerIndex): boolean =>
-  audience === 'both' || (audience === 'male' ? actorIndex === 0 : actorIndex === 1);
+  audience === 'both' || audience === 'current' || audience === 'opponent' ||
+  (audience === 'male' ? actorIndex === 0 : actorIndex === 1);
+
+export const getStandardCardPerformerIndex = (
+  card: CardItem,
+  currentPlayerIndex: PlayerIndex,
+): PlayerIndex => getCardDeck(card) === 'standard' && getCardAudience(card) === 'opponent'
+  ? (currentPlayerIndex === 0 ? 1 : 0)
+  : currentPlayerIndex;
 
 const stagesMatch = (
   allowedStages: readonly OutfitStage[] | undefined,

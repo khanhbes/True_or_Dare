@@ -492,11 +492,11 @@
   animation: mythic-icon-halo 3.6s ease-in-out infinite;
 }
 
-.card-position-rare .mythic-icon-aura > svg {
+.card-position-rare .mythic-icon-aura svg {
   animation: mythic-icon-color-shift 6.4s ease-in-out infinite;
 }
 
-.card-position-rare .mythic-icon-aura > .card-custom-icon {
+.card-position-rare .mythic-icon-aura .card-custom-icon {
   animation: mythic-image-color-shift 6.4s ease-in-out infinite;
 }
 
@@ -628,8 +628,8 @@
   .card-position-rare::before,
   .card-position-rare .mythic-icon-aura,
   .card-position-rare .mythic-icon-aura::before,
-  .card-position-rare .mythic-icon-aura > svg,
-  .card-position-rare .mythic-icon-aura > .card-custom-icon,
+  .card-position-rare .mythic-icon-aura svg,
+  .card-position-rare .mythic-icon-aura .card-custom-icon,
   .avatar-menu { animation: none; }
   .interactive-box:hover { transform: none; }
 }

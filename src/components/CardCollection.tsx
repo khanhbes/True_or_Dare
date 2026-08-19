@@ -141,6 +141,7 @@ function renderCardIcon(
     offsetY: number;
     removeBackground: boolean;
     backgroundTolerance: number;
+    whiteOutlineWidth: number;
     autoCrop: boolean;
     palette: IconPalette;
   },
@@ -289,6 +290,33 @@ function renderCardIcon(
     }
 
     ctx.putImageData(imageData, 0, 0);
+
+    const outlineWidth = Math.max(0, Math.min(12, Math.round(options.whiteOutlineWidth)));
+    if (outlineWidth > 0) {
+      const foregroundCanvas = document.createElement('canvas');
+      foregroundCanvas.width = size;
+      foregroundCanvas.height = size;
+      const foregroundCtx = foregroundCanvas.getContext('2d')!;
+      foregroundCtx.putImageData(imageData, 0, 0);
+
+      ctx.clearRect(0, 0, size, size);
+      for (let radius = 1; radius <= outlineWidth; radius += 1) {
+        const samples = Math.max(16, Math.ceil(Math.PI * radius * 2));
+        for (let sample = 0; sample < samples; sample += 1) {
+          const angle = (sample / samples) * Math.PI * 2;
+          ctx.drawImage(
+            foregroundCanvas,
+            Math.cos(angle) * radius,
+            Math.sin(angle) * radius,
+          );
+        }
+      }
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(foregroundCanvas, 0, 0);
+    }
     callback(canvas.toDataURL('image/png'));
   };
   img.src = originalDataUrl;
@@ -379,6 +407,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [imgAutoCrop, setImgAutoCrop] = useState(true);
   const [imgRemoveBackground, setImgRemoveBackground] = useState(true);
   const [imgBackgroundTolerance, setImgBackgroundTolerance] = useState(55);
+  const [imgWhiteOutlineWidth, setImgWhiteOutlineWidth] = useState(3);
+  const [cardIconScale, setCardIconScale] = useState(1);
+  const [cardTextScale, setCardTextScale] = useState(1);
   const [imageError, setImageError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const deleteCancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -480,6 +511,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       setImgAutoCrop(true);
       setImgRemoveBackground(true);
       setImgBackgroundTolerance(55);
+      setImgWhiteOutlineWidth(3);
     };
     reader.readAsDataURL(file);
   }, []);
@@ -499,12 +531,13 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       offsetY: imgOffsetY,
       removeBackground: imgRemoveBackground,
       backgroundTolerance: imgBackgroundTolerance,
+      whiteOutlineWidth: imgWhiteOutlineWidth,
       autoCrop: imgAutoCrop,
       palette: imagePalette,
     }, (result) => {
       setProcessedImage(result);
     });
-  }, [originalImage, imgThreshold, imgContrast, imgZoom, imgOffsetX, imgOffsetY, imgAutoCrop, imgRemoveBackground, imgBackgroundTolerance, imagePalette]);
+  }, [originalImage, imgThreshold, imgContrast, imgZoom, imgOffsetX, imgOffsetY, imgAutoCrop, imgRemoveBackground, imgBackgroundTolerance, imgWhiteOutlineWidth, imagePalette]);
 
   const handleClearImage = useCallback(() => {
     setOriginalImage(null);
@@ -547,8 +580,11 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setImgAutoCrop(true);
     setImgRemoveBackground(true);
     setImgBackgroundTolerance(55);
+    setImgWhiteOutlineWidth(3);
     setImgThreshold(140);
     setImgContrast(1.5);
+    setCardIconScale(1);
+    setCardTextScale(1);
     setOriginalImage(null);
     setProcessedImage(null);
     setImageError('');
@@ -679,6 +715,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setProcessedImage(card.customImage || null);
     setImgAutoCrop(true);
     setImgRemoveBackground(false);
+    setImgWhiteOutlineWidth(0);
+    setCardIconScale(card.appearance?.iconScale ?? 1);
+    setCardTextScale(card.appearance?.textScale ?? 1);
     setImageError('');
     setIsAdding(true);
     setSelectedCard(null);
@@ -700,6 +739,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       isCustom: editingCard ? editingCard.isCustom : true,
       customImage: processedImage || undefined,
       customImageId: processedImage ? editingCard?.customImageId : undefined,
+      appearance: cardIconScale === 1 && cardTextScale === 1
+        ? undefined
+        : { iconScale: cardIconScale, textScale: cardTextScale },
       timerSeconds: customTimerMode === 'custom'
         ? parsedCustomTimerSeconds
         : customTimerMode === 'disabled'
@@ -941,6 +983,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
               <option value="male">Nam</option>
               <option value="female">Nữ</option>
               <option value="both">Cả hai</option>
+              <option value="current">Người đang lượt</option>
+              <option value="opponent">Đối phương</option>
             </select>
           </label>
         </div>
@@ -1198,7 +1242,12 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         <option value="both">Cả hai</option>
                         <option value="male">Nam</option>
                         <option value="female">Nữ</option>
+                        <option value="current">Người đang lượt</option>
+                        <option value="opponent">Đối phương</option>
                       </select>
+                      <span className="mt-1.5 block text-[9px] leading-relaxed text-neutral-500">
+                        “Đối phương” chuyển người thực hiện sang người còn lại nhưng vẫn chỉ dùng một lượt bài.
+                      </span>
                     </label>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
@@ -1601,6 +1650,88 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                   </div>
                 )}
 
+                <section className="space-y-3 rounded-2xl border border-violet-300/15 bg-violet-300/[0.035] p-3.5" aria-labelledby="card-appearance-title">
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-violet-300/10 text-violet-200">
+                      <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <h4 id="card-appearance-title" className="text-xs font-semibold text-neutral-100">Kích thước hiển thị</h4>
+                      <p className="mt-0.5 text-[10px] leading-relaxed text-neutral-500">Áp dụng cho icon và toàn bộ chữ bên trong lá bài.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex min-h-24 items-center gap-4 overflow-hidden rounded-xl border border-white/10 bg-[#140b13] px-4 py-3">
+                    <div className="grid h-16 w-16 shrink-0 place-items-center overflow-visible text-rose-300">
+                      <div
+                        className="h-14 w-14 transition-transform duration-200 motion-reduce:transition-none"
+                        style={{ transform: `scale(${cardIconScale})` }}
+                      >
+                        {processedImage ? (
+                          <img src={processedImage} alt="" className="h-full w-full object-contain" style={{ filter: imagePreviewShadow }} />
+                        ) : (() => {
+                          const PreviewIcon = getCardIcon(customIcon);
+                          return PreviewIcon ? <PreviewIcon className="h-full w-full" /> : null;
+                        })()}
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1 text-center">
+                      <p
+                        className="font-medium leading-relaxed text-white transition-[font-size] duration-200 motion-reduce:transition-none"
+                        style={{ fontSize: `${12 * cardTextScale}px` }}
+                      >
+                        Xem trước nội dung lá bài
+                      </p>
+                      <p
+                        className="mt-1 italic text-rose-300/75 transition-[font-size] duration-200 motion-reduce:transition-none"
+                        style={{ fontSize: `${9 * cardTextScale}px` }}
+                      >
+                        Nhãn, gợi ý và thời gian cũng đổi theo.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <ZoomIn className="h-3.5 w-3.5 shrink-0 text-violet-200" aria-hidden="true" />
+                      <label htmlFor="card-icon-scale" className="w-20 shrink-0 text-[10px] text-neutral-400">Icon</label>
+                      <input
+                        id="card-icon-scale"
+                        type="range"
+                        min="50"
+                        max="180"
+                        step="5"
+                        value={Math.round(cardIconScale * 100)}
+                        onChange={(event) => setCardIconScale(Number(event.target.value) / 100)}
+                        className="h-1 flex-1 accent-violet-400"
+                      />
+                      <output htmlFor="card-icon-scale" className="w-10 text-right text-[10px] tabular-nums text-neutral-400">{Math.round(cardIconScale * 100)}%</output>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-3.5 shrink-0 text-center text-xs font-serif text-violet-200" aria-hidden="true">Aa</span>
+                      <label htmlFor="card-text-scale" className="w-20 shrink-0 text-[10px] text-neutral-400">Tất cả chữ</label>
+                      <input
+                        id="card-text-scale"
+                        type="range"
+                        min="75"
+                        max="150"
+                        step="5"
+                        value={Math.round(cardTextScale * 100)}
+                        onChange={(event) => setCardTextScale(Number(event.target.value) / 100)}
+                        className="h-1 flex-1 accent-violet-400"
+                      />
+                      <output htmlFor="card-text-scale" className="w-10 text-right text-[10px] tabular-nums text-neutral-400">{Math.round(cardTextScale * 100)}%</output>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setCardIconScale(1); setCardTextScale(1); }}
+                    className="min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.035] text-[10px] font-semibold text-neutral-400 transition-colors hover:border-violet-200/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/50"
+                  >
+                    Đặt kích thước về 100%
+                  </button>
+                </section>
+
                 {/* ========= IMAGE UPLOAD & EDITOR ========= */}
                 <div className="border border-dashed border-rose-500/30 rounded-2xl p-4 space-y-3">
                   <label className="text-xs text-neutral-300 flex items-center gap-1.5">
@@ -1713,6 +1844,24 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                           </div>
                         )}
                         <div className="flex items-center gap-3">
+                          <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 border-white bg-neutral-700" aria-hidden="true" />
+                          <label htmlFor="image-white-outline" className="w-20 shrink-0 text-[10px] text-neutral-400">Viền trắng</label>
+                          <input
+                            id="image-white-outline"
+                            type="range"
+                            min="0"
+                            max="12"
+                            step="1"
+                            value={imgWhiteOutlineWidth}
+                            onChange={(event) => setImgWhiteOutlineWidth(Number(event.target.value))}
+                            className="h-1 flex-1 accent-white"
+                          />
+                          <output htmlFor="image-white-outline" className="w-9 text-right text-[10px] tabular-nums text-neutral-400">
+                            {imgWhiteOutlineWidth === 0 ? 'Tắt' : `${imgWhiteOutlineWidth}px`}
+                          </output>
+                        </div>
+                        <p className="-mt-1 pl-7 text-[9px] text-neutral-500">Viền được tạo theo mép chủ thể và lưu cùng ảnh.</p>
+                        <div className="flex items-center gap-3">
                           <ZoomIn className="w-3.5 h-3.5 text-rose-300" />
                           <label className="text-[10px] text-neutral-400 w-14 shrink-0">Scale icon</label>
                           <input type="range" min="100" max="300" step="10" value={imgZoom * 100} onChange={(e) => setImgZoom(Number(e.target.value) / 100)} className="flex-1 h-1 accent-rose-500" />
@@ -1757,7 +1906,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         </div>
 
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => { setImgZoom(1); setImgOffsetX(0); setImgOffsetY(0); setImgThreshold(140); setImgContrast(1.5); setImgAutoCrop(true); setImgRemoveBackground(true); setImgBackgroundTolerance(55); }} className="flex-1 py-1.5 rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-center gap-1.5 hover:bg-rose-600/30 transition-all cursor-pointer">
+                          <button type="button" onClick={() => { setImgZoom(1); setImgOffsetX(0); setImgOffsetY(0); setImgThreshold(140); setImgContrast(1.5); setImgAutoCrop(true); setImgRemoveBackground(true); setImgBackgroundTolerance(55); setImgWhiteOutlineWidth(3); }} className="flex-1 py-1.5 rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-center gap-1.5 hover:bg-rose-600/30 transition-all cursor-pointer">
                             <RotateCcw className="w-3 h-3" /> Đặt lại
                           </button>
                           <button

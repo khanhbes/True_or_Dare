@@ -57,7 +57,7 @@ const loadStoredAppMode = (): AppMode => {
 const CARD_LEVELS = new Set(['gentle', 'intimate', 'passionate']);
 const CARD_TYPES = new Set(['truth', 'dare']);
 const CARD_DECKS = new Set(['standard', 'position']);
-const CARD_AUDIENCES = new Set(['male', 'female', 'both']);
+const CARD_AUDIENCES = new Set(['male', 'female', 'both', 'current', 'opponent']);
 const POSITION_FAMILIES = new Set(['oral', 'blowjob', 'handjob', 'have_sex', 'other']);
 const POSITION_RECIPIENTS = new Set(['male', 'female', 'both']);
 const OUTFIT_STAGES = new Set(['dressed', 'underwear_only', 'empty']);
@@ -124,6 +124,16 @@ const isStoredCard = (value: unknown): value is CardItem => {
       (position.luxuryGain === undefined ||
         (typeof position.luxuryGain === 'number' && Number.isFinite(position.luxuryGain) &&
           position.luxuryGain >= 0 && position.luxuryGain <= 100)));
+  const appearance = value.appearance;
+  const hasValidAppearance =
+    appearance === undefined ||
+    (isRecord(appearance) &&
+      (appearance.iconScale === undefined ||
+        (typeof appearance.iconScale === 'number' && Number.isFinite(appearance.iconScale) &&
+          appearance.iconScale >= 0.5 && appearance.iconScale <= 1.8)) &&
+      (appearance.textScale === undefined ||
+        (typeof appearance.textScale === 'number' && Number.isFinite(appearance.textScale) &&
+          appearance.textScale >= 0.75 && appearance.textScale <= 1.5)));
 
   return (
     typeof value.id === 'string' &&
@@ -143,6 +153,7 @@ const isStoredCard = (value: unknown): value is CardItem => {
     isOptionalString(value.customImage) &&
     isOptionalString(value.customImageId) &&
     (value.illustrationOverride === undefined || typeof value.illustrationOverride === 'boolean') &&
+    hasValidAppearance &&
     hasValidEffect
   );
 };
