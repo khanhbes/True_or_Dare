@@ -84,7 +84,7 @@ const TYPE_SORT_ORDER: Record<CardType, number> = {
   dare: 1,
 };
 
-type ClothingEffectSelection = 'none' | 'self' | 'opponent' | 'swap';
+type ClothingEffectSelection = 'none' | 'self' | 'opponent' | 'male' | 'female' | 'both' | 'swap';
 type CollectionTab = 'all' | 'truth' | 'dare' | 'favorites' | CardLevel;
 type StageSelection = 'any' | OutfitStage;
 type CardTimerMode = 'inherit' | 'disabled' | 'custom';
@@ -364,8 +364,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     const content = customContent.toLocaleLowerCase('vi');
     if (/đổi[^.!?\n]{0,48}(đồ|trang phục|quần|áo)|đổi[^.!?\n]{0,48}cho nhau/.test(content)) return 'swap';
     if (!/(cởi|bỏ|tháo)/.test(content)) return null;
+    if (customDeck === 'position') return customPositionRecipient;
     return /(đối phương|người ấy|của anh|của em)/.test(content) ? 'opponent' : 'self';
-  }, [customContent]);
+  }, [customContent, customDeck, customPositionRecipient]);
 
   // Image upload & editor state
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -628,19 +629,24 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   };
 
   const openEditEditor = (card: CardItem) => {
+    const cardDeck = getCardDeck(card);
+    const storedEffect = card.clothingEffect;
+    const effectSelection: ClothingEffectSelection = card.position?.family === 'have_sex'
+      ? 'none'
+      : storedEffect?.kind === 'swap_garments'
+        ? 'swap'
+        : storedEffect?.kind === 'remove_garment'
+          ? cardDeck === 'position'
+            ? (storedEffect.target === 'male' || storedEffect.target === 'female' || storedEffect.target === 'both' ? storedEffect.target : 'none')
+            : (storedEffect.target === 'self' || storedEffect.target === 'opponent' ? storedEffect.target : 'none')
+          : 'none';
     setEditingCard(card);
     setCustomType(card.type);
     setCustomLevel(card.level);
     setCustomContent(card.content);
     setCustomHint(card.hint || '');
     setCustomIcon(card.icon || autoAssignIcon(card.content));
-    setCustomClothingEffect(
-      card.clothingEffect?.kind === 'swap_garments'
-        ? 'swap'
-        : card.clothingEffect?.kind === 'remove_garment'
-          ? card.clothingEffect.target
-          : 'none',
-    );
+    setCustomClothingEffect(effectSelection);
     setClothingEffectTouched(false);
     setIllustrationTouched(false);
     const existingTimer = typeof card.timerSeconds === 'number'
@@ -652,10 +658,10 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setCustomTimerMode(existingTimer !== null ? 'custom' : card.timerSeconds === null ? 'disabled' : 'inherit');
     setCustomTimerSeconds(String(existingTimer ?? DEFAULT_CARD_TIMER_SECONDS));
     setTimerTouched(false);
-    setCustomDeck(getCardDeck(card));
-    setCustomStars(getCardDeck(card) === 'position' ? derivePositionDifficultyStars(card) : deriveDifficultyStars(card));
+    setCustomDeck(cardDeck);
+    setCustomStars(cardDeck === 'position' ? derivePositionDifficultyStars(card) : deriveDifficultyStars(card));
     setCustomAudience(getCardAudience(card));
-    const existingGain = getCardDeck(card) === 'position'
+    const existingGain = cardDeck === 'position'
       ? card.position?.luxuryGain
       : card.progression?.intimacyGain;
     setCustomGainEnabled(typeof existingGain === 'number');
@@ -693,6 +699,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       icon: processedImage ? undefined : customIcon,
       isCustom: editingCard ? editingCard.isCustom : true,
       customImage: processedImage || undefined,
+      customImageId: processedImage ? editingCard?.customImageId : undefined,
       timerSeconds: customTimerMode === 'custom'
         ? parsedCustomTimerSeconds
         : customTimerMode === 'disabled'
@@ -729,6 +736,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
         : customClothingEffect === 'swap'
           ? { kind: 'swap_garments' }
           : { kind: 'remove_garment', target: customClothingEffect };
+    }
+    if (customDeck === 'position' && customPositionFamily === 'have_sex') {
+      delete nextCard.clothingEffect;
     }
 
     if (editingCard) {
@@ -1097,6 +1107,13 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         setCustomType('dare');
                         setCustomLevel('passionate');
                         setCustomStars(customPositionFamily === 'have_sex' ? 10 : customPositionFamily === 'handjob' ? 7 : customPositionFamily === 'blowjob' ? 5 : 3);
+                        if (customClothingEffect === 'self' || customClothingEffect === 'opponent') {
+                          setCustomClothingEffect(customPositionRecipient);
+                          setClothingEffectTouched(true);
+                        }
+                      } else if (customClothingEffect === 'male' || customClothingEffect === 'female' || customClothingEffect === 'both') {
+                        setCustomClothingEffect('none');
+                        setClothingEffectTouched(true);
                       }
                     }}
                     className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-amber-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300"
@@ -1195,6 +1212,10 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                             setCustomPositionOrder(family === 'oral' ? 1 : family === 'blowjob' ? 2 : family === 'handjob' ? 3 : family === 'have_sex' ? 4 : 1);
                             setCustomPositionRarity(family === 'have_sex' ? 'mythic' : 'luxury');
                             setCustomStars(family === 'have_sex' ? 10 : family === 'handjob' ? 7 : family === 'blowjob' ? 5 : 3);
+                            if (family === 'have_sex') {
+                              setCustomClothingEffect('none');
+                              setClothingEffectTouched(true);
+                            }
                             setPositionTouched(true);
                           }}
                           className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none focus:border-amber-300/50"
@@ -1348,6 +1369,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                   <select
                     id="card-clothing-effect"
                     value={customClothingEffect}
+                    disabled={customDeck === 'position' && customPositionFamily === 'have_sex'}
                     onChange={(event) => {
                       setCustomClothingEffect(event.target.value as ClothingEffectSelection);
                       setClothingEffectTouched(true);
@@ -1355,14 +1377,26 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                     className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-rose-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300 focus:border-rose-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/40"
                   >
                     <option value="none">Không tác động</option>
-                    <option value="self">Người đang lượt bỏ 1 món</option>
-                    <option value="opponent">Đối phương bỏ 1 món</option>
+                    {customDeck === 'standard' ? (
+                      <>
+                        <option value="self">Người đang lượt bỏ 1 món</option>
+                        <option value="opponent">Đối phương bỏ 1 món</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="male">Nam bỏ 1 món</option>
+                        <option value="female">Nữ bỏ 1 món</option>
+                        <option value="both">Cả hai cùng bỏ 1 món</option>
+                      </>
+                    )}
                     <option value="swap">Hai người đổi 1 món cho nhau</option>
                   </select>
                   <p className="mt-1.5 text-[10px] leading-relaxed text-neutral-500">
-                    Khi hoàn thành thẻ, trò chơi sẽ mở bước chọn và xác nhận món đồ phù hợp.
+                    {customDeck === 'position' && customPositionFamily === 'have_sex'
+                      ? 'Lá Have Sex chỉ kết thúc ván sau khi xem; không được gắn tác động trang phục.'
+                      : 'Khi hoàn thành thẻ, trò chơi sẽ mở bước chọn và xác nhận món đồ phù hợp.'}
                   </p>
-                  {suggestedClothingEffect && suggestedClothingEffect !== customClothingEffect && (
+                  {!(customDeck === 'position' && customPositionFamily === 'have_sex') && suggestedClothingEffect && suggestedClothingEffect !== customClothingEffect && (
                     <button
                       type="button"
                       onClick={() => {
@@ -1371,7 +1405,17 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                       }}
                       className="mt-2 min-h-11 w-full rounded-xl border border-amber-300/25 bg-amber-300/[0.06] px-3 text-left text-[10px] font-semibold text-amber-100 transition hover:border-amber-200/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/50"
                     >
-                      Gợi ý từ nội dung: áp dụng “{suggestedClothingEffect === 'swap' ? 'Hai người đổi đồ' : suggestedClothingEffect === 'opponent' ? 'Đối phương bỏ 1 món' : 'Người đang lượt bỏ 1 món'}”
+                      Gợi ý từ nội dung: áp dụng “{suggestedClothingEffect === 'swap'
+                        ? 'Hai người đổi đồ'
+                        : suggestedClothingEffect === 'opponent'
+                          ? 'Đối phương bỏ 1 món'
+                          : suggestedClothingEffect === 'male'
+                            ? 'Nam bỏ 1 món'
+                            : suggestedClothingEffect === 'female'
+                              ? 'Nữ bỏ 1 món'
+                              : suggestedClothingEffect === 'both'
+                                ? 'Cả hai cùng bỏ 1 món'
+                                : 'Người đang lượt bỏ 1 món'}”
                     </button>
                   )}
                 </div>

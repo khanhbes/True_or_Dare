@@ -133,13 +133,60 @@ export const isClothingEffect = (value: unknown): value is ClothingEffect => {
   const candidate = value as Partial<ClothingEffect>;
   if (candidate.kind === 'swap_garments') return true;
   return candidate.kind === 'remove_garment' &&
-    (candidate.target === 'self' || candidate.target === 'opponent');
+    (candidate.target === 'self' || candidate.target === 'opponent' ||
+      candidate.target === 'male' || candidate.target === 'female' || candidate.target === 'both');
+};
+
+export const normalizeCardClothingEffect = (card: CardItem): CardItem => {
+  const effect = card.clothingEffect;
+  if (!effect || effect.kind === 'swap_garments') return card;
+  if (card.deck === 'position') {
+    if (card.position?.family === 'have_sex') {
+      const next = { ...card };
+      delete next.clothingEffect;
+      return next;
+    }
+    if (effect.target === 'self' || effect.target === 'opponent') {
+      return {
+        ...card,
+        clothingEffect: {
+          kind: 'remove_garment',
+          target: card.position?.recipient ?? 'both',
+        },
+      };
+    }
+    return card;
+  }
+  if (effect.target === 'male' || effect.target === 'female' || effect.target === 'both') {
+    const next = { ...card };
+    delete next.clothingEffect;
+    return next;
+  }
+  return card;
 };
 
 export const getTargetIndex = (
-  effect: Extract<ClothingEffect, { kind: 'remove_garment' }>,
+  effect: { kind: 'remove_garment'; target: 'self' | 'opponent' },
   currentIndex: PlayerIndex,
 ): PlayerIndex => (effect.target === 'self' ? currentIndex : currentIndex === 0 ? 1 : 0);
+
+export const getRemovalTargetIndices = (
+  card: CardItem,
+  actorIndex: PlayerIndex,
+): PlayerIndex[] => {
+  const effect = card.clothingEffect;
+  if (!effect || effect.kind !== 'remove_garment') return [];
+  if (card.deck === 'position') {
+    if (card.position?.family === 'have_sex') return [];
+    if (effect.target === 'male') return [0];
+    if (effect.target === 'female') return [1];
+    if (effect.target === 'both') return [0, 1];
+    return [];
+  }
+  if (effect.target === 'self') return [actorIndex];
+  if (effect.target === 'opponent') return [actorIndex === 0 ? 1 : 0];
+  return [];
+};
 
 export const isCardEligibleForOutfits = (
   card: CardItem,
@@ -148,11 +195,14 @@ export const isCardEligibleForOutfits = (
 ): boolean => {
   if (card.clothingEffect === undefined || card.clothingEffect === null) return true;
   if (!isClothingEffect(card.clothingEffect)) return false;
+  if (card.deck === 'position' && card.position?.family === 'have_sex') return false;
   if (card.clothingEffect.kind === 'swap_garments') {
     return outfits.every((outfit) => getRemovableGarments(outfit).length > 0);
   }
-  const targetIndex = getTargetIndex(card.clothingEffect, actorIndex);
-  return getRemovableGarments(outfits[targetIndex]).length > 0;
+  const targetIndices = getRemovalTargetIndices(card, actorIndex);
+  return targetIndices.length > 0 && targetIndices.every(
+    (targetIndex) => getRemovableGarments(outfits[targetIndex]).length > 0,
+  );
 };
 
 const getEligiblePool = ({
@@ -237,13 +287,16 @@ export const mergeEditedSystemCard = (
   systemCard: CardItem,
   editedCard?: CardItem,
 ): CardItem => {
-  if (!editedCard) return systemCard;
+  if (!editedCard) {
+    return normalizeCardClothingEffect(systemCard);
+  }
   const hasIllustrationOverride = editedCard.illustrationOverride === true;
-  return {
+  const merged: CardItem = {
     ...systemCard,
     ...editedCard,
     icon: hasIllustrationOverride ? editedCard.icon : systemCard.icon,
     customImage: hasIllustrationOverride ? editedCard.customImage : systemCard.customImage,
+    customImageId: hasIllustrationOverride ? editedCard.customImageId : systemCard.customImageId,
     clothingEffect:
       editedCard.clothingEffect === undefined
         ? systemCard.clothingEffect
@@ -262,6 +315,7 @@ export const mergeEditedSystemCard = (
         ? systemCard.position
         : editedCard.position,
   };
+  return normalizeCardClothingEffect(merged);
 };
 
 const safeRandom = (random: () => number): number => {
@@ -274,8 +328,9 @@ const chooseWeighted = <Key extends string>(
   keys: readonly Key[],
   probabilities: Readonly<Record<Key, number>>,
   random: () => number,
-): Key => {
+): Key | null => {
   const enabled = keys.filter((key) => probabilities[key] > 0);
+  if (enabled.length === 0) return null;
   if (enabled.length === 1) return enabled[0];
 
   const roll = safeRandom(random);
@@ -330,6 +385,9 @@ export const selectEligibleCard = ({
     availableTypes: candidateTypes,
   }).types;
   const selectedType = chooseWeighted(CARD_TYPES, typeProbabilities, random);
+  if (!selectedType) {
+    return { card: null, nextUsedCardIds: [...new Set(usedCardIds)], availableTypes, didResetPool: false };
+  }
   const typeCandidates = candidates.filter((card) => card.type === selectedType);
 
   const candidateLevels = CARD_LEVELS.filter((level) =>
@@ -343,6 +401,9 @@ export const selectEligibleCard = ({
     availableLevels: candidateLevels,
   }).levels;
   const selectedLevel = chooseWeighted(CARD_LEVELS, levelProbabilities, random);
+  if (!selectedLevel) {
+    return { card: null, nextUsedCardIds: [...new Set(usedCardIds)], availableTypes, didResetPool: false };
+  }
   const selectionPool = typeCandidates.filter((card) => card.level === selectedLevel);
 
   const card = chooseRandom(selectionPool, random);

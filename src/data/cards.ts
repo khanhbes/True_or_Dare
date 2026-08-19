@@ -531,7 +531,7 @@ const BASE_CARDS: CardItem[] = [
     deck: 'position',
     content: 'Nếu cả hai vẫn đồng thuận, hãy cùng quyết định có tiếp tục quan hệ tình dục hay khép lại trò chơi tại đây.',
     hint: 'Mở lá bài không tạo nghĩa vụ phải thực hiện.',
-    icon: 'position_final',
+    icon: 'position_have_sex_art',
     progression: { difficultyStars: 5, audience: 'both', intimacyGain: 0 },
     position: { family: 'have_sex', recipient: 'both', orderGroup: 4, rarity: 'mythic', difficultyStars: 10 },
   },

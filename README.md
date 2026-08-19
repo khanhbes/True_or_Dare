@@ -1,20 +1,15 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Truth or Dare for Couples
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/ddf1d814-5d3e-4a0d-bb6b-511061a11872
+Trò chơi hai người chạy hoàn toàn trong trình duyệt. Ứng dụng không cần API key hay dịch vụ AI phía máy chủ.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Yêu cầu:** Node.js 20 trở lên.
 
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Run the app:
    `npm run dev`
+
+Mở `http://localhost:3000`. Dữ liệu người chơi, cấu hình và thẻ được lưu cục bộ trong trình duyệt; ảnh thẻ được lưu bằng IndexedDB.

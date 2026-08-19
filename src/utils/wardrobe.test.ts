@@ -13,8 +13,25 @@ import {
   hydrateOutfitConfig,
   isGarmentRemovable,
   removeGarment,
+  removeGarmentsFromBoth,
   swapGarments,
 } from './wardrobe';
+
+test('dual removal validates both choices and commits both outfits atomically', () => {
+  const outfits = [
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[0]),
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[1]),
+  ] as const;
+  const blocked = removeGarmentsFromBoth(outfits, 'underwear', 'shirt');
+  assert.equal(blocked, null);
+  assert.equal(getPresentGarmentSlots(outfits[0]).length, 3);
+  assert.equal(getPresentGarmentSlots(outfits[1]).length, 4);
+  const committed = removeGarmentsFromBoth(outfits, 'shirt', 'pants');
+  assert.ok(committed);
+  assert.deepEqual(committed.removed.map((garment) => garment.slot), ['shirt', 'pants']);
+  assert.equal(getPresentGarmentSlots(committed.outfits[0]).length, 2);
+  assert.equal(getPresentGarmentSlots(committed.outfits[1]).length, 3);
+});
 
 const powerSet = <T>(items: readonly T[]): T[][] =>
   items.reduce<T[][]>(

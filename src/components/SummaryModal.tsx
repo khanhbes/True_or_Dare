@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Trophy, Heart, RotateCcw, X, CheckCircle2, Layers3 } from 'lucide-react';
-import { ClothingRemovalEvent, IntimacyEvent, JourneyPhase, OutfitState, Player } from '../types';
+import { ClothingRemovalEvent, GameEndReason, IntimacyEvent, JourneyPhase, OutfitState, Player } from '../types';
 import { getPresentGarmentSlots } from '../utils/wardrobe';
 
 interface SummaryModalProps {
@@ -18,6 +18,9 @@ interface SummaryModalProps {
   journeyPhase?: JourneyPhase;
   onRestart: () => void;
   onClose: () => void;
+  onHome?: () => void;
+  terminal?: boolean;
+  endReason?: GameEndReason | null;
 }
 
 const getInitialGarmentCount = (outfitState: OutfitState) =>
@@ -54,6 +57,9 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   journeyPhase,
   onRestart,
   onClose,
+  onHome,
+  terminal = false,
+  endReason,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -82,10 +88,13 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+    const focusFrame = window.requestAnimationFrame(() => {
+      if (terminal) panelRef.current?.querySelector<HTMLElement>('button:not([disabled])')?.focus();
+      else closeButtonRef.current?.focus();
+    });
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !terminal) {
         event.preventDefault();
         onClose();
         return;
@@ -123,7 +132,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
       document.body.style.overflow = previousOverflow;
       if (previouslyFocused?.isConnected) previouslyFocused.focus();
     };
-  }, [onClose]);
+  }, [onClose, terminal]);
 
   const renderOutfitSummary = (playerIndex: 0 | 1) => {
     const outfitState = outfitStates?.[playerIndex];
@@ -178,7 +187,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
       aria-labelledby="summary-title"
       aria-describedby="summary-description"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (!terminal && event.target === event.currentTarget) onClose();
       }}
     >
       <motion.div
@@ -190,15 +199,17 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
         transition={{ duration: shouldReduceMotion ? 0.08 : 0.24, ease: 'easeOut' }}
         className="relative w-full max-w-lg max-h-[calc(100svh-2rem)] overflow-y-auto overscroll-contain glass-wine rounded-3xl p-6 sm:p-8 border border-amber-400/60 shadow-2xl text-center text-white"
       >
-        <button
-          ref={closeButtonRef}
-          type="button"
-          onClick={onClose}
-          aria-label="Đóng thống kê"
-          className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {!terminal && (
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng thống kê"
+            className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
         <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-rose-500/30 to-amber-500/30 border border-amber-400/60 mx-auto flex items-center justify-center mb-4">
           <Trophy className="w-8 h-8 text-amber-300 drop-shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
@@ -208,7 +219,11 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
           Tổng Kết Cuộc Chơi
         </h3>
         <p id="summary-description" className="text-xs text-rose-200/90 italic mb-6">
-          "Mỗi khoảnh khắc chia sẻ là một nhịp đập yêu thương"
+          {terminal
+            ? endReason === 'have_sex'
+              ? 'Lá hiếm đã được mở. Không có yêu cầu phải thực hiện.'
+              : 'Ván chơi đã kết thúc và không thể tiếp tục từ màn hình này.'
+            : '“Mỗi khoảnh khắc chia sẻ là một nhịp đập yêu thương”'}
         </p>
 
         {/* Intimacy Score Badge */}
@@ -288,13 +303,23 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="min-h-11 flex-1 py-3 rounded-full bg-neutral-900 border border-neutral-700 text-xs font-semibold hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-          >
-            Chơi Tiếp Lượt Sau
-          </button>
+          {terminal ? (
+            <button
+              type="button"
+              onClick={onHome}
+              className="min-h-11 flex-1 py-3 rounded-full bg-neutral-900 border border-neutral-700 text-xs font-semibold hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+            >
+              Về trang đầu
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-11 flex-1 py-3 rounded-full bg-neutral-900 border border-neutral-700 text-xs font-semibold hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+            >
+              Chơi Tiếp Lượt Sau
+            </button>
+          )}
           <button
             type="button"
             onClick={onRestart}

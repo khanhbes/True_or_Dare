@@ -24,8 +24,9 @@ interface ProgressionConfigModalProps {
 const TYPE_KEYS: CardType[] = ['truth', 'dare'];
 
 const normalizedPercent = (values: readonly number[], index: number): number => {
-  const total = values.reduce((sum, value) => sum + Math.max(0, value), 0);
-  return total > 0 ? Math.round((Math.max(0, values[index]) / total) * 100) : 0;
+  const safe = values.map((value) => Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0);
+  const total = safe.reduce((sum, value) => sum + value, 0);
+  return total > 0 ? Math.round((safe[index] / total) * 100) : 0;
 };
 export const ProgressionConfigModal: React.FC<ProgressionConfigModalProps> = ({
   config,
@@ -43,17 +44,18 @@ export const ProgressionConfigModal: React.FC<ProgressionConfigModalProps> = ({
   const isValid = draft.bands.every((band) =>
     TYPE_KEYS.some((type) => Number.isFinite(band.typeWeights[type]) && band.typeWeights[type] > 0) &&
     DIFFICULTY_STARS.some((star) => Number.isFinite(band.starWeights[star]) && band.starWeights[star] > 0) &&
-    TYPE_KEYS.every((type) => Number.isFinite(band.typeWeights[type]) && band.typeWeights[type] >= 0) &&
-    DIFFICULTY_STARS.every((star) => Number.isFinite(band.starWeights[star]) && band.starWeights[star] >= 0),
+    TYPE_KEYS.every((type) => Number.isFinite(band.typeWeights[type]) && band.typeWeights[type] >= 0 && band.typeWeights[type] <= 100) &&
+    DIFFICULTY_STARS.every((star) => Number.isFinite(band.starWeights[star]) && band.starWeights[star] >= 0 && band.starWeights[star] <= 100),
   ) && DIFFICULTY_STARS.every((star) =>
     Number.isFinite(draft.starGains[star]) && draft.starGains[star] >= 0 && draft.starGains[star] <= 100,
-  ) && Number.isFinite(draft.cardRemovalBonus) && draft.cardRemovalBonus >= 0 && draft.cardRemovalBonus <= 100;
+  ) && DIFFICULTY_STARS.some((star) => draft.starGains[star] > 0) &&
+    Number.isFinite(draft.cardRemovalBonus) && draft.cardRemovalBonus >= 0 && draft.cardRemovalBonus <= 100;
   const isLuxuryValid = luxuryDraft.bands.every((band) =>
     POSITION_DIFFICULTY_STARS.some((star) => Number.isFinite(band.starWeights[star]) && band.starWeights[star] > 0) &&
-    POSITION_DIFFICULTY_STARS.every((star) => Number.isFinite(band.starWeights[star]) && band.starWeights[star] >= 0)
+    POSITION_DIFFICULTY_STARS.every((star) => Number.isFinite(band.starWeights[star]) && band.starWeights[star] >= 0 && band.starWeights[star] <= 100)
   ) && POSITION_DIFFICULTY_STARS.every((star) =>
     Number.isFinite(luxuryDraft.starGains[star]) && luxuryDraft.starGains[star] >= 0 && luxuryDraft.starGains[star] <= 100
-  );
+  ) && POSITION_DIFFICULTY_STARS.some((star) => star < 10 && luxuryDraft.starGains[star] > 0);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -191,6 +193,7 @@ export const ProgressionConfigModal: React.FC<ProgressionConfigModalProps> = ({
                           <input
                             type="number"
                             min={0}
+                            max={100}
                             step={1}
                             aria-label={`${type === 'truth' ? 'Sự thật' : 'Thử thách'} tại ${band.minPercent} đến ${band.maxPercent} phần trăm`}
                             value={band.typeWeights[type]}
@@ -205,6 +208,7 @@ export const ProgressionConfigModal: React.FC<ProgressionConfigModalProps> = ({
                           <input
                             type="number"
                             min={0}
+                            max={100}
                             step={1}
                             aria-label={`${star} sao tại ${band.minPercent} đến ${band.maxPercent} phần trăm`}
                             value={band.starWeights[star]}
@@ -282,7 +286,7 @@ export const ProgressionConfigModal: React.FC<ProgressionConfigModalProps> = ({
                           <th className="whitespace-nowrap px-3 py-3 text-[#ead2ff]">{band.minPercent}–{band.maxPercent}%</th>
                           {POSITION_DIFFICULTY_STARS.map((star, starIndex) => (
                             <td key={star} className="px-2 py-2">
-                              <input type="number" min={0} step={1} aria-label={`${star} sao Luxury tại ${band.minPercent} đến ${band.maxPercent} phần trăm`} value={band.starWeights[star]} onChange={(event) => updateLuxuryBandWeight(bandIndex, star, Number(event.target.value))} className="h-10 w-16 rounded-lg border border-neutral-700 bg-neutral-950 px-2 text-white outline-none focus:border-[#d7b1ff]/60" />
+                              <input type="number" min={0} max={100} step={1} aria-label={`${star} sao Luxury tại ${band.minPercent} đến ${band.maxPercent} phần trăm`} value={band.starWeights[star]} onChange={(event) => updateLuxuryBandWeight(bandIndex, star, Number(event.target.value))} className="h-10 w-16 rounded-lg border border-neutral-700 bg-neutral-950 px-2 text-white outline-none focus:border-[#d7b1ff]/60" />
                               <div className="mt-1 text-[9px] text-neutral-500">≈{normalizedPercent(values, starIndex)}%</div>
                             </td>
                           ))}
@@ -313,7 +317,7 @@ export const ProgressionConfigModal: React.FC<ProgressionConfigModalProps> = ({
 
           {(!(activeTrack === 'standard' ? isValid : isLuxuryValid)) && (
             <p role="alert" className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
-              Mỗi hàng cần ít nhất một trọng số sao lớn hơn 0; các giá trị điểm nằm trong 0–100.
+              Trọng số phải trong 0–100 và mỗi hàng cần ít nhất một lựa chọn lớn hơn 0. Điểm Tim hồng và điểm Luxury 1–9★ không được đồng thời bằng 0.
             </p>
           )}
         </div>

@@ -12,6 +12,9 @@ export type PositionRarity = 'luxury' | 'mythic';
 export type PlayerPresentation = 'male' | 'female';
 export type GarmentSlot = 'shirt' | 'pants' | 'bra' | 'underwear';
 export type OutfitStage = 'dressed' | 'underwear_only' | 'empty';
+export type StandardRemovalTarget = 'self' | 'opponent';
+export type PositionRemovalTarget = 'male' | 'female' | 'both';
+export type GameEndReason = 'pink_complete' | 'have_sex' | 'no_cards' | 'manual';
 
 export interface GarmentConfig {
   styleId: string;
@@ -38,7 +41,7 @@ export interface OutfitState {
 }
 
 export type ClothingEffect =
-  | { kind: 'remove_garment'; target: 'self' | 'opponent' }
+  | { kind: 'remove_garment'; target: StandardRemovalTarget | PositionRemovalTarget }
   | { kind: 'swap_garments' };
 
 export interface CardProgressionMetadata {
@@ -131,6 +134,8 @@ export interface CardItem {
   isCustom?: boolean;
   icon?: string; // SVG icon name for card illustration
   customImage?: string; // Base64 data URL for custom uploaded icon
+  /** IndexedDB key for uploaded illustrations. Legacy base64 uses customImage. */
+  customImageId?: string;
   /** Marks a deliberate illustration override on an edited built-in card. */
   illustrationOverride?: boolean;
   clothingEffect?: ClothingEffect | null;

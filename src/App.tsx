@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useLayoutEffect } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { ParticleBackground } from './components/ParticleBackground';
 import { IntroScreen } from './components/IntroScreen';
 import { SetupScreen } from './components/SetupScreen';
 import { GameTable } from './components/GameTable';
-import { CardCollection } from './components/CardCollection';
 import { SummaryModal } from './components/SummaryModal';
 import { RulesModal } from './components/RulesModal';
 import {
   CardItem,
   ClothingRemovalEvent,
+  GameEndReason,
   GameSettings,
   IntimacyEvent,
   JourneyPhase,
@@ -19,9 +19,16 @@ import {
   ProgressionConfig,
 } from './types';
 import { INITIAL_CARDS } from './data/cards';
-import { mergeEditedSystemCard } from './utils/cardSelection';
+import { mergeEditedSystemCard, normalizeCardClothingEffect } from './utils/cardSelection';
 import { createOutfitState, hydrateGameSettings } from './utils/wardrobe';
 import { getCardDeck, hydrateLuxuryProgressionConfig, hydrateProgressionConfig } from './utils/progression';
+import { browserCardImageStore, hydrateCardImages, prepareCardsForStorage } from './utils/cardImageStore';
+import { DEFAULT_PLAYER_1, DEFAULT_PLAYER_2, loadStoredPlayer } from './utils/playerStorage';
+
+const CardCollection = lazy(async () => {
+  const module = await import('./components/CardCollection');
+  return { default: module.CardCollection };
+});
 
 const STORAGE_KEYS = {
   CUSTOM_CARDS: 'tod_couples_custom_cards',
@@ -72,7 +79,8 @@ const isStoredCard = (value: unknown): value is CardItem => {
     (isRecord(effect) && (
       effect.kind === 'swap_garments' ||
       (effect.kind === 'remove_garment' &&
-        (effect.target === 'self' || effect.target === 'opponent'))
+        (effect.target === 'self' || effect.target === 'opponent' ||
+          effect.target === 'male' || effect.target === 'female' || effect.target === 'both'))
     ));
   const hasValidTimer =
     value.timerSeconds === undefined ||
@@ -133,6 +141,7 @@ const isStoredCard = (value: unknown): value is CardItem => {
     (value.isCustom === undefined || typeof value.isCustom === 'boolean') &&
     isOptionalString(value.icon) &&
     isOptionalString(value.customImage) &&
+    isOptionalString(value.customImageId) &&
     (value.illustrationOverride === undefined || typeof value.illustrationOverride === 'boolean') &&
     hasValidEffect
   );
@@ -170,7 +179,7 @@ const loadStoredCards = (key: string): CardItem[] => {
         delete normalizedCard.timerSeconds;
       }
     }
-    return normalizedCard;
+    return normalizeCardClothingEffect(normalizedCard);
   }).filter((card) => {
     if (seenIds.has(card.id)) return false;
     seenIds.add(card.id);
@@ -190,7 +199,10 @@ export default function App() {
   const [collectionReturnScreen, setCollectionReturnScreen] = useState<'intro' | 'game'>('intro');
   const [showSummary, setShowSummary] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [gameEndReason, setGameEndReason] = useState<GameEndReason | null>(null);
+  const [gameNavigationLocked, setGameNavigationLocked] = useState(false);
   const [appMode, setAppMode] = useState<AppMode>(loadStoredAppMode);
+  const [storageError, setStorageError] = useState<string | null>(null);
 
   // Every view is a full-page destination. Reset the document scroll before
   // paint so entering the game from the bottom of Setup never clips its header.
@@ -219,27 +231,8 @@ export default function App() {
   );
 
   // Players
-  const [player1, setPlayer1] = useState<Player>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PLAYER1);
-      return saved
-        ? JSON.parse(saved)
-        : { name: 'Anh', avatar: '👨‍💼', color: '#FF6B9D', completedCount: 0, skippedCount: 0 };
-    } catch {
-      return { name: 'Anh', avatar: '👨‍💼', color: '#FF6B9D', completedCount: 0, skippedCount: 0 };
-    }
-  });
-
-  const [player2, setPlayer2] = useState<Player>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PLAYER2);
-      return saved
-        ? JSON.parse(saved)
-        : { name: 'Em', avatar: '👩‍💼', color: '#D4AF37', completedCount: 0, skippedCount: 0 };
-    } catch {
-      return { name: 'Em', avatar: '👩‍💼', color: '#D4AF37', completedCount: 0, skippedCount: 0 };
-    }
-  });
+  const [player1, setPlayer1] = useState<Player>(() => loadStoredPlayer(STORAGE_KEYS.PLAYER1, DEFAULT_PLAYER_1));
+  const [player2, setPlayer2] = useState<Player>(() => loadStoredPlayer(STORAGE_KEYS.PLAYER2, DEFAULT_PLAYER_2));
 
   // Settings
   const [settings, setSettings] = useState<GameSettings>(() => {
@@ -298,17 +291,57 @@ export default function App() {
     (card) => getCardDeck(card) === 'position' || settings.levels.includes(card.level),
   );
 
-  // Save changes to localStorage
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_CARDS, JSON.stringify(customCards));
-    } catch {}
+    let active = true;
+    const hydrateImages = async () => {
+      const [customResult, editedResult] = await Promise.all([
+        hydrateCardImages(customCards),
+        hydrateCardImages(editedCards),
+      ]);
+      if (!active) return;
+      const applyImages = (current: CardItem[], hydrated: CardItem[]) => {
+        const byId = new Map(hydrated.map((card) => [card.id, card.customImage] as const));
+        return current.map((card) => byId.get(card.id) ? { ...card, customImage: byId.get(card.id) } : card);
+      };
+      setCustomCards((current) => applyImages(current, customResult.cards));
+      setEditedCards((current) => applyImages(current, editedResult.cards));
+      const errors = [...customResult.errors, ...editedResult.errors];
+      if (errors.length) setStorageError(errors[0]);
+    };
+    void hydrateImages();
+    return () => { active = false; };
+    // Only hydrate the metadata loaded during initial render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save changes to localStorage. Image bytes are committed to IndexedDB first;
+  // failed migrations retain the legacy base64 value so data is never lost.
+  useEffect(() => {
+    let active = true;
+    void prepareCardsForStorage(customCards).then((result) => {
+      if (!active) return;
+      try {
+        localStorage.setItem(STORAGE_KEYS.CUSTOM_CARDS, JSON.stringify(result.cards));
+        if (result.errors.length) setStorageError(result.errors[0]);
+      } catch {
+        setStorageError('Không đủ dung lượng để lưu bài riêng. Ảnh và nội dung hiện vẫn được giữ trong phiên này.');
+      }
+    });
+    return () => { active = false; };
   }, [customCards]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.EDITED_CARDS, JSON.stringify(editedCards));
-    } catch {}
+    let active = true;
+    void prepareCardsForStorage(editedCards).then((result) => {
+      if (!active) return;
+      try {
+        localStorage.setItem(STORAGE_KEYS.EDITED_CARDS, JSON.stringify(result.cards));
+        if (result.errors.length) setStorageError(result.errors[0]);
+      } catch {
+        setStorageError('Không đủ dung lượng để lưu chỉnh sửa thẻ. Dữ liệu hiện vẫn được giữ trong phiên này.');
+      }
+    });
+    return () => { active = false; };
   }, [editedCards]);
 
   useEffect(() => {
@@ -387,9 +420,15 @@ export default function App() {
     }
     setFavorites((current) => current.filter((id) => id !== cardId));
     setUnlockedCardIds((current) => current.filter((id) => id !== cardId));
+    if (card.customImageId) {
+      void browserCardImageStore.delete(card.customImageId).catch(() => {
+        setStorageError('Đã xóa lá bài nhưng chưa thể dọn ảnh cũ khỏi bộ nhớ trình duyệt.');
+      });
+    }
   };
 
   const openCollection = (returnScreen: 'intro' | 'game') => {
+    if (returnScreen === 'game' && gameNavigationLocked) return;
     setCollectionReturnScreen(returnScreen);
     setScreen('collection');
   };
@@ -410,6 +449,10 @@ export default function App() {
       positionTouched: boolean;
     },
   ) => {
+    if (updatedCard.deck === 'position' && updatedCard.position?.family === 'have_sex') {
+      updatedCard = { ...updatedCard };
+      delete updatedCard.clothingEffect;
+    }
     if (updatedCard.isCustom) {
       setCustomCards((prev) => prev.map((card) => card.id === updatedCard.id ? updatedCard : card));
       return;
@@ -429,6 +472,7 @@ export default function App() {
         // Leave it absent so the latest curated system icon can flow through.
         delete nextRawEdit.icon;
         delete nextRawEdit.customImage;
+        delete nextRawEdit.customImageId;
         delete nextRawEdit.illustrationOverride;
       }
 
@@ -495,6 +539,8 @@ export default function App() {
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
     setSessionPositionRevealCount(0);
+    setGameEndReason(null);
+    setShowSummary(false);
     setScreen('game');
   };
 
@@ -522,8 +568,22 @@ export default function App() {
     setSessionPositionCardIds([]);
     setSessionPositionRevealCount(0);
     setShowSummary(false);
+    setGameEndReason(null);
     setScreen('setup');
   };
+
+  const handleFinishGame = (reason: GameEndReason) => {
+    setGameEndReason(reason);
+    setShowSummary(true);
+  };
+
+  const handleReturnHome = () => {
+    setShowSummary(false);
+    setGameEndReason(null);
+    setScreen('intro');
+  };
+
+  const keepGameMounted = screen === 'game' || (screen === 'collection' && collectionReturnScreen === 'game');
 
   return (
     <div className="relative min-h-screen overflow-x-hidden">
@@ -553,8 +613,9 @@ export default function App() {
           />
         )}
 
-        {screen === 'game' && (
-          <GameTable
+        {keepGameMounted && (
+          <div hidden={screen !== 'game'} aria-hidden={screen !== 'game' || undefined}>
+            <GameTable
             player1={player1}
             player2={player2}
             currentPlayerIndex={currentPlayerIndex}
@@ -566,8 +627,13 @@ export default function App() {
             onToggleFavorite={handleToggleFavorite}
             onOpenCollection={() => openCollection('game')}
             onOpenRules={() => setShowRules(true)}
-            onOpenSummary={() => setShowSummary(true)}
-            onFinishGame={() => setShowSummary(true)}
+            onOpenSummary={() => {
+              setGameEndReason(null);
+              setShowSummary(true);
+            }}
+            onFinishGame={handleFinishGame}
+            isSuspended={screen !== 'game' || showRules || showSummary}
+            onNavigationLockChange={setGameNavigationLocked}
             onUpdatePlayers={(p1, p2) => {
               setPlayer1(p1);
               setPlayer2(p2);
@@ -595,10 +661,12 @@ export default function App() {
             }}
             onSessionPositionCardIdsChange={setSessionPositionCardIds}
           />
+          </div>
         )}
 
         {screen === 'collection' && (
-          <CardCollection
+          <Suspense fallback={<div className="grid min-h-screen place-items-center text-sm text-rose-200">Đang mở Bộ sưu tập…</div>}>
+            <CardCollection
             cards={allCards}
             mode={appMode}
             unlockedCardIds={unlockedCardIds}
@@ -614,6 +682,7 @@ export default function App() {
             onLuxuryProgressionConfigChange={setLuxuryProgressionConfig}
             onBack={() => setScreen(collectionReturnScreen)}
           />
+          </Suspense>
         )}
       </main>
 
@@ -632,13 +701,25 @@ export default function App() {
           positionCardsRevealed={sessionPositionRevealCount}
           journeyPhase={journeyPhase}
           onRestart={handleRestartSession}
-          onClose={() => setShowSummary(false)}
+          onClose={() => {
+            if (!gameEndReason) setShowSummary(false);
+          }}
+          onHome={handleReturnHome}
+          terminal={gameEndReason !== null}
+          endReason={gameEndReason}
         />
       )}
 
       <AnimatePresence>
         {showRules && <RulesModal onClose={() => setShowRules(false)} />}
       </AnimatePresence>
+
+      {storageError && (
+        <div role="alert" className="fixed bottom-4 left-1/2 z-[90] flex w-[min(92vw,34rem)] -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border border-rose-300/35 bg-[#1a0b11]/95 px-4 py-3 text-xs text-rose-100 shadow-2xl">
+          <span>{storageError}</span>
+          <button type="button" onClick={() => setStorageError(null)} className="min-h-10 shrink-0 rounded-full border border-white/15 px-3 font-semibold">Đóng</button>
+        </div>
+      )}
     </div>
   );
 }

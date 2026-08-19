@@ -31,7 +31,7 @@ export const GameCard: React.FC<GameCardProps> = ({
   const IconComponent = getCardIcon(iconName);
   const deck = getCardDeck(card);
   const isPosition = deck === 'position';
-  const isRarePosition = card.position?.family === 'have_sex';
+  const isRarePosition = isPosition && card.position?.rarity === 'mythic';
   const audienceLabel = card.position
     ? ({ male: 'Nam nhận', female: 'Nữ nhận', both: 'Cả hai' } as const)[card.position.recipient]
     : ({ male: 'Nam', female: 'Nữ', both: 'Cả hai' } as const)[getCardAudience(card)];

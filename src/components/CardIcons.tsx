@@ -10,6 +10,7 @@ import coupleSlowDanceKissImage from '../assets/couple-slow-dance-kiss-art.png';
 import coupleSofaCuddleImage from '../assets/couple-sofa-cuddle-art.png';
 import couplePlayfulSpinImage from '../assets/couple-playful-spin-art.png';
 import coupleUmbrellaKissImage from '../assets/couple-umbrella-kiss-art.png';
+import haveSexMythicImage from '../assets/have-sex-mythic-art.png';
 
 interface IconProps {
   className?: string;
@@ -111,6 +112,15 @@ export const CoupleUmbrellaKissImageIcon: React.FC<IconProps> = ({ className }) 
     alt=""
     aria-hidden="true"
     className={`${className || ''} generated-couple-icon object-contain`}
+  />
+);
+
+export const HaveSexMythicImageIcon: React.FC<IconProps> = ({ className }) => (
+  <img
+    src={haveSexMythicImage}
+    alt=""
+    aria-hidden="true"
+    className={`${className || ''} generated-couple-icon card-custom-icon object-contain`}
   />
 );
 
@@ -1610,6 +1620,7 @@ const ICON_MAP: Record<string, React.FC<IconProps>> = {
   position_blowjob: PositionBlowjobIcon,
   position_handjob: PositionHandjobIcon,
   position_final: PositionFinalIcon,
+  position_have_sex_art: HaveSexMythicImageIcon,
 };
 
 export const CARD_ICON_NAMES = Object.keys(ICON_MAP);

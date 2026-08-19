@@ -25,6 +25,7 @@ import {
   CardItem,
   CardType,
   ClothingRemovalEvent,
+  GameEndReason,
   GarmentSlot,
   GameSettings,
   IntimacyEvent,
@@ -41,9 +42,10 @@ import { getCardIcon, autoAssignIcon } from './CardIcons';
 import { PenaltyPrompt } from './PenaltyPrompt';
 import { GarmentRemovalDialog } from './GarmentRemovalDialog';
 import { GarmentSwapDialog } from './GarmentSwapDialog';
+import { DualGarmentRemovalDialog } from './DualGarmentRemovalDialog';
 import { OutfitFigure } from './OutfitFigure';
 import {
-  getTargetIndex,
+  getRemovalTargetIndices,
 } from '../utils/cardSelection';
 import {
   GARMENT_LABELS,
@@ -52,6 +54,7 @@ import {
   getPresentGarmentSlots,
   getRemovableGarments,
   removeGarment,
+  removeGarmentsFromBoth,
   swapGarments,
 } from '../utils/wardrobe';
 import { resolveCardTimerSeconds } from '../utils/cardTimer';
@@ -83,7 +86,8 @@ interface GameTableProps {
   onOpenCollection: () => void;
   onOpenRules: () => void;
   onOpenSummary: () => void;
-  onFinishGame: () => void;
+  onFinishGame: (reason: GameEndReason) => void;
+  isSuspended?: boolean;
   onUpdatePlayers: (p1: Player, p2: Player) => void;
   onUpdateOutfits: (outfits: [OutfitState, OutfitState]) => void;
   onAddClothingRemovalEvent: (event: ClothingRemovalEvent) => void;
@@ -102,6 +106,7 @@ interface GameTableProps {
   onJourneyPhaseChange: (phase: JourneyPhase) => void;
   onRevealPositionCard: (cardId: string) => void;
   onSessionPositionCardIdsChange: (cardIds: string[]) => void;
+  onNavigationLockChange?: (locked: boolean) => void;
 }
 
 interface PlayerOutfitStatusProps {
@@ -184,6 +189,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   onOpenRules,
   onOpenSummary,
   onFinishGame,
+  isSuspended = false,
   onUpdatePlayers,
   onUpdateOutfits,
   onAddClothingRemovalEvent,
@@ -202,6 +208,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   onJourneyPhaseChange,
   onRevealPositionCard,
   onSessionPositionCardIdsChange,
+  onNavigationLockChange,
 }) => {
   const [isMusicOn, setIsMusicOn] = useState(soundEngine.isMusicOn());
   const [isMuted, setIsMuted] = useState(soundEngine.getMuted());
@@ -217,6 +224,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     targetIndex: PlayerIndex;
   } | null>(null);
   const [showSwapDialog, setShowSwapDialog] = useState(false);
+  const [showDualRemovalDialog, setShowDualRemovalDialog] = useState(false);
 
   // Card draw state machine
   const [drawState, setDrawState] = useState<
@@ -231,6 +239,8 @@ export const GameTable: React.FC<GameTableProps> = ({
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const didPlayTimerAlarmRef = useRef(false);
   const completionCommittedRef = useRef(false);
+  const drawTimeoutsRef = useRef<number[]>([]);
+  const wasTimerRunningBeforeSuspendRef = useRef(false);
 
   const currentPlayer = currentPlayerIndex === 0 ? player1 : player2;
   const availableDrawTypes = (['truth', 'dare'] as const).filter((type) =>
@@ -257,12 +267,30 @@ export const GameTable: React.FC<GameTableProps> = ({
     random: () => 0,
   }).probabilities;
   const chance = (value: number) => `${Math.round(value * 100)}%`;
+  const navigationLocked = drawState === 'shuffling' || drawState === 'drawing';
+
+  useEffect(() => {
+    onNavigationLockChange?.(navigationLocked);
+  }, [navigationLocked, onNavigationLockChange]);
+
+  useEffect(() => {
+    if (isSuspended) {
+      if (isTimerRunning) wasTimerRunningBeforeSuspendRef.current = true;
+      setIsTimerRunning(false);
+      soundEngine.stopTimerAlarm();
+      return;
+    }
+    if (wasTimerRunningBeforeSuspendRef.current && timerSeconds !== null && timerSeconds > 0) {
+      wasTimerRunningBeforeSuspendRef.current = false;
+      setIsTimerRunning(true);
+    }
+  }, [isSuspended, isTimerRunning, timerSeconds]);
 
   // Countdown uses one disposable timeout per second. The alarm is handled by
   // the guarded transition effect below, outside the state updater, so React
   // Strict Mode cannot accidentally schedule it twice.
   useEffect(() => {
-    if (!isTimerRunning || timerSeconds === null || timerSeconds <= 0) return;
+    if (isSuspended || !isTimerRunning || timerSeconds === null || timerSeconds <= 0) return;
 
     const currentSeconds = timerSeconds;
     const timeout = window.setTimeout(() => {
@@ -275,23 +303,33 @@ export const GameTable: React.FC<GameTableProps> = ({
     }, 1000);
 
     return () => window.clearTimeout(timeout);
-  }, [isTimerRunning, timerSeconds]);
+  }, [isSuspended, isTimerRunning, timerSeconds]);
 
   useEffect(() => {
-    if (timerSeconds !== 0 || didPlayTimerAlarmRef.current) return;
+    if (isSuspended || timerSeconds !== 0 || didPlayTimerAlarmRef.current) return;
 
     didPlayTimerAlarmRef.current = true;
     setIsTimerRunning(false);
     soundEngine.playTimerAlarm(3000);
     setLiveMessage('Hết giờ. Chuông đang báo trong khoảng 3 giây.');
-  }, [timerSeconds]);
+  }, [isSuspended, timerSeconds]);
 
   useEffect(
     () => () => {
+      drawTimeoutsRef.current.forEach(window.clearTimeout);
+      drawTimeoutsRef.current = [];
       soundEngine.stopTimerAlarm();
     },
     [],
   );
+
+  const scheduleDrawStep = (callback: () => void, delay: number) => {
+    const timeout = window.setTimeout(() => {
+      drawTimeoutsRef.current = drawTimeoutsRef.current.filter((id) => id !== timeout);
+      callback();
+    }, delay);
+    drawTimeoutsRef.current.push(timeout);
+  };
 
   useEffect(() => {
     if (!unlockNotice) return;
@@ -317,6 +355,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   };
 
   const handleTimerControl = () => {
+    if (isSuspended) return;
     if (timerSeconds === 0) {
       const resetSeconds = resolveCardTimerSeconds(activeCard, settings);
       if (resetSeconds === null) return;
@@ -360,8 +399,11 @@ export const GameTable: React.FC<GameTableProps> = ({
     });
 
     if (!selection.card) {
-      setDrawError(
-        preferredType
+      setDrawError(selection.errorCode === 'no_progress_gain'
+        ? 'Cấu hình điểm Tim hồng đang bằng 0. Hãy mở Developer và đặt ít nhất một mức điểm lớn hơn 0.'
+        : selection.errorCode === 'no_positive_weight'
+          ? 'Không có trọng số dương cho loại/số sao hợp lệ ở mốc này. Hãy kiểm tra cấu hình Developer.'
+          : preferredType
           ? `Không còn thẻ ${preferredType === 'truth' ? 'Sự Thật' : 'Thử Thách'} phù hợp.`
           : 'Không còn thẻ phù hợp với trạng thái trang phục hiện tại.',
       );
@@ -376,14 +418,14 @@ export const GameTable: React.FC<GameTableProps> = ({
     setDrawState('shuffling');
     soundEngine.playShuffle();
 
-    setTimeout(() => {
+    scheduleDrawStep(() => {
       setActiveCard(randomCard);
       setDrawState('drawing');
       setIsRevealed(!settings.privacyDefault);
       setCardFlipped(false);
 
       // Trigger 3D flip animation
-      setTimeout(() => {
+      scheduleDrawStep(() => {
         setCardFlipped(true);
         soundEngine.playCardFlip();
         setDrawState('drawn');
@@ -522,6 +564,8 @@ export const GameTable: React.FC<GameTableProps> = ({
   };
 
   const finalizeSkippedTurn = () => {
+    if (completionCommittedRef.current) return;
+    completionCommittedRef.current = true;
     setShowPenaltyPrompt(false);
     if (currentPlayerIndex === 0) {
       onUpdatePlayers(
@@ -539,15 +583,26 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   // Action: Complete Challenge
   const handleComplete = () => {
+    if (!activeCard || completionCommittedRef.current) return;
     soundEngine.stopTimerAlarm();
     setIsTimerRunning(false);
+    if (activeCard.position?.family === 'have_sex') {
+      completionCommittedRef.current = true;
+      onFinishGame('have_sex');
+      return;
+    }
     if (activeCard?.clothingEffect?.kind === 'swap_garments') {
       setShowSwapDialog(true);
       return;
     }
-    if (activeCard?.clothingEffect?.kind === 'remove_garment') {
-      const targetIndex = getTargetIndex(activeCard.clothingEffect, currentPlayerIndex);
-      if (getRemovableGarments(outfitStates[targetIndex]).length > 0) {
+    if (activeCard.clothingEffect?.kind === 'remove_garment') {
+      const targetIndices = getRemovalTargetIndices(activeCard, currentPlayerIndex);
+      if (targetIndices.length === 2) {
+        setShowDualRemovalDialog(true);
+        return;
+      }
+      const targetIndex = targetIndices[0];
+      if (targetIndex !== undefined && getRemovableGarments(outfitStates[targetIndex]).length > 0) {
         setRemovalRequest({ source: 'card', targetIndex });
         return;
       }
@@ -557,6 +612,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   // Action: Skip Challenge
   const handleSkip = () => {
+    if (!activeCard || completionCommittedRef.current) return;
     soundEngine.playTick();
     soundEngine.stopTimerAlarm();
     setIsTimerRunning(false);
@@ -572,6 +628,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     const wasPenalty = removalRequest?.source === 'penalty';
     setRemovalRequest(null);
     setShowSwapDialog(false);
+    setShowDualRemovalDialog(false);
     if (wasPenalty) setShowPenaltyPrompt(true);
   };
 
@@ -609,11 +666,40 @@ export const GameTable: React.FC<GameTableProps> = ({
   };
 
   const handleContinueWithoutRemoval = () => {
-    if (!removalRequest) return;
-    const source = removalRequest.source;
+    const source = removalRequest?.source ?? (showDualRemovalDialog ? 'card' : null);
+    if (!source) return;
     setRemovalRequest(null);
+    setShowDualRemovalDialog(false);
     if (source === 'card') finalizeCardCompletion();
     else finalizeSkippedTurn();
+  };
+
+  const handleConfirmDualRemoval = (firstSlot: GarmentSlot, secondSlot: GarmentSlot) => {
+    if (!activeCard || completionCommittedRef.current || !showDualRemovalDialog) return;
+    const result = removeGarmentsFromBoth(outfitStates, firstSlot, secondSlot);
+    if (!result) {
+      setLiveMessage('Trang phục đã thay đổi. Hãy chọn lại hai món có thể bỏ.');
+      return;
+    }
+    const now = Date.now();
+    onUpdateOutfits(result.outfits);
+    result.removed.forEach((garment, targetPlayerIndex) => {
+      onAddClothingRemovalEvent({
+        actorPlayerIndex: currentPlayerIndex,
+        targetPlayerIndex: targetPlayerIndex as PlayerIndex,
+        garmentSlot: garment.slot,
+        garment: { styleId: garment.styleId, color: garment.color },
+        garmentId: garment.id,
+        action: 'removed',
+        source: 'card',
+        cardId: activeCard.id,
+        round: currentRound,
+        timestamp: now,
+      });
+    });
+    setShowDualRemovalDialog(false);
+    setLiveMessage(`${player1.name} và ${player2.name} mỗi người đã bỏ một món. Trang phục được cập nhật cùng lúc.`);
+    finalizeCardCompletion(true);
   };
 
   const handleConfirmSwap = (firstSlot: GarmentSlot, secondSlot: GarmentSlot) => {
@@ -674,8 +760,8 @@ export const GameTable: React.FC<GameTableProps> = ({
     setDrawError(null);
     setRemovalRequest(null);
     setShowPenaltyPrompt(false);
-    completionCommittedRef.current = false;
-
+    setShowSwapDialog(false);
+    setShowDualRemovalDialog(false);
     onNextTurn();
   };
 
@@ -697,7 +783,11 @@ export const GameTable: React.FC<GameTableProps> = ({
       setDrawState('idle');
       setDrawError(selection.missingFinalCard
         ? 'Tim Luxury đã đầy nhưng chưa có lá Have Sex 10★. Bạn có thể mở Developer hoặc kết thúc ván.'
-        : 'Không còn lá Tư thế phù hợp với trang phục hiện tại.');
+        : selection.errorCode === 'no_progress_gain'
+          ? 'Cấu hình điểm Luxury 1–9★ đang bằng 0. Hãy mở Developer hoặc kết thúc ván.'
+          : selection.errorCode === 'no_positive_weight'
+            ? 'Không có trọng số dương cho bậc sao Tư thế hợp lệ ở mốc này. Hãy kiểm tra Developer.'
+            : 'Không còn lá Tư thế phù hợp với trang phục hiện tại.');
       return;
     }
     soundEngine.stopTimerAlarm();
@@ -713,7 +803,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     onRevealPositionCard(nextCard.id);
     onJourneyPhaseChange(nextCard.position?.family === 'have_sex' ? 'final' : 'position');
     soundEngine.playShuffle();
-    window.setTimeout(() => {
+    scheduleDrawStep(() => {
       setCardFlipped(true);
       setDrawState('drawn');
       soundEngine.playCardFlip();
@@ -723,11 +813,12 @@ export const GameTable: React.FC<GameTableProps> = ({
   const handleEnterPositionJourney = () => revealPositionCard();
 
   const handlePositionAdvance = (completed: boolean) => {
-    if (!activeCard) return;
+    if (!activeCard || completionCommittedRef.current) return;
     if (completed) {
       handleComplete();
       return;
     }
+    completionCommittedRef.current = true;
     soundEngine.playTick();
     revealPositionCard([activeCard.id]);
   };
@@ -745,10 +836,14 @@ export const GameTable: React.FC<GameTableProps> = ({
   const activeDeck = activeCard ? getCardDeck(activeCard) : 'standard';
   const isPositionCard = activeDeck === 'position';
   const isFinalPositionCard = activeCard?.position?.family === 'have_sex';
+  const isMythicPositionCard = isPositionCard && activeCard?.position?.rarity === 'mythic';
+  const removalTargetIndices = activeCard ? getRemovalTargetIndices(activeCard, currentPlayerIndex) : [];
   const completionActionLabel = activeCard?.clothingEffect?.kind === 'swap_garments'
     ? 'Chọn 2 món để đổi'
     : activeCard?.clothingEffect?.kind === 'remove_garment'
-      ? `Chọn 1 món của ${getTargetIndex(activeCard.clothingEffect, currentPlayerIndex) === 0 ? player1.name : player2.name}`
+      ? removalTargetIndices.length === 2
+        ? 'Chọn 2 món để cùng bỏ'
+        : `Chọn 1 món của ${removalTargetIndices[0] === 0 ? player1.name : player2.name}`
       : 'Đã hoàn thành';
   const canApplyPenaltyGarment = getRemovableGarments(outfitStates[currentPlayerIndex]).length > 0;
 
@@ -774,7 +869,7 @@ export const GameTable: React.FC<GameTableProps> = ({
             </div>
             <div className="font-serif-romantic text-base font-bold text-white flex items-center gap-1.5">
               <span>{currentPlayer.name}</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+              <span className={`w-2 h-2 rounded-full bg-emerald-400 inline-block ${shouldReduceMotion ? '' : 'animate-ping'}`} />
             </div>
           </div>
         </div>
@@ -814,6 +909,7 @@ export const GameTable: React.FC<GameTableProps> = ({
           <button
             type="button"
             onClick={onOpenRules}
+            disabled={navigationLocked}
             aria-label="Cách chơi và luật phạt"
             title="Cách chơi & luật phạt"
             className="flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-900/80 border border-neutral-700/60 text-rose-300 hover:border-rose-400/50 hover:text-rose-100 transition-all"
@@ -823,6 +919,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
           <button
             onClick={onOpenCollection}
+            disabled={navigationLocked}
             aria-label="Mở bộ sưu tập thẻ"
             className="flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl bg-neutral-900/80 px-3 border border-neutral-700/60 text-amber-300 hover:text-amber-100 transition-all text-xs"
           >
@@ -832,6 +929,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
           <button
             onClick={onOpenSummary}
+            disabled={navigationLocked}
             aria-label="Mở tổng kết và thống kê"
             className="flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl bg-rose-950/60 px-3 border border-rose-500/30 text-rose-300 hover:text-rose-100 transition-all text-xs"
           >
@@ -973,7 +1071,7 @@ export const GameTable: React.FC<GameTableProps> = ({
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
               <button
                 type="button"
-                onClick={onFinishGame}
+                onClick={() => onFinishGame('pink_complete')}
                 className="min-h-12 rounded-full border border-white/15 bg-black/20 px-4 text-xs font-semibold text-slate-300 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
               >
                 Kết thúc tại đây
@@ -997,7 +1095,7 @@ export const GameTable: React.FC<GameTableProps> = ({
             <p className="mt-2 text-xs leading-relaxed text-neutral-400">{drawError || 'Bạn có thể bổ sung thẻ Tư thế trong Developer hoặc kết thúc ván an toàn.'}</p>
             <div className="mt-5 grid gap-2 sm:grid-cols-2">
               <button type="button" onClick={onOpenCollection} className="min-h-12 rounded-full border border-[#d7b1ff]/25 px-4 text-xs font-semibold text-[#ead2ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b1ff]">Mở Developer</button>
-              <button type="button" onClick={onFinishGame} className="min-h-12 rounded-full bg-[linear-gradient(135deg,#f4e8ff,#e8a48c)] px-4 text-xs font-bold text-[#120717] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f4e8ff]">Kết thúc ván</button>
+              <button type="button" onClick={() => onFinishGame('no_cards')} className="min-h-12 rounded-full bg-[linear-gradient(135deg,#f4e8ff,#e8a48c)] px-4 text-xs font-bold text-[#120717] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f4e8ff]">Kết thúc ván</button>
             </div>
           </section>
         )}
@@ -1017,7 +1115,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
               {/* Top Card Back with Metallic Gold Filigree Pattern */}
               <motion.div
-                whileHover={{ y: -8, scale: 1.02 }}
+                whileHover={shouldReduceMotion ? undefined : { y: -8, scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 className="relative w-full h-full rounded-2xl p-4 bg-gradient-to-br from-[#2a0e14] via-[#1a080d] to-[#0d0407] border-4 border-[#D4AF37] gold-glow flex flex-col items-center justify-between overflow-hidden"
               >
@@ -1113,16 +1211,16 @@ export const GameTable: React.FC<GameTableProps> = ({
           <div className="flex flex-col items-center py-12">
             <motion.div
               animate={{
-                rotateY: [0, 180, 360],
-                rotateZ: [-5, 5, -5],
-                scale: [1, 1.1, 1],
+                rotateY: shouldReduceMotion ? 0 : [0, 180, 360],
+                rotateZ: shouldReduceMotion ? 0 : [-5, 5, -5],
+                scale: shouldReduceMotion ? 1 : [1, 1.1, 1],
               }}
-              transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: shouldReduceMotion ? 0.08 : 0.8, repeat: shouldReduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
               className="w-48 h-72 rounded-2xl bg-gradient-to-br from-amber-600 to-rose-900 border-2 border-amber-300 shadow-2xl flex items-center justify-center"
             >
-              <Sparkles className="w-12 h-12 text-amber-200 animate-spin" />
+              <Sparkles className={`w-12 h-12 text-amber-200 ${shouldReduceMotion ? '' : 'animate-spin'}`} />
             </motion.div>
-            <p className="mt-6 text-sm text-amber-300 font-serif-romantic italic animate-pulse">
+            <p className={`mt-6 text-sm text-amber-300 font-serif-romantic italic ${shouldReduceMotion ? '' : 'animate-pulse'}`}>
               Đang xáo trộn các lá bài bí mật...
             </p>
           </div>
@@ -1145,12 +1243,12 @@ export const GameTable: React.FC<GameTableProps> = ({
               >
                 {/* CARD BACK SIDE */}
                 <div className="backface-hidden absolute inset-0 rotate-y-180 rounded-2xl p-6 bg-gradient-to-br from-[#2a0e14] via-[#1a080d] to-[#0d0407] border-2 border-[#D4AF37] shadow-2xl flex flex-col items-center justify-center">
-                  <Flame className="w-16 h-16 text-amber-400 animate-pulse" />
+                  <Flame className={`w-16 h-16 text-amber-400 ${shouldReduceMotion ? '' : 'animate-pulse'}`} />
                 </div>
 
                 {/* CARD FRONT SIDE - New Design */}
                 <div className={`backface-hidden absolute inset-0 game-card ${
-                  isFinalPositionCard
+                  isMythicPositionCard
                     ? 'card-position-rare'
                     : isPositionCard
                       ? 'card-position'
@@ -1159,7 +1257,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                   style={{ borderRadius: '16px' }}
                 >
                   {/* Corner decorations for intimate/passionate */}
-                  {!isFinalPositionCard && activeCard.level !== 'gentle' && (
+                  {!isMythicPositionCard && activeCard.level !== 'gentle' && (
                     <>
                       <span className="card-corner-deco top-2 left-2.5">♠ ♥</span>
                       <span className="card-corner-deco top-2 right-2.5">♦ ♣</span>
@@ -1181,7 +1279,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                               {POSITION_RECIPIENT_LABELS[activeCard.position.recipient]}
                             </span>
                             <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${
-                              isFinalPositionCard
+                              isMythicPositionCard
                                 ? 'border-[#e8a48c]/55 bg-[#d7b1ff]/10 text-[#f4e8ff]'
                                 : 'border-[#e2c275]/35 bg-[#e2c275]/10 text-[#f7e7b0]'
                             }`}>
@@ -1267,7 +1365,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                         >
                           {/* Card Icon (custom image or SVG) */}
                           {activeCard.customImage ? (
-                            <div className={`card-icon-wrapper-lg card-custom-icon-wrapper ${isFinalPositionCard ? 'mythic-icon-aura' : ''}`}>
+                            <div className={`card-icon-wrapper-lg card-custom-icon-wrapper ${isMythicPositionCard ? 'mythic-icon-aura' : ''}`}>
                               <img
                                 src={activeCard.customImage}
                                 alt="icon"
@@ -1278,7 +1376,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                             const iconName = activeCard.icon || autoAssignIcon(activeCard.content);
                             const IconComp = getCardIcon(iconName);
                             return IconComp ? (
-                              <div className={`card-icon-wrapper-lg card-icon-color ${isFinalPositionCard ? 'mythic-icon-aura' : ''}`}>
+                              <div className={`card-icon-wrapper-lg card-icon-color ${isMythicPositionCard ? 'mythic-icon-aura' : ''}`}>
                                 <IconComp className="w-full h-full" />
                               </div>
                             ) : null;
@@ -1337,7 +1435,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                 {isFinalPositionCard ? (
                   <button
                     type="button"
-                    onClick={onFinishGame}
+                    onClick={handleComplete}
                     className="min-h-12 w-full rounded-full bg-[linear-gradient(135deg,#f4e8ff,#e8a48c)] px-5 text-sm font-bold text-[#120717] shadow-[0_0_28px_rgba(232,164,140,.3)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f4e8ff] motion-reduce:transform-none"
                   >
                     Đã xem · Kết thúc ván
@@ -1434,6 +1532,15 @@ export const GameTable: React.FC<GameTableProps> = ({
           outfitStates={outfitStates}
           onConfirm={handleConfirmSwap}
           onCancel={() => setShowSwapDialog(false)}
+        />
+      )}
+      {showDualRemovalDialog && (
+        <DualGarmentRemovalDialog
+          playerNames={[player1.name, player2.name]}
+          outfitStates={outfitStates}
+          onConfirm={handleConfirmDualRemoval}
+          onCancel={() => setShowDualRemovalDialog(false)}
+          onContinueWithoutRemoval={handleContinueWithoutRemoval}
         />
       )}
     </div>

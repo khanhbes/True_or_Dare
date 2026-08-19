@@ -170,7 +170,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
                   Đến lượt ai, người đó rút bài Sự Thật hoặc Thử Thách phù hợp với nhãn Nam, Nữ hoặc Cả hai. Bài bắt đầu từ 1★ và tăng dần xác suất xuất hiện bài nhiều sao hơn khi mức thân mật tăng.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
-                  Hoàn thành bài sẽ cộng điểm theo số sao. Cởi đồ do hiệu ứng của thẻ có thưởng thêm; bỏ qua và cởi đồ do luật phạt không cộng điểm. Có thể đổi thẻ, bỏ qua hoặc dừng mà không cần giải thích.
+                  Hoàn thành bài sẽ cộng điểm theo số sao. Cởi đồ do hiệu ứng của thẻ có thưởng thêm; bỏ qua và cởi đồ do luật phạt không cộng điểm. Bỏ qua được xử lý theo luật phạt đã cấu hình; cả hai luôn có thể dừng mà không cần giải thích.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
                   Với thẻ có tác động trang phục, hãy chọn đúng món theo lời thẻ rồi xác nhận. Thẻ đổi đồ yêu cầu mỗi người chọn một món; bản xem trước có thể hủy mà không làm thay đổi nhân vật.

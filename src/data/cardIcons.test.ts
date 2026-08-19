@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { createHash } from 'node:crypto';
 import { INITIAL_CARDS } from './cards';
 
 const iconSourcePath = fileURLToPath(new URL('../components/CardIcons.tsx', import.meta.url));
@@ -43,4 +44,13 @@ test('content-specific cards keep their curated icon assignments', () => {
     assert.ok(card, `Missing built-in card ${cardId}`);
     assert.equal(card.icon, expectedIcon, `${cardId} should use ${expectedIcon}`);
   }
+});
+
+test('all 66 built-in card texts stay byte-for-byte unchanged', () => {
+  const snapshot = INITIAL_CARDS.map(({ id, content }) => [id, content]);
+  assert.equal(INITIAL_CARDS.length, 66);
+  assert.equal(
+    createHash('sha256').update(JSON.stringify(snapshot)).digest('hex'),
+    '630dc272fdf0edd3571974a7cbde514186191c9135eb0f65f9401c22dd9deb1b',
+  );
 });

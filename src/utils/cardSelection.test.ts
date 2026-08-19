@@ -5,10 +5,12 @@ import {
   areBothPlayersLowOnClothing,
   getCardDrawProbabilities,
   getEligibleCardDrawProbabilities,
+  getRemovalTargetIndices,
   getTargetIndex,
   isCardEligibleForOutfits,
   isClothingEffect,
   mergeEditedSystemCard,
+  normalizeCardClothingEffect,
   selectEligibleCard,
 } from './cardSelection';
 import { createOutfitState, DEFAULT_GAME_SETTINGS, removeGarment } from './wardrobe';
@@ -76,6 +78,29 @@ test('self and opponent effects resolve both player indexes correctly', () => {
   assert.equal(isCardEligibleForOutfits(opponentCard, 0, [maleEmpty, femaleDressed]), true);
   assert.equal(isCardEligibleForOutfits(selfCard, 1, [maleEmpty, femaleDressed]), true);
   assert.equal(isCardEligibleForOutfits(opponentCard, 1, [maleEmpty, femaleDressed]), false);
+});
+
+test('position removal targets are explicit and Have Sex never applies clothing effects', () => {
+  const makePosition = (target: 'male' | 'female' | 'both', family: 'oral' | 'have_sex' = 'oral'): CardItem => ({
+    id: `${family}-${target}`,
+    type: 'dare', level: 'passionate', content: 'position', deck: 'position',
+    position: { family, recipient: 'both', orderGroup: family === 'have_sex' ? 4 : 1, rarity: family === 'have_sex' ? 'mythic' : 'luxury' },
+    clothingEffect: { kind: 'remove_garment', target },
+  });
+  assert.deepEqual(getRemovalTargetIndices(makePosition('male'), 1), [0]);
+  assert.deepEqual(getRemovalTargetIndices(makePosition('female'), 0), [1]);
+  assert.deepEqual(getRemovalTargetIndices(makePosition('both'), 1), [0, 1]);
+  assert.deepEqual(getRemovalTargetIndices(makePosition('both', 'have_sex'), 0), []);
+  assert.equal(isCardEligibleForOutfits(makePosition('both'), 0, [emptyOutfit(0), dressedOutfits()[1]]), false);
+  assert.equal(isCardEligibleForOutfits(makePosition('both', 'have_sex'), 0, dressedOutfits()), false);
+  assert.equal(mergeEditedSystemCard(makePosition('both', 'have_sex')).clothingEffect, undefined);
+  const legacy = {
+    ...makePosition('male'),
+    clothingEffect: { kind: 'remove_garment', target: 'self' },
+  } as CardItem;
+  assert.deepEqual(normalizeCardClothingEffect(legacy).clothingEffect, {
+    kind: 'remove_garment', target: 'both',
+  });
 });
 
 test('invalid clothing effects are rejected without affecting cards with null or no effect', () => {
@@ -372,8 +397,8 @@ test('system metadata survives legacy edits while explicit overrides stay explic
 
   assert.equal(inherited.content, 'Edited');
   assert.equal(inherited.icon, 'blindfold_kiss');
-  assert.deepEqual(inherited.clothingEffect, system.clothingEffect);
-  assert.deepEqual(explicitUndefined.clothingEffect, system.clothingEffect);
+  assert.deepEqual(inherited.clothingEffect, { kind: 'remove_garment', target: 'both' });
+  assert.deepEqual(explicitUndefined.clothingEffect, { kind: 'remove_garment', target: 'both' });
   assert.equal(disabled.clothingEffect, null);
   assert.equal(inherited.timerSeconds, 45);
   assert.equal(timerOverride.timerSeconds, 90);

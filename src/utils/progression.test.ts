@@ -17,7 +17,6 @@ import {
   isStandardJourneyCardEligible,
   selectJourneyCard,
   selectLuxuryPositionCard,
-  selectNextPositionCard,
 } from './progression';
 
 const outfits = [
@@ -184,23 +183,7 @@ test('completion gain clamps at 100 and penalty removals are not part of this re
   });
 });
 
-test('position selection respects oral, blowjob, handjob order then reuses final', () => {
-  const positionCards = INITIAL_CARDS.filter((card) => getCardDeck(card) === 'position');
-  const oralIds = positionCards.filter((card) => card.position?.orderGroup === 1).map((card) => card.id);
-  const blowjobIds = positionCards.filter((card) => card.position?.orderGroup === 2).map((card) => card.id);
-  const handjobIds = positionCards.filter((card) => card.position?.orderGroup === 3).map((card) => card.id);
-  assert.equal(selectNextPositionCard(positionCards, [], [], () => 0)?.position?.family, 'oral');
-  assert.equal(selectNextPositionCard(positionCards, oralIds, [], () => 0)?.position?.family, 'blowjob');
-  assert.equal(selectNextPositionCard(positionCards, [...oralIds, ...blowjobIds], [], () => 0)?.position?.family, 'handjob');
-  const allCommon = [...oralIds, ...blowjobIds, ...handjobIds];
-  assert.equal(selectNextPositionCard(positionCards, allCommon, [], () => 0)?.position?.family, 'have_sex');
-  assert.equal(
-    selectNextPositionCard(positionCards, [...allCommon, 'pos-have-sex'], [], () => 0)?.position?.family,
-    'have_sex',
-  );
-});
-
-test('config hydration rejects all-zero rows and malformed gains without losing valid rows', () => {
+test('config hydration preserves zero weights and clamps malformed or oversized values', () => {
   const hydrated = hydrateProgressionConfig({
     bands: [
       { typeWeights: { truth: 0, dare: 0 }, starWeights: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
@@ -209,7 +192,8 @@ test('config hydration rejects all-zero rows and malformed gains without losing 
     starGains: { 1: -1, 2: 7, 3: 8, 4: 9, 5: 200 },
     cardRemovalBonus: 11,
   });
-  assert.deepEqual(hydrated.bands[0], DEFAULT_PROGRESSION_CONFIG.bands[0]);
+  assert.deepEqual(hydrated.bands[0].typeWeights, { truth: 0, dare: 0 });
+  assert.deepEqual(hydrated.bands[0].starWeights, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
   assert.deepEqual(hydrated.bands[1].typeWeights, { truth: 20, dare: 80 });
   assert.equal(hydrated.starGains[1], 4);
   assert.equal(hydrated.starGains[2], 7);
@@ -251,7 +235,7 @@ test('Luxury probabilities follow every boundary and unlock 10 stars only from 8
     usedCardIds: [],
     luxuryPercent: 79,
     config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
-    random: () => .999999,
+    random: () => .04,
   });
   assert.notEqual(derivePositionDifficultyStars(beforeUnlock.card!), 10);
   const afterUnlock = selectLuxuryPositionCard({
@@ -261,7 +245,7 @@ test('Luxury probabilities follow every boundary and unlock 10 stars only from 8
     usedCardIds: [],
     luxuryPercent: 80,
     config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
-    random: () => .999999,
+    random: () => .04,
   });
   assert.equal(derivePositionDifficultyStars(afterUnlock.card!), 10);
 });
@@ -342,7 +326,7 @@ test('100 percent forces the 10-star final and reports a missing final without c
   assert.equal(missing.missingFinalCard, true);
 });
 
-test('Luxury config hydration preserves valid rows and rejects all-zero rows', () => {
+test('Luxury config hydration preserves absolute zero rows and clamps gains', () => {
   const hydrated = hydrateLuxuryProgressionConfig({
     bands: [
       { starWeights: Object.fromEntries(Array.from({ length: 10 }, (_, index) => [index + 1, 0])) },
@@ -350,9 +334,51 @@ test('Luxury config hydration preserves valid rows and rejects all-zero rows', (
     ],
     starGains: { 1: -5, 2: 9, 10: 500 },
   });
-  assert.deepEqual(hydrated.bands[0], DEFAULT_LUXURY_PROGRESSION_CONFIG.bands[0]);
+  assert.deepEqual(hydrated.bands[0].starWeights, Object.fromEntries(
+    Array.from({ length: 10 }, (_, index) => [index + 1, 0]),
+  ));
   assert.equal(hydrated.bands[1].starWeights[10], 9);
   assert.equal(hydrated.starGains[1], 6);
   assert.equal(hydrated.starGains[2], 9);
   assert.equal(hydrated.starGains[10], 100);
+});
+
+test('zero weights and zero gains return coded errors instead of selecting undefined cards', () => {
+  const card = makeCard('only', 'truth', 1);
+  const zeroWeights = {
+    ...DEFAULT_PROGRESSION_CONFIG,
+    bands: DEFAULT_PROGRESSION_CONFIG.bands.map((band) => ({
+      ...band,
+      typeWeights: { truth: 0, dare: 0 },
+      starWeights: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<DifficultyStars, number>,
+    })),
+  };
+  const noWeight = selectJourneyCard({ cards: [card], actorIndex: 0, outfits, usedCardIds: [], levels: ['gentle'], intimacyPercent: 0, config: zeroWeights, random: () => 0 });
+  assert.equal(noWeight.card, null);
+  assert.equal(noWeight.errorCode, 'no_positive_weight');
+
+  const noGainConfig = {
+    ...DEFAULT_PROGRESSION_CONFIG,
+    starGains: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<DifficultyStars, number>,
+  };
+  const noGain = selectJourneyCard({ cards: [card], actorIndex: 0, outfits, usedCardIds: [], levels: ['gentle'], intimacyPercent: 0, config: noGainConfig, random: () => 0 });
+  assert.equal(noGain.card, null);
+  assert.equal(noGain.errorCode, 'no_progress_gain');
+});
+
+test('the 10-star roll is exactly five percent at 80–99 and is independent from non-final exhaustion', () => {
+  const cards = [makePositionCard('five', 5), makePositionCard('final', 10)];
+  const base = { cards, actorIndex: 0 as const, outfits, usedCardIds: ['five'], luxuryPercent: 99, config: DEFAULT_LUXURY_PROGRESSION_CONFIG };
+  const hit = selectLuxuryPositionCard({ ...base, random: () => 0.049999 });
+  assert.equal(hit.card?.id, 'final');
+  assert.equal(hit.probabilities.stars[10], 0.05);
+  const miss = selectLuxuryPositionCard({ ...base, random: () => 0.05 });
+  assert.equal(miss.card?.id, 'five');
+  assert.equal(miss.didResetPool, true);
+});
+
+test('hydration clamps finite oversized weights before normalization', () => {
+  const hydrated = hydrateLuxuryProgressionConfig({ bands: [{ starWeights: { 1: 1e308, 10: 1e308 } }] });
+  assert.equal(hydrated.bands[0].starWeights[1], 100);
+  assert.equal(hydrated.bands[0].starWeights[10], 100);
 });

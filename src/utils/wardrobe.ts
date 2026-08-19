@@ -340,6 +340,29 @@ export const removeGarment = (state: OutfitState, slot: GarmentSlot): OutfitStat
   });
 };
 
+export interface DualGarmentRemovalResult {
+  outfits: [OutfitState, OutfitState];
+  removed: [EquippedGarment, EquippedGarment];
+}
+
+/** Validates both choices before changing either outfit. */
+export const removeGarmentsFromBoth = (
+  outfits: readonly [OutfitState, OutfitState],
+  firstSlot: GarmentSlot,
+  secondSlot: GarmentSlot,
+): DualGarmentRemovalResult | null => {
+  if (!isGarmentRemovable(outfits[0], firstSlot) || !isGarmentRemovable(outfits[1], secondSlot)) {
+    return null;
+  }
+  const first = getEquippedGarment(outfits[0], firstSlot);
+  const second = getEquippedGarment(outfits[1], secondSlot);
+  if (!first || !second) return null;
+  return {
+    outfits: [removeGarment(outfits[0], firstSlot), removeGarment(outfits[1], secondSlot)],
+    removed: [first, second],
+  };
+};
+
 export interface GarmentSwapResult {
   outfits: [OutfitState, OutfitState];
   transferred: [EquippedGarment, EquippedGarment];
