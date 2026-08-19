@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx --test src/utils/wardrobe.test.ts src/utils/cardSelection.test.ts"
+    "test": "tsx --test src/utils/wardrobe.test.ts src/utils/cardSelection.test.ts src/utils/cardTimer.test.ts src/utils/progression.test.ts src/data/cardIcons.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

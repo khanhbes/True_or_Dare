@@ -228,20 +228,37 @@ export const getEligibleCardDrawProbabilities = (
 
 /**
  * Preserves new gameplay metadata when loading an older edited built-in card.
- * An explicit null is retained so players can intentionally disable an effect.
+ * An explicit null is retained so developers can intentionally disable an
+ * effect or countdown without freezing unrelated future system metadata.
  */
 export const mergeEditedSystemCard = (
   systemCard: CardItem,
   editedCard?: CardItem,
 ): CardItem => {
   if (!editedCard) return systemCard;
+  const hasIllustrationOverride = editedCard.illustrationOverride === true;
   return {
     ...systemCard,
     ...editedCard,
+    icon: hasIllustrationOverride ? editedCard.icon : systemCard.icon,
+    customImage: hasIllustrationOverride ? editedCard.customImage : systemCard.customImage,
     clothingEffect:
       editedCard.clothingEffect === undefined
         ? systemCard.clothingEffect
         : editedCard.clothingEffect,
+    timerSeconds:
+      editedCard.timerSeconds === undefined
+        ? systemCard.timerSeconds
+        : editedCard.timerSeconds,
+    deck: editedCard.deck === undefined ? systemCard.deck : editedCard.deck,
+    progression:
+      editedCard.progression === undefined
+        ? systemCard.progression
+        : editedCard.progression,
+    position:
+      editedCard.position === undefined
+        ? systemCard.position
+        : editedCard.position,
   };
 };
 

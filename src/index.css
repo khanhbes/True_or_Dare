@@ -391,6 +391,78 @@
   color: #FF6B9D;
 }
 
+/* --- POSITION DECK: midnight sapphire + champagne foil --- */
+.card-position {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(31, 79, 142, 0.34), transparent 36%),
+    linear-gradient(160deg, #111d37 0%, #070b18 52%, #03050c 100%);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(226, 194, 117, 0.12),
+    inset 0 1px 0 rgba(255, 244, 214, 0.12);
+}
+
+.game-card.card-position::after {
+  background: conic-gradient(
+    from var(--card-rainbow-angle),
+    #725c2d,
+    #f7e7b0,
+    #b98a38,
+    #fff4d6,
+    #725c2d
+  );
+  filter: drop-shadow(0 0 4px rgba(226, 194, 117, 0.42));
+  animation: position-foil-drift 12s linear infinite;
+}
+
+.card-position .card-icon-color {
+  color: #e2c275;
+  filter: drop-shadow(0 0 14px rgba(226, 194, 117, 0.28));
+}
+
+/* --- RAREST CARD: obsidian, imperial violet, platinum and rose gold --- */
+.card-position-rare {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(115, 55, 141, 0.38), transparent 34%),
+    radial-gradient(circle at 20% 80%, rgba(232, 164, 140, 0.12), transparent 35%),
+    linear-gradient(150deg, #35124b 0%, #120717 44%, #050507 100%);
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.62),
+    0 0 42px rgba(244, 232, 255, 0.16),
+    inset 0 0 0 1px rgba(232, 164, 140, 0.22);
+}
+
+.game-card.card-position-rare::after {
+  padding: 3px;
+  background: conic-gradient(
+    from var(--card-rainbow-angle),
+    #6e3c67,
+    #f4e8ff,
+    #e8a48c,
+    #fff6df,
+    #a97499,
+    #f4e8ff,
+    #6e3c67
+  );
+  filter: drop-shadow(0 0 7px rgba(244, 232, 255, 0.5));
+  animation: rare-card-foil 8s linear infinite;
+}
+
+.card-position-rare .card-icon-color {
+  color: #f4e8ff;
+  filter: drop-shadow(0 0 18px rgba(232, 164, 140, 0.48));
+}
+
+@keyframes position-foil-drift {
+  to { --card-rainbow-angle: 360deg; }
+}
+
+@keyframes rare-card-foil {
+  0% { --card-rainbow-angle: 0deg; opacity: 0.78; }
+  50% { opacity: 1; }
+  100% { --card-rainbow-angle: 360deg; opacity: 0.78; }
+}
+
 @property --card-rainbow-angle {
   syntax: '<angle>';
   initial-value: 0deg;

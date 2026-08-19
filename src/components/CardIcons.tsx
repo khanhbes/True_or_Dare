@@ -588,6 +588,139 @@ export const HeartbeatIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
+// ===== PLAYFUL ATTENTION =====
+export const PlayfulAttentionIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="35" cy="41" r="27" fill="currentColor" />
+    <path d="M23 36C26 33 30 33 33 36M45 34H51" stroke="white" strokeWidth="3.5" strokeLinecap="round" opacity="0.88" />
+    <path d="M25 51C31 57 41 58 48 50" stroke="white" strokeWidth="3.5" strokeLinecap="round" opacity="0.82" />
+    <path d="M62 6L65 14L73 17L65 20L62 28L59 20L51 17L59 14L62 6Z" fill="currentColor" />
+    <path d="M68 37L70 42L75 44L70 46L68 51L66 46L61 44L66 42L68 37Z" fill="currentColor" opacity="0.62" />
+    <path d="M13 23L7 17M12 31L4 30" stroke="currentColor" strokeWidth="4" strokeLinecap="round" opacity="0.58" />
+  </svg>
+);
+
+// ===== LOVE SONG / POEM =====
+export const LoveSongPoemIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M32 15H67V64C60 60 53 60 46 64C41 67 36 68 32 68V15Z" fill="currentColor" />
+    <path d="M32 15C37 19 43 19 48 15M32 68C37 64 43 64 48 68" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.34" />
+    <path d="M49 31C46 25 37 29 39 36C41 42 49 46 49 46C49 46 58 42 60 36C62 29 53 25 49 31Z" fill="white" opacity="0.76" />
+    <path d="M23 18V51" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+    <path d="M23 20L38 16V26L23 30" stroke="currentColor" strokeWidth="6" strokeLinejoin="round" />
+    <ellipse cx="15" cy="56" rx="10" ry="7" transform="rotate(-18 15 56)" fill="currentColor" />
+    <path d="M11 10L8 6M16 9V4" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.55" />
+  </svg>
+);
+
+// ===== MUSIC + PERFUME =====
+export const MusicPerfumeIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="38" y="35" width="33" height="36" rx="9" fill="currentColor" />
+    <rect x="48" y="21" width="14" height="15" rx="3" fill="currentColor" />
+    <path d="M45 17H65M61 12H72" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+    <path d="M54 47C50 42 43 46 45 52C47 57 54 61 54 61C54 61 62 57 63 52C65 46 58 42 54 47Z" fill="white" opacity="0.72" />
+    <path d="M24 15V51" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+    <path d="M24 18L40 14V25L24 29" stroke="currentColor" strokeWidth="6" strokeLinejoin="round" />
+    <ellipse cx="16" cy="56" rx="10" ry="7" transform="rotate(-18 16 56)" fill="currentColor" />
+    <path d="M7 26L4 22M12 22V17" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.5" />
+  </svg>
+);
+
+// ===== ROMANTIC OUTFIT =====
+export const RomanticOutfitIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M40 8C40 3 47 3 47 9C47 13 43 14 40 17L16 31M40 17L64 31M16 31H64" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M29 27L22 39L30 44L26 70H54L50 44L58 39L51 27H29Z" fill="currentColor" />
+    <path d="M32 28C34 34 37 36 40 36C43 36 46 34 48 28" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.52" />
+    <path d="M65 8L68 15L75 18L68 21L65 28L62 21L55 18L62 15L65 8Z" fill="currentColor" />
+    <path d="M13 48L15 53L20 55L15 57L13 62L11 57L6 55L11 53L13 48Z" fill="currentColor" opacity="0.62" />
+  </svg>
+);
+
+// ===== BODY + KISS LOCATION =====
+export const BodyKissIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M31 7C26 17 27 25 31 32C24 39 20 50 20 69H60C60 50 56 39 49 32C53 25 54 17 49 7C44 12 36 12 31 7Z" fill="currentColor" />
+    <path d="M31 32C35 36 45 36 49 32M40 38V66" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.34" />
+    <path d="M47 40C51 35 58 37 60 42C58 48 52 51 47 52C42 51 36 48 34 42C36 37 43 35 47 40Z" fill="white" opacity="0.84" />
+    <path d="M36 42C42 45 52 45 58 42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.38" />
+    <circle cx="66" cy="28" r="3" fill="currentColor" opacity="0.55" />
+    <circle cx="70" cy="20" r="2" fill="currentColor" opacity="0.35" />
+  </svg>
+);
+
+// ===== EYES + VOICE =====
+export const EyesVoiceIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 30C16 17 28 12 41 14C51 16 59 22 65 30C58 40 48 46 36 46C24 46 14 40 7 30Z" fill="currentColor" />
+    <ellipse cx="36" cy="30" rx="9" ry="10" fill="white" opacity="0.84" />
+    <circle cx="36" cy="30" r="4" fill="currentColor" />
+    <path d="M34 52H65C70 52 73 56 73 61V66C73 71 69 74 64 74H50L41 79V74H34C29 74 26 71 26 66V60C26 56 29 52 34 52Z" fill="currentColor" />
+    <path d="M48 61C45 56 38 60 40 65C42 69 48 72 48 72C48 72 55 69 56 65C58 60 51 56 48 61Z" fill="white" opacity="0.78" />
+    <path d="M69 23L75 18M69 31H77" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" opacity="0.58" />
+  </svg>
+);
+
+// ===== THREE KISSES =====
+export const TripleKissIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15 73V53C15 42 21 36 30 32C26 28 24 23 24 18C24 10 30 5 38 5C49 5 56 14 56 25C56 34 51 40 45 44V73H15Z" fill="currentColor" opacity="0.78" />
+    <path d="M37 22C41 25 46 25 50 22" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.64" />
+    <path d="M61 16C64 12 70 14 70 19C70 24 62 28 62 28C62 28 54 24 54 19C54 14 59 12 61 16Z" fill="currentColor" />
+    <path d="M61 38C64 34 70 36 70 41C70 46 62 50 62 50C62 50 54 46 54 41C54 36 59 34 61 38Z" fill="currentColor" />
+    <path d="M57 60C60 56 66 58 66 63C66 68 58 72 58 72C58 72 50 68 50 63C50 58 55 56 57 60Z" fill="currentColor" />
+    <circle cx="73" cy="31" r="2" fill="currentColor" opacity="0.45" />
+  </svg>
+);
+
+// ===== UNBUTTON + BACK CARESS =====
+export const UnbuttonBackCaressIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13 16L29 7L40 18L51 7L67 16L62 72H18L13 16Z" fill="currentColor" />
+    <path d="M29 8L40 18L51 8M40 19V70" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.55" />
+    <circle cx="40" cy="31" r="3" fill="white" opacity="0.82" />
+    <circle cx="40" cy="45" r="3" fill="white" opacity="0.82" />
+    <circle cx="40" cy="59" r="3" fill="none" stroke="white" strokeWidth="2.5" strokeDasharray="2.5 2" opacity="0.76" />
+    <path d="M70 31C61 37 57 46 56 59" stroke="white" strokeWidth="5" strokeLinecap="round" opacity="0.9" />
+    <path d="M67 27L73 30L70 36" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.72" />
+  </svg>
+);
+
+// ===== BLINDFOLD KISS =====
+export const BlindfoldKissIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 72V45C5 26 16 12 31 12C35 12 38 14 40 17C35 22 33 28 34 35L27 41L35 45C35 56 29 66 24 72H5Z" fill="currentColor" />
+    <path d="M75 72V45C75 26 64 12 49 12C45 12 42 14 40 17C45 22 47 28 46 35L53 41L45 45C45 56 51 66 56 72H75Z" fill="currentColor" opacity="0.8" />
+    <path d="M13 28C20 24 28 24 36 28L34 37C27 34 20 34 13 37V28Z" fill="white" opacity="0.82" />
+    <path d="M12 29L6 25M35 28L40 24" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
+    <path d="M38 39C40 36 42 36 44 39C42 43 41 44 41 44C41 44 39 43 38 39Z" fill="white" opacity="0.9" />
+    <path d="M29 54C36 50 44 50 51 54" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.48" />
+  </svg>
+);
+
+// ===== ICE TRACE ON BACK =====
+export const IceBackTraceIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M28 6C25 17 28 25 33 31C26 39 23 50 23 72H58C58 50 55 39 48 31C53 25 56 17 52 6C45 12 35 12 28 6Z" fill="currentColor" />
+    <path d="M40 20C36 34 37 50 44 65" stroke="white" strokeWidth="3" strokeLinecap="round" strokeDasharray="3 6" opacity="0.76" />
+    <path d="M5 11L20 6L31 18L17 25L5 11Z" fill="currentColor" />
+    <path d="M20 6L18 19L5 11M18 19L31 18" stroke="white" strokeWidth="2" opacity="0.56" />
+    <path d="M11 34L8 39M20 32L19 39" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.48" />
+  </svg>
+);
+
+// ===== COLLARBONE TRACE =====
+export const CollarboneTraceIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M31 7V23C22 27 14 35 10 47V73H70V47C66 35 58 27 49 23V7H31Z" fill="currentColor" />
+    <path d="M20 38C28 31 35 31 40 36C45 31 52 31 60 38" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.64" />
+    <path d="M65 18C56 24 50 31 44 42C39 50 33 57 22 63" stroke="white" strokeWidth="5" strokeLinecap="round" opacity="0.88" />
+    <circle cx="66" cy="17" r="5" fill="white" opacity="0.9" />
+    <path d="M45 42L42 37M45 42L50 40" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.7" />
+  </svg>
+);
+
 // ===== DRESS / OUTFIT =====
 export const DressIcon: React.FC<IconProps> = ({ className }) => (
   <svg className={className} viewBox="0 0 55 70" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -1287,6 +1420,50 @@ export const CoupleStargazingIcon: React.FC<IconProps> = ({ className }) => (
   </svg>
 );
 
+// ===== POSITION DECK: LUXURY SILHOUETTES =====
+export const PositionOralIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="52" cy="21" r="11" fill="currentColor" opacity="0.86" />
+    <path d="M37 70C38 48 42 34 54 30C66 34 71 47 70 70H37Z" fill="currentColor" opacity="0.82" />
+    <circle cx="25" cy="49" r="9" fill="currentColor" />
+    <path d="M8 70C12 59 19 54 29 56C36 57 41 62 44 70H8Z" fill="currentColor" />
+    <path d="M27 40C35 35 40 30 43 24" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
+    <path d="M19 19L21 14L23 19L28 21L23 23L21 28L19 23L14 21L19 19Z" fill="white" opacity="0.84" />
+    <path d="M9 73H72" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.48" />
+  </svg>
+);
+
+export const PositionBlowjobIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 43C23 33 31 30 40 37C49 30 57 33 64 43C57 56 49 62 40 62C31 62 23 56 16 43Z" fill="currentColor" />
+    <path d="M19 43C29 45 50 45 61 43" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
+    <path d="M40 15L43 22L50 25L43 28L40 35L37 28L30 25L37 22L40 15Z" fill="white" opacity="0.84" />
+    <path d="M13 22C19 16 25 14 31 17M67 22C61 16 55 14 49 17" stroke="currentColor" strokeWidth="4" strokeLinecap="round" opacity="0.58" />
+    <circle cx="12" cy="48" r="3" fill="white" opacity="0.7" />
+    <circle cx="68" cy="48" r="3" fill="white" opacity="0.7" />
+  </svg>
+);
+
+export const PositionHandjobIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13 48C22 39 29 33 35 24C38 20 44 22 43 27L39 37L54 28C59 25 63 31 59 35L45 49C39 56 34 63 29 70" fill="currentColor" />
+    <path d="M67 48C58 39 51 33 45 24C42 20 36 22 37 27L41 37L26 28C21 25 17 31 21 35L35 49C41 56 46 63 51 70" fill="currentColor" opacity="0.7" />
+    <path d="M40 49C33 43 27 48 29 54C31 60 40 65 40 65C40 65 49 60 51 54C53 48 47 43 40 49Z" fill="white" opacity="0.9" />
+    <path d="M12 72H68" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.45" />
+  </svg>
+);
+
+export const PositionFinalIcon: React.FC<IconProps> = ({ className }) => (
+  <svg className={className} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M40 5L47 14L59 12L61 24L72 30L66 41L72 52L61 58L59 70L47 68L40 77L33 68L21 70L19 58L8 52L14 41L8 30L19 24L21 12L33 14L40 5Z" fill="currentColor" opacity="0.3" />
+    <circle cx="29" cy="29" r="9" fill="currentColor" />
+    <circle cx="51" cy="29" r="9" fill="currentColor" opacity="0.78" />
+    <path d="M16 66C17 48 22 39 31 39C36 39 39 43 40 49C41 43 44 39 49 39C58 39 63 48 64 66H16Z" fill="currentColor" />
+    <path d="M25 44C31 48 36 53 40 62C44 53 49 48 55 44" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.88" />
+    <path d="M37 20L40 13L43 20L50 23L43 26L40 33L37 26L30 23L37 20Z" fill="white" opacity="0.9" />
+  </svg>
+);
+
 // Icon name to component mapping
 const ICON_MAP: Record<string, React.FC<IconProps>> = {
   lips: LipsIcon,
@@ -1330,6 +1507,17 @@ const ICON_MAP: Record<string, React.FC<IconProps>> = {
   hands: HandsTogetherIcon,
   button: ButtonUndoIcon,
   breath: HeartbeatIcon,
+  playful_attention: PlayfulAttentionIcon,
+  love_song_poem: LoveSongPoemIcon,
+  music_perfume: MusicPerfumeIcon,
+  romantic_outfit: RomanticOutfitIcon,
+  body_kiss: BodyKissIcon,
+  eyes_voice: EyesVoiceIcon,
+  triple_kiss: TripleKissIcon,
+  unbutton_back_caress: UnbuttonBackCaressIcon,
+  blindfold_kiss: BlindfoldKissIcon,
+  ice_back_trace: IceBackTraceIcon,
+  collarbone_trace: CollarboneTraceIcon,
   lingerie: LingerieIcon,
   tongue: TongueIcon,
   couple: CoupleEmbraceIcon,
@@ -1418,6 +1606,10 @@ const ICON_MAP: Record<string, React.FC<IconProps>> = {
   movie_award: MovieAwardIcon,
   streaming: StreamingIcon,
   cinema_seats: CinemaSeatsIcon,
+  position_oral: PositionOralIcon,
+  position_blowjob: PositionBlowjobIcon,
+  position_handjob: PositionHandjobIcon,
+  position_final: PositionFinalIcon,
 };
 
 export const CARD_ICON_NAMES = Object.keys(ICON_MAP);
@@ -1432,6 +1624,22 @@ export function autoAssignIcon(content: string): string {
   const lower = content.toLowerCase();
   const kissContext = lower.replace(/cầu hôn/g, '');
   const mentionsKiss = kissContext.includes('hôn') || lower.includes('môi');
+
+  if ((lower.includes('ngốc nghếch') || lower.includes('tinh nghịch')) && lower.includes('chú ý')) return 'playful_attention';
+  if ((lower.includes('trang phục') || lower.includes('kiểu tóc')) && lower.includes('cuốn hút')) return 'mirror';
+  if (lower.includes('ngày hẹn hò mơ ước') || lower.includes('buổi hẹn hò mơ ước')) return 'location';
+  if ((lower.includes('góc nghiêng') || lower.includes('đường nét')) && lower.includes('cơ thể')) return 'body';
+  if ((lower.includes('bài hát') || lower.includes('bản nhạc') || lower.includes('âm nhạc')) && (lower.includes('mùi hương') || lower.includes('nước hoa'))) return 'music_perfume';
+  if ((lower.includes('hát') || lower.includes('tình ca')) && (lower.includes('câu thơ') || lower.includes('đọc thơ'))) return 'love_song_poem';
+  if (lower.includes('trang phục quyến rũ') || lower.includes('bộ đồ quyến rũ')) return 'romantic_outfit';
+  if (mentionsKiss && (lower.includes('vị trí nào trên cơ thể') || lower.includes('vị trí trên cơ thể'))) return 'body_kiss';
+  if (lower.includes('ánh mắt') && (lower.includes('giọng nói') || lower.includes('lời nói'))) return 'eyes_voice';
+  if (mentionsKiss && (lower.includes('3 nụ hôn') || lower.includes('ba nụ hôn'))) return 'triple_kiss';
+  if (mentionsKiss && lower.includes('bịt mắt')) return 'blindfold_kiss';
+  if (lower.includes('cúc áo') && (lower.includes('vuốt') || lower.includes('chạm')) && lower.includes('lưng')) return 'unbutton_back_caress';
+  if ((lower.includes('đá lạnh') || lower.includes('ngón tay ấm')) && lower.includes('sống lưng')) return 'ice_back_trace';
+  if (lower.includes('xương đòn') && lower.includes('ngón tay')) return 'collarbone_trace';
+  if (mentionsKiss && lower.includes('địa điểm')) return 'location';
 
   if (lower.includes('xoay một vòng') || lower.includes('bế xoay') || lower.includes('nhấc bổng xoay') || lower.includes('quay vòng')) return 'couple_playful_spin_art';
   if (mentionsKiss && (lower.includes('bế lên') || lower.includes('nhấc bổng') || lower.includes('ôm bổng') || lower.includes('bế trong tay'))) return 'couple_lifted_kiss_art';

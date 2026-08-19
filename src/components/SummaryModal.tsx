@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Trophy, Heart, RotateCcw, X, CheckCircle2, Layers3 } from 'lucide-react';
-import { ClothingRemovalEvent, OutfitState, Player } from '../types';
+import { ClothingRemovalEvent, IntimacyEvent, JourneyPhase, OutfitState, Player } from '../types';
 
 interface SummaryModalProps {
   player1: Player;
@@ -10,6 +10,10 @@ interface SummaryModalProps {
   favoritesCount: number;
   outfitStates?: [OutfitState, OutfitState];
   removalEvents?: ClothingRemovalEvent[];
+  intimacyPercent?: number;
+  intimacyEvents?: IntimacyEvent[];
+  positionCardsRevealed?: number;
+  journeyPhase?: JourneyPhase;
   onRestart: () => void;
   onClose: () => void;
 }
@@ -41,6 +45,10 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   favoritesCount,
   outfitStates,
   removalEvents,
+  intimacyPercent,
+  intimacyEvents,
+  positionCardsRevealed = 0,
+  journeyPhase,
   onRestart,
   onClose,
 }) => {
@@ -48,7 +56,14 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const totalCompleted = player1.completedCount + player2.completedCount;
-  const intimacyScore = Math.min(100, Math.round((totalCompleted / Math.max(1, totalRounds)) * 100));
+  const legacyIntimacyScore = Math.min(100, Math.round((totalCompleted / Math.max(1, totalRounds)) * 100));
+  const intimacyScore = intimacyPercent ?? legacyIntimacyScore;
+  const cardGain = intimacyEvents
+    ?.filter((event) => event.source === 'completed_card')
+    .reduce((total, event) => total + event.amount, 0) ?? 0;
+  const clothingGain = intimacyEvents
+    ?.filter((event) => event.source === 'card_clothing_removal')
+    .reduce((total, event) => total + event.amount, 0) ?? 0;
 
   let intimacyBadge = 'Gắn Kết Nhẹ Nhàng 🌸';
   if (intimacyScore > 75) intimacyBadge = 'Cặp Đôi Bùng Nổ Nồng Nhiệt 💋';
@@ -199,6 +214,27 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
           <div className="inline-block px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/40 text-xs text-rose-300 font-medium">
             {intimacyBadge}
           </div>
+          {intimacyEvents && (
+            <div className="grid grid-cols-3 gap-1.5 pt-2 text-center">
+              <div className="rounded-lg bg-white/[0.04] px-1 py-1.5">
+                <div className="text-[9px] text-neutral-500">Hoàn thành</div>
+                <div className="text-xs font-bold text-white">+{cardGain}%</div>
+              </div>
+              <div className="rounded-lg bg-rose-500/[0.07] px-1 py-1.5">
+                <div className="text-[9px] text-neutral-500">Theo thẻ</div>
+                <div className="text-xs font-bold text-rose-300">+{clothingGain}%</div>
+              </div>
+              <div className="rounded-lg bg-amber-500/[0.07] px-1 py-1.5">
+                <div className="text-[9px] text-neutral-500">Tư thế đã mở</div>
+                <div className="text-xs font-bold text-amber-300">{positionCardsRevealed}</div>
+              </div>
+            </div>
+          )}
+          {journeyPhase === 'final' && (
+            <p className="pt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-200">
+              Đã mở lá hiếm kết thúc hành trình
+            </p>
+          )}
         </div>
 
         {/* Player stats comparison */}

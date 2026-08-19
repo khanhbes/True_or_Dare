@@ -84,8 +84,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
   const [p2Avatar, setP2Avatar] = useState(initialPlayer2.avatar || '👩‍💼');
 
   const [selectedLevels, setSelectedLevels] = useState<CardLevel[]>(initialSettings.levels);
-  const [roundsMode, setRoundsMode] = useState<'unlimited' | 'target'>(initialSettings.roundsMode);
-  const [targetRounds, setTargetRounds] = useState<number>(initialSettings.targetRounds);
   const [privacyDefault, setPrivacyDefault] = useState<boolean>(initialSettings.privacyDefault);
   const [enableTimer, setEnableTimer] = useState<boolean>(initialSettings.enableTimer);
   const [drawMode, setDrawMode] = useState<'random' | 'choose'>(initialSettings.drawMode);
@@ -128,8 +126,8 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
     };
     const settings: GameSettings = {
       levels: selectedLevels,
-      roundsMode,
-      targetRounds,
+      roundsMode: 'unlimited',
+      targetRounds: initialSettings.targetRounds,
       privacyDefault,
       enableTimer,
       timerDuration: 30,
@@ -332,47 +330,14 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
             Tùy Chỉnh Lượt Chơi & Bảo Mật
           </h3>
 
-          {/* Rounds Mode */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-800">
+          {/* Journey is the single game mode. */}
+          <div className="flex items-start gap-3 rounded-xl border border-amber-300/20 bg-amber-300/[0.05] px-3.5 py-3">
+            <Heart className="mt-0.5 h-5 w-5 shrink-0 fill-rose-400/20 text-rose-300" aria-hidden="true" />
             <div>
-              <div className="text-sm font-medium text-white">Chế độ số lượt chơi</div>
-              <div className="text-xs text-neutral-400">Giới hạn số lượt hoặc chơi thoải mái</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setRoundsMode('unlimited')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                  roundsMode === 'unlimited'
-                    ? 'bg-rose-600 text-white shadow-md'
-                    : 'bg-neutral-800 text-neutral-400 hover:text-white'
-                }`}
-              >
-                Không giới hạn
-              </button>
-              <button
-                type="button"
-                onClick={() => setRoundsMode('target')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                  roundsMode === 'target'
-                    ? 'bg-rose-600 text-white shadow-md'
-                    : 'bg-neutral-800 text-neutral-400 hover:text-white'
-                }`}
-              >
-                Cố định
-              </button>
-              {roundsMode === 'target' && (
-                <select
-                  value={targetRounds}
-                  onChange={(e) => setTargetRounds(Number(e.target.value))}
-                  className="appearance-none bg-neutral-800/90 border border-neutral-700 hover:border-amber-500/50 text-xs text-white rounded-xl px-2.5 py-1.5 transition-all duration-300 hover:shadow-[0_0_12px_rgba(212,175,55,0.12)] focus:border-rose-400/60 focus:shadow-[0_0_15px_rgba(255,107,157,0.1)]"
-                >
-                  <option value={10}>10 lượt</option>
-                  <option value={16}>16 lượt</option>
-                  <option value={20}>20 lượt</option>
-                  <option value={30}>30 lượt</option>
-                </select>
-              )}
+              <div className="text-sm font-medium text-white">Hành trình thân mật · 0–100%</div>
+              <div className="mt-0.5 text-xs leading-relaxed text-neutral-400">
+                Lá bài tăng dần từ 1 đến 5 sao. Ván kết thúc sau khi hai bạn mở lá hiếm cuối hành trình.
+              </div>
             </div>
           </div>
 
@@ -443,7 +408,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
               <div>
                 <div className="text-sm font-medium text-white">Đếm ngược cho thử thách</div>
                 <div className="text-xs text-neutral-400">
-                  Hiển thị đồng hồ đếm ngược cho các lá bài Thử Thách
+                  Hiển thị đồng hồ cho những lá Thử Thách đã được đặt thời gian
                 </div>
               </div>
             </div>

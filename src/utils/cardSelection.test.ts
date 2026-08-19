@@ -314,20 +314,60 @@ test('preferred type with no eligible cards returns null instead of changing typ
   assert.deepEqual(result.availableTypes, ['truth']);
 });
 
-test('system metadata survives legacy edits while explicit null disables it', () => {
-  const system = cards[3];
-  const legacyEdit = { ...system, content: 'Edited' };
+test('system metadata survives legacy edits while explicit overrides stay explicit', () => {
+  const system: CardItem = {
+    ...cards[3],
+    icon: 'blindfold_kiss',
+    timerSeconds: 45,
+    deck: 'position',
+    progression: { difficultyStars: 4, audience: 'both', intimacyGain: 11 },
+    position: {
+      family: 'handjob',
+      recipient: 'both',
+      orderGroup: 3,
+      rarity: 'luxury',
+    },
+  };
+  const legacyEdit = { ...system, content: 'Edited', icon: 'kiss_surprise' };
   delete legacyEdit.clothingEffect;
+  delete legacyEdit.timerSeconds;
+  delete legacyEdit.deck;
+  delete legacyEdit.progression;
+  delete legacyEdit.position;
   const inherited = mergeEditedSystemCard(system, legacyEdit);
   const explicitUndefined = mergeEditedSystemCard(system, {
     ...legacyEdit,
     clothingEffect: undefined,
   });
   const disabled = mergeEditedSystemCard(system, { ...legacyEdit, clothingEffect: null });
+  const timerOverride = mergeEditedSystemCard(system, { ...legacyEdit, timerSeconds: 90 });
+  const timerDisabled = mergeEditedSystemCard(system, { ...legacyEdit, timerSeconds: null });
+  const customIllustration = mergeEditedSystemCard(system, {
+    ...legacyEdit,
+    icon: 'heart',
+    illustrationOverride: true,
+  });
+  const progressionOverride = mergeEditedSystemCard(system, {
+    ...legacyEdit,
+    deck: 'standard',
+    progression: { difficultyStars: 2, audience: 'female' },
+    position: null,
+  });
 
   assert.equal(inherited.content, 'Edited');
+  assert.equal(inherited.icon, 'blindfold_kiss');
   assert.deepEqual(inherited.clothingEffect, system.clothingEffect);
   assert.deepEqual(explicitUndefined.clothingEffect, system.clothingEffect);
   assert.equal(disabled.clothingEffect, null);
+  assert.equal(inherited.timerSeconds, 45);
+  assert.equal(timerOverride.timerSeconds, 90);
+  assert.equal(timerDisabled.timerSeconds, null);
+  assert.equal(inherited.deck, 'position');
+  assert.deepEqual(inherited.progression, system.progression);
+  assert.deepEqual(inherited.position, system.position);
+  assert.equal(progressionOverride.deck, 'standard');
+  assert.deepEqual(progressionOverride.progression, { difficultyStars: 2, audience: 'female' });
+  assert.equal(progressionOverride.position, null);
+  assert.equal(customIllustration.icon, 'heart');
   assert.deepEqual(system.clothingEffect, { kind: 'remove_garment', target: 'opponent' });
 });

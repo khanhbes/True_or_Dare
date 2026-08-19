@@ -3,6 +3,7 @@ import { CardItem, CardLevel } from '../types';
 import { getCardIcon, autoAssignIcon } from './CardIcons';
 import { LEVEL_INFO } from '../data/cards';
 import { Heart } from 'lucide-react';
+import { deriveDifficultyStars, getCardAudience, getCardDeck } from '../utils/progression';
 
 interface GameCardProps {
   card: CardItem;
@@ -28,10 +29,19 @@ export const GameCard: React.FC<GameCardProps> = ({
   const levelInfo = LEVEL_INFO[card.level];
   const iconName = card.icon || autoAssignIcon(card.content);
   const IconComponent = getCardIcon(iconName);
+  const deck = getCardDeck(card);
+  const isPosition = deck === 'position';
+  const isRarePosition = card.position?.family === 'have_sex';
+  const audienceLabel = card.position
+    ? ({ male: 'Nam nhận', female: 'Nữ nhận', both: 'Cả hai' } as const)[card.position.recipient]
+    : ({ male: 'Nam', female: 'Nữ', both: 'Cả hai' } as const)[getCardAudience(card)];
+  const familyLabel = card.position
+    ? ({ oral: 'ORAL SEX', blowjob: 'BLOWJOB', handjob: 'HANDJOB', have_sex: 'HAVE SEX' } as const)[card.position.family]
+    : null;
 
   // Card level class
-  const levelClass = `card-${card.level}`;
-  const isIntimateOrPassionate = card.level === 'intimate' || card.level === 'passionate';
+  const levelClass = isRarePosition ? 'card-position-rare' : isPosition ? 'card-position' : `card-${card.level}`;
+  const isIntimateOrPassionate = !isPosition && (card.level === 'intimate' || card.level === 'passionate');
 
   // Size-dependent styles
   const sizeStyles = {
@@ -91,7 +101,13 @@ export const GameCard: React.FC<GameCardProps> = ({
       <div className="card-content-layer flex flex-col h-full">
         {/* Top: Type & Level badges */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {isPosition ? (
+              <span className={`${s.badge} rounded-full border border-[#e2c275]/45 bg-[#e2c275]/10 font-bold text-[#f7e7b0]`}>
+                ✦ {familyLabel}
+              </span>
+            ) : (
+              <>
             <span
               className={`${s.badge} rounded-full font-semibold border ${
                 card.type === 'truth'
@@ -104,6 +120,8 @@ export const GameCard: React.FC<GameCardProps> = ({
             <span className={`${s.badge} rounded-full border ${levelInfo.badgeBg}`}>
               {levelInfo.icon} {levelInfo.name}
             </span>
+              </>
+            )}
           </div>
 
           {/* Favorite button */}
@@ -161,6 +179,14 @@ export const GameCard: React.FC<GameCardProps> = ({
 
         {/* Bottom: Optional timer */}
         <div className="mt-auto pt-2">
+          <div className="mb-1.5 flex items-center justify-center gap-1.5 text-[9px] text-neutral-400">
+            <span className="rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-2 py-0.5 text-amber-200">
+              {deriveDifficultyStars(card)}★
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.035] px-2 py-0.5">
+              {audienceLabel}
+            </span>
+          </div>
           {card.timerSeconds && showContent && (
             <div className="text-[10px] text-amber-300/60 text-center">
               ⏱ {card.timerSeconds}s

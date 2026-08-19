@@ -7,10 +7,20 @@ import { GameTable } from './components/GameTable';
 import { CardCollection } from './components/CardCollection';
 import { SummaryModal } from './components/SummaryModal';
 import { RulesModal } from './components/RulesModal';
-import { CardItem, ClothingRemovalEvent, GameSettings, OutfitState, Player } from './types';
+import {
+  CardItem,
+  ClothingRemovalEvent,
+  GameSettings,
+  IntimacyEvent,
+  JourneyPhase,
+  OutfitState,
+  Player,
+  ProgressionConfig,
+} from './types';
 import { INITIAL_CARDS } from './data/cards';
 import { mergeEditedSystemCard } from './utils/cardSelection';
 import { createOutfitState, hydrateGameSettings } from './utils/wardrobe';
+import { getCardDeck, hydrateProgressionConfig } from './utils/progression';
 
 const STORAGE_KEYS = {
   CUSTOM_CARDS: 'tod_couples_custom_cards',
@@ -22,6 +32,7 @@ const STORAGE_KEYS = {
   APP_MODE: 'tod_couples_app_mode',
   UNLOCKED_CARDS: 'tod_couples_unlocked_cards',
   DELETED_SYSTEM_CARDS: 'tod_couples_deleted_system_cards',
+  PROGRESSION_CONFIG: 'tod_couples_progression_config',
 };
 
 type AppMode = 'player' | 'developer';
@@ -36,6 +47,12 @@ const loadStoredAppMode = (): AppMode => {
 
 const CARD_LEVELS = new Set(['gentle', 'intimate', 'passionate']);
 const CARD_TYPES = new Set(['truth', 'dare']);
+const CARD_DECKS = new Set(['standard', 'position']);
+const CARD_AUDIENCES = new Set(['male', 'female', 'both']);
+const POSITION_FAMILIES = new Set(['oral', 'blowjob', 'handjob', 'have_sex']);
+const POSITION_RECIPIENTS = new Set(['male', 'female', 'both']);
+const OUTFIT_STAGES = new Set(['dressed', 'underwear_only', 'empty']);
+const MAX_CARD_TIMER_SECONDS = 3600;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -55,9 +72,39 @@ const isStoredCard = (value: unknown): value is CardItem => {
       (effect.target === 'self' || effect.target === 'opponent'));
   const hasValidTimer =
     value.timerSeconds === undefined ||
+    value.timerSeconds === null ||
     (typeof value.timerSeconds === 'number' &&
-      Number.isFinite(value.timerSeconds) &&
-      value.timerSeconds >= 0);
+      Number.isFinite(value.timerSeconds));
+  const progression = value.progression;
+  const validStages = (stages: unknown) =>
+    stages === undefined ||
+    (Array.isArray(stages) && stages.every((stage) => typeof stage === 'string' && OUTFIT_STAGES.has(stage)));
+  const hasValidProgression =
+    progression === undefined ||
+    progression === null ||
+    (isRecord(progression) &&
+      typeof progression.difficultyStars === 'number' &&
+      Number.isInteger(progression.difficultyStars) &&
+      progression.difficultyStars >= 1 &&
+      progression.difficultyStars <= 5 &&
+      typeof progression.audience === 'string' &&
+      CARD_AUDIENCES.has(progression.audience) &&
+      (progression.intimacyGain === undefined ||
+        (typeof progression.intimacyGain === 'number' &&
+          Number.isFinite(progression.intimacyGain) &&
+          progression.intimacyGain >= 0 &&
+          progression.intimacyGain <= 100)) &&
+      validStages(progression.actorStages) &&
+      validStages(progression.partnerStages));
+  const position = value.position;
+  const hasValidPosition =
+    position === undefined ||
+    position === null ||
+    (isRecord(position) &&
+      typeof position.family === 'string' && POSITION_FAMILIES.has(position.family) &&
+      typeof position.recipient === 'string' && POSITION_RECIPIENTS.has(position.recipient) &&
+      typeof position.orderGroup === 'number' && [1, 2, 3, 4].includes(position.orderGroup) &&
+      (position.rarity === 'luxury' || position.rarity === 'mythic'));
 
   return (
     typeof value.id === 'string' &&
@@ -69,9 +116,13 @@ const isStoredCard = (value: unknown): value is CardItem => {
     typeof value.content === 'string' &&
     isOptionalString(value.hint) &&
     hasValidTimer &&
+    (value.deck === undefined || (typeof value.deck === 'string' && CARD_DECKS.has(value.deck))) &&
+    hasValidProgression &&
+    hasValidPosition &&
     (value.isCustom === undefined || typeof value.isCustom === 'boolean') &&
     isOptionalString(value.icon) &&
     isOptionalString(value.customImage) &&
+    (value.illustrationOverride === undefined || typeof value.illustrationOverride === 'boolean') &&
     hasValidEffect
   );
 };
@@ -92,7 +143,24 @@ const loadStoredArray = <T,>(
 
 const loadStoredCards = (key: string): CardItem[] => {
   const seenIds = new Set<string>();
-  return loadStoredArray(key, isStoredCard).filter((card) => {
+  return loadStoredArray(key, isStoredCard).map((card) => {
+    const normalizedCard = { ...card };
+    if (typeof normalizedCard.timerSeconds === 'number') {
+      if (normalizedCard.timerSeconds <= 0) {
+        // Older editor versions could store zero. Preserve its intended
+        // "disabled" meaning with the explicit sentinel used by system edits.
+        normalizedCard.timerSeconds = null;
+      } else if (
+        !Number.isInteger(normalizedCard.timerSeconds) ||
+        normalizedCard.timerSeconds > MAX_CARD_TIMER_SECONDS
+      ) {
+        // Keep the card instead of dropping user content because one legacy
+        // timer field was malformed. An absent value simply means no timer.
+        delete normalizedCard.timerSeconds;
+      }
+    }
+    return normalizedCard;
+  }).filter((card) => {
     if (seenIds.has(card.id)) return false;
     seenIds.add(card.id);
     return true;
@@ -171,6 +239,14 @@ export default function App() {
       return hydrateGameSettings(null);
     }
   });
+  const [progressionConfig, setProgressionConfig] = useState<ProgressionConfig>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PROGRESSION_CONFIG);
+      return hydrateProgressionConfig(saved ? JSON.parse(saved) : null);
+    } catch {
+      return hydrateProgressionConfig(null);
+    }
+  });
 
   // Current turn state
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<0 | 1>(0);
@@ -180,6 +256,10 @@ export default function App() {
     createOutfitState(settings.outfits[1]),
   ]);
   const [clothingRemovalEvents, setClothingRemovalEvents] = useState<ClothingRemovalEvent[]>([]);
+  const [intimacyPercent, setIntimacyPercent] = useState(0);
+  const [intimacyEvents, setIntimacyEvents] = useState<IntimacyEvent[]>([]);
+  const [journeyPhase, setJourneyPhase] = useState<JourneyPhase>('standard');
+  const [sessionPositionCardIds, setSessionPositionCardIds] = useState<string[]>([]);
 
   // Combine built-in cards + custom cards
   const editedCardMap = new Map<string, CardItem>(
@@ -193,7 +273,9 @@ export default function App() {
   ];
 
   // Filter available cards by active levels selected in settings
-  const availableCards = allCards.filter((card) => settings.levels.includes(card.level));
+  const availableCards = allCards.filter(
+    (card) => getCardDeck(card) === 'position' || settings.levels.includes(card.level),
+  );
 
   // Save changes to localStorage
   useEffect(() => {
@@ -245,6 +327,12 @@ export default function App() {
     } catch {}
   }, [settings]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PROGRESSION_CONFIG, JSON.stringify(progressionConfig));
+    } catch {}
+  }, [progressionConfig]);
+
   // Favorite toggle
   const handleToggleFavorite = (cardId: string) => {
     setFavorites((prev) =>
@@ -262,6 +350,7 @@ export default function App() {
   };
 
   const handleDeleteCard = (card: CardItem) => {
+    if (card.position?.family === 'have_sex') return;
     const cardId = card.id;
     if (card.isCustom) {
       setCustomCards((current) => current.filter((item) => item.id !== cardId));
@@ -280,7 +369,19 @@ export default function App() {
 
   const handleUpdateCard = (
     updatedCard: CardItem,
-    { clothingEffectTouched }: { clothingEffectTouched: boolean },
+    {
+      clothingEffectTouched,
+      illustrationTouched,
+      timerTouched,
+      progressionTouched,
+      positionTouched,
+    }: {
+      clothingEffectTouched: boolean;
+      illustrationTouched: boolean;
+      timerTouched: boolean;
+      progressionTouched: boolean;
+      positionTouched: boolean;
+    },
   ) => {
     if (updatedCard.isCustom) {
       setCustomCards((prev) => prev.map((card) => card.id === updatedCard.id ? updatedCard : card));
@@ -290,6 +391,20 @@ export default function App() {
       const previousRawEdit = prev.find((card) => card.id === updatedCard.id);
       const nextRawEdit = { ...updatedCard };
 
+      if (illustrationTouched) {
+        nextRawEdit.illustrationOverride = true;
+      } else if (previousRawEdit?.illustrationOverride) {
+        nextRawEdit.illustrationOverride = true;
+        nextRawEdit.icon = previousRawEdit.icon;
+        nextRawEdit.customImage = previousRawEdit.customImage;
+      } else {
+        // Legacy edits copied the old built-in illustration into localStorage.
+        // Leave it absent so the latest curated system icon can flow through.
+        delete nextRawEdit.icon;
+        delete nextRawEdit.customImage;
+        delete nextRawEdit.illustrationOverride;
+      }
+
       if (!clothingEffectTouched) {
         if (previousRawEdit?.clothingEffect !== undefined) {
           nextRawEdit.clothingEffect = previousRawEdit.clothingEffect;
@@ -297,6 +412,37 @@ export default function App() {
           // The effect shown in the editor came from the built-in card. Keep the
           // persisted field absent so future system metadata can still flow through.
           delete nextRawEdit.clothingEffect;
+        }
+      }
+
+      if (!timerTouched) {
+        if (
+          previousRawEdit &&
+          Object.prototype.hasOwnProperty.call(previousRawEdit, 'timerSeconds')
+        ) {
+          nextRawEdit.timerSeconds = previousRawEdit.timerSeconds;
+        } else {
+          // The effective value shown in the editor came from the built-in
+          // card. Keep it absent in storage so future curated values flow in.
+          delete nextRawEdit.timerSeconds;
+        }
+      }
+
+      if (!progressionTouched) {
+        if (previousRawEdit && Object.prototype.hasOwnProperty.call(previousRawEdit, 'progression')) {
+          nextRawEdit.progression = previousRawEdit.progression;
+        } else {
+          delete nextRawEdit.progression;
+        }
+      }
+
+      if (!positionTouched) {
+        if (previousRawEdit && Object.prototype.hasOwnProperty.call(previousRawEdit, 'position')) {
+          nextRawEdit.position = previousRawEdit.position;
+          nextRawEdit.deck = previousRawEdit.deck;
+        } else {
+          delete nextRawEdit.position;
+          delete nextRawEdit.deck;
         }
       }
 
@@ -316,6 +462,10 @@ export default function App() {
       createOutfitState(newSettings.outfits[1]),
     ]);
     setClothingRemovalEvents([]);
+    setIntimacyPercent(0);
+    setIntimacyEvents([]);
+    setJourneyPhase('standard');
+    setSessionPositionCardIds([]);
     setScreen('game');
   };
 
@@ -336,6 +486,10 @@ export default function App() {
       createOutfitState(settings.outfits[1]),
     ]);
     setClothingRemovalEvents([]);
+    setIntimacyPercent(0);
+    setIntimacyEvents([]);
+    setJourneyPhase('standard');
+    setSessionPositionCardIds([]);
     setShowSummary(false);
     setScreen('setup');
   };
@@ -394,6 +548,17 @@ export default function App() {
             unlockedCardIds={unlockedCardIds}
             onUnlockCard={handleUnlockCard}
             onNextTurn={handleNextTurn}
+            progressionConfig={progressionConfig}
+            intimacyPercent={intimacyPercent}
+            journeyPhase={journeyPhase}
+            sessionPositionCardIds={sessionPositionCardIds}
+            onIntimacyPercentChange={setIntimacyPercent}
+            onAddIntimacyEvents={(events) => setIntimacyEvents((current) => [...current, ...events])}
+            onJourneyPhaseChange={setJourneyPhase}
+            onRevealPositionCard={(cardId) => {
+              setSessionPositionCardIds((current) => current.includes(cardId) ? current : [...current, cardId]);
+              handleUnlockCard(cardId);
+            }}
           />
         )}
 
@@ -408,6 +573,8 @@ export default function App() {
             onAddCustomCard={handleAddCustomCard}
             onUpdateCard={handleUpdateCard}
             onDeleteCard={handleDeleteCard}
+            progressionConfig={progressionConfig}
+            onProgressionConfigChange={setProgressionConfig}
             onBack={() => setScreen(collectionReturnScreen)}
           />
         )}
@@ -422,6 +589,10 @@ export default function App() {
           favoritesCount={favorites.length}
           outfitStates={outfitStates}
           removalEvents={clothingRemovalEvents}
+          intimacyPercent={intimacyPercent}
+          intimacyEvents={intimacyEvents}
+          positionCardsRevealed={sessionPositionCardIds.length}
+          journeyPhase={journeyPhase}
           onRestart={handleRestartSession}
           onClose={() => setShowSummary(false)}
         />

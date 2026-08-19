@@ -15,11 +15,28 @@ import {
   Eraser,
   Code2,
   LockKeyhole,
+  Timer,
+  SlidersHorizontal,
 } from 'lucide-react';
-import { CardItem, CardLevel, CardType, ClothingEffect } from '../types';
+import {
+  CardAudience,
+  CardDeck,
+  CardItem,
+  CardLevel,
+  CardType,
+  ClothingEffect,
+  DifficultyStars,
+  OutfitStage,
+  PositionFamily,
+  PositionRarity,
+  PositionRecipient,
+  ProgressionConfig,
+} from '../types';
 import { soundEngine } from '../utils/audio';
 import { GameCard } from './GameCard';
 import { CARD_ICON_NAMES, autoAssignIcon, getCardIcon } from './CardIcons';
+import { ProgressionConfigModal } from './ProgressionConfigModal';
+import { deriveDifficultyStars, getCardAudience, getCardDeck } from '../utils/progression';
 
 export type CardCollectionMode = 'player' | 'developer';
 
@@ -30,7 +47,13 @@ export interface CardCollectionProps {
   onAddCustomCard: (newCard: CardItem) => void;
   onUpdateCard: (
     card: CardItem,
-    metadata: { clothingEffectTouched: boolean },
+    metadata: {
+      clothingEffectTouched: boolean;
+      illustrationTouched: boolean;
+      timerTouched: boolean;
+      progressionTouched: boolean;
+      positionTouched: boolean;
+    },
   ) => void;
   /** Defaults to developer to preserve the behavior of older call sites. */
   mode?: CardCollectionMode;
@@ -40,6 +63,8 @@ export interface CardCollectionProps {
   onDeleteCard?: (card: CardItem) => void;
   /** Keeps the back action accurate when the collection is opened mid-game. */
   backDestination?: 'home' | 'game';
+  progressionConfig: ProgressionConfig;
+  onProgressionConfigChange: (config: ProgressionConfig) => void;
   onBack: () => void;
 }
 
@@ -56,6 +81,11 @@ const TYPE_SORT_ORDER: Record<CardType, number> = {
 
 type ClothingEffectSelection = 'none' | ClothingEffect['target'];
 type CollectionTab = 'all' | 'truth' | 'dare' | 'favorites' | CardLevel;
+type StageSelection = 'any' | OutfitStage;
+
+const CARD_TIMER_PRESETS = [10, 15, 30, 45, 60] as const;
+const DEFAULT_CARD_TIMER_SECONDS = 30;
+const MAX_CARD_TIMER_SECONDS = 3600;
 
 interface LockedCollectionCardProps {
   position: number;
@@ -214,6 +244,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   unlockedCardIds,
   onDeleteCard,
   backDestination = 'home',
+  progressionConfig,
+  onProgressionConfigChange,
   onBack,
 }) => {
   const prefersReducedMotion = useReducedMotion();
@@ -221,6 +253,10 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
   const [pendingDeleteCardId, setPendingDeleteCardId] = useState<string | null>(null);
+  const [showProgressionConfig, setShowProgressionConfig] = useState(false);
+  const [deckFilter, setDeckFilter] = useState<'all' | CardDeck>('all');
+  const [starFilter, setStarFilter] = useState<'all' | DifficultyStars>('all');
+  const [audienceFilter, setAudienceFilter] = useState<'all' | CardAudience>('all');
 
   // Add Custom Card Modal State
   const [isAdding, setIsAdding] = useState(false);
@@ -232,6 +268,36 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [customIcon, setCustomIcon] = useState('heart');
   const [customClothingEffect, setCustomClothingEffect] = useState<ClothingEffectSelection>('none');
   const [clothingEffectTouched, setClothingEffectTouched] = useState(false);
+  const [illustrationTouched, setIllustrationTouched] = useState(false);
+  const [customTimerEnabled, setCustomTimerEnabled] = useState(false);
+  const [customTimerSeconds, setCustomTimerSeconds] = useState(String(DEFAULT_CARD_TIMER_SECONDS));
+  const [timerTouched, setTimerTouched] = useState(false);
+  const [customDeck, setCustomDeck] = useState<CardDeck>('standard');
+  const [customStars, setCustomStars] = useState<DifficultyStars>(1);
+  const [customAudience, setCustomAudience] = useState<CardAudience>('both');
+  const [customGainEnabled, setCustomGainEnabled] = useState(false);
+  const [customGain, setCustomGain] = useState('4');
+  const [customActorStage, setCustomActorStage] = useState<StageSelection>('any');
+  const [customPartnerStage, setCustomPartnerStage] = useState<StageSelection>('any');
+  const [customPositionFamily, setCustomPositionFamily] = useState<PositionFamily>('oral');
+  const [customPositionRecipient, setCustomPositionRecipient] = useState<PositionRecipient>('both');
+  const [customPositionOrder, setCustomPositionOrder] = useState<1 | 2 | 3 | 4>(1);
+  const [customPositionRarity, setCustomPositionRarity] = useState<PositionRarity>('luxury');
+  const [progressionTouched, setProgressionTouched] = useState(false);
+  const [positionTouched, setPositionTouched] = useState(false);
+
+  const parsedCustomTimerSeconds = Number(customTimerSeconds);
+  const hasValidCustomTimer = customType !== 'dare'
+    || !customTimerEnabled
+    || (
+      Number.isInteger(parsedCustomTimerSeconds)
+      && parsedCustomTimerSeconds >= 1
+      && parsedCustomTimerSeconds <= MAX_CARD_TIMER_SECONDS
+    );
+  const parsedCustomGain = Number(customGain);
+  const hasValidCustomGain = !customGainEnabled || (
+    Number.isFinite(parsedCustomGain) && parsedCustomGain >= 0 && parsedCustomGain <= 100
+  );
 
   // Image upload & editor state
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -287,6 +353,14 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       if (activeTab === 'favorites') return visibleFavorites.includes(card.id);
       return card.level === activeTab;
     })
+    .filter((card) => deckFilter === 'all' || getCardDeck(card) === deckFilter)
+    .filter((card) => starFilter === 'all' || deriveDifficultyStars(card) === starFilter)
+    .filter((card) => {
+      if (audienceFilter === 'all') return true;
+      return getCardDeck(card) === 'position'
+        ? card.position?.recipient === audienceFilter
+        : getCardAudience(card) === audienceFilter;
+    })
     .sort((firstCard, secondCard) => {
       const levelDifference = LEVEL_SORT_ORDER[firstCard.level] - LEVEL_SORT_ORDER[secondCard.level];
       if (levelDifference !== 0) return levelDifference;
@@ -303,6 +377,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       return;
     }
     setImageError('');
+    setIllustrationTouched(true);
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
@@ -340,6 +415,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setOriginalImage(null);
     setProcessedImage(null);
     setImageError('');
+    setIllustrationTouched(true);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
@@ -352,6 +428,23 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setCustomIcon('heart');
     setCustomClothingEffect('none');
     setClothingEffectTouched(false);
+    setIllustrationTouched(false);
+    setCustomTimerEnabled(false);
+    setCustomTimerSeconds(String(DEFAULT_CARD_TIMER_SECONDS));
+    setTimerTouched(false);
+    setCustomDeck('standard');
+    setCustomStars(1);
+    setCustomAudience('both');
+    setCustomGainEnabled(false);
+    setCustomGain('4');
+    setCustomActorStage('any');
+    setCustomPartnerStage('any');
+    setCustomPositionFamily('oral');
+    setCustomPositionRecipient('both');
+    setCustomPositionOrder(1);
+    setCustomPositionRarity('luxury');
+    setProgressionTouched(false);
+    setPositionTouched(false);
     setImgZoom(1);
     setImgOffsetX(0);
     setImgOffsetY(0);
@@ -359,8 +452,11 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setImgBackgroundTolerance(55);
     setImgThreshold(140);
     setImgContrast(1.5);
-    handleClearImage();
-  }, [handleClearImage]);
+    setOriginalImage(null);
+    setProcessedImage(null);
+    setImageError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
 
   useEffect(() => {
     if (isDeveloper) return;
@@ -444,6 +540,30 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setCustomIcon(card.icon || autoAssignIcon(card.content));
     setCustomClothingEffect(card.clothingEffect?.target || 'none');
     setClothingEffectTouched(false);
+    setIllustrationTouched(false);
+    const existingTimer = typeof card.timerSeconds === 'number'
+      && Number.isInteger(card.timerSeconds)
+      && card.timerSeconds >= 1
+      && card.timerSeconds <= MAX_CARD_TIMER_SECONDS
+      ? card.timerSeconds
+      : null;
+    setCustomTimerEnabled(card.type === 'dare' && existingTimer !== null);
+    setCustomTimerSeconds(String(existingTimer ?? DEFAULT_CARD_TIMER_SECONDS));
+    setTimerTouched(false);
+    setCustomDeck(getCardDeck(card));
+    setCustomStars(deriveDifficultyStars(card));
+    setCustomAudience(getCardAudience(card));
+    const existingGain = card.progression?.intimacyGain;
+    setCustomGainEnabled(typeof existingGain === 'number');
+    setCustomGain(String(existingGain ?? 4));
+    setCustomActorStage(card.progression?.actorStages?.[0] ?? 'any');
+    setCustomPartnerStage(card.progression?.partnerStages?.[0] ?? 'any');
+    setCustomPositionFamily(card.position?.family ?? 'oral');
+    setCustomPositionRecipient(card.position?.recipient ?? 'both');
+    setCustomPositionOrder(card.position?.orderGroup ?? 1);
+    setCustomPositionRarity(card.position?.rarity ?? 'luxury');
+    setProgressionTouched(false);
+    setPositionTouched(false);
     setOriginalImage(card.customImage || null);
     setProcessedImage(card.customImage || null);
     setImgRemoveBackground(false);
@@ -454,19 +574,38 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
 
   const handleCreateCustomCard = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customContent.trim()) return;
+    if (!customContent.trim() || !hasValidCustomTimer || !hasValidCustomGain) return;
 
     soundEngine.playCompleteSound();
     const nextCard: CardItem = {
       ...editingCard,
       id: editingCard?.id || `custom-${Date.now()}`,
-      type: customType,
-      level: customLevel,
+      type: customDeck === 'position' ? 'dare' : customType,
+      level: customDeck === 'position' ? 'passionate' : customLevel,
       content: customContent.trim(),
       hint: customHint.trim() || undefined,
       icon: processedImage ? undefined : customIcon,
       isCustom: editingCard ? editingCard.isCustom : true,
       customImage: processedImage || undefined,
+      timerSeconds: customDeck === 'standard' && customType === 'dare' && customTimerEnabled
+        ? parsedCustomTimerSeconds
+        : null,
+      deck: customDeck,
+      progression: {
+        difficultyStars: customStars,
+        audience: customDeck === 'position' ? 'both' : customAudience,
+        intimacyGain: customGainEnabled ? parsedCustomGain : undefined,
+        actorStages: customActorStage === 'any' ? undefined : [customActorStage],
+        partnerStages: customPartnerStage === 'any' ? undefined : [customPartnerStage],
+      },
+      position: customDeck === 'position'
+        ? {
+            family: customPositionFamily,
+            recipient: customPositionRecipient,
+            orderGroup: customPositionFamily === 'have_sex' ? 4 : customPositionOrder,
+            rarity: customPositionFamily === 'have_sex' ? 'mythic' : customPositionRarity,
+          }
+        : null,
     };
 
     // `undefined` keeps system-card gameplay metadata during hydration/merge.
@@ -478,7 +617,13 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     }
 
     if (editingCard) {
-      onUpdateCard(nextCard, { clothingEffectTouched });
+      onUpdateCard(nextCard, {
+        clothingEffectTouched,
+        illustrationTouched,
+        timerTouched,
+        progressionTouched,
+        positionTouched,
+      });
     } else {
       onAddCustomCard(nextCard);
     }
@@ -530,17 +675,28 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
           </span>
 
           {isDeveloper && (
-            <button
-              aria-label="Thêm bài riêng"
-              onClick={() => {
-                soundEngine.playTick();
-                openCreateEditor();
-              }}
-              className="flex cursor-pointer items-center gap-1.5 rounded-full bg-rose-600/80 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 motion-reduce:transition-none"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden md:inline">Thêm bài riêng</span>
-            </button>
+            <>
+              <button
+                type="button"
+                aria-label="Cấu hình tiến triển"
+                onClick={() => setShowProgressionConfig(true)}
+                className="flex min-h-10 items-center gap-1.5 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 text-xs font-semibold text-amber-100 transition-colors hover:bg-amber-300/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                <span className="hidden lg:inline">Tiến triển</span>
+              </button>
+              <button
+                aria-label="Thêm bài riêng"
+                onClick={() => {
+                  soundEngine.playTick();
+                  openCreateEditor();
+                }}
+                className="flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full bg-rose-600/80 px-3 text-xs font-semibold text-white shadow-md transition-all hover:bg-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 motion-reduce:transition-none"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden md:inline">Thêm bài riêng</span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -624,6 +780,45 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
             </button>
           ))}
         </div>
+
+        <div className="mx-auto grid w-full max-w-2xl grid-cols-3 gap-2">
+          <label className="text-[10px] text-neutral-500">
+            Bộ bài
+            <select
+              value={deckFilter}
+              onChange={(event) => setDeckFilter(event.target.value as 'all' | CardDeck)}
+              className="mt-1 min-h-10 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-2 text-xs text-neutral-200 outline-none focus:border-amber-300/50"
+            >
+              <option value="all">Tất cả</option>
+              <option value="standard">Bài thường</option>
+              <option value="position">Tư thế</option>
+            </select>
+          </label>
+          <label className="text-[10px] text-neutral-500">
+            Độ khó
+            <select
+              value={starFilter}
+              onChange={(event) => setStarFilter(event.target.value === 'all' ? 'all' : Number(event.target.value) as DifficultyStars)}
+              className="mt-1 min-h-10 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-2 text-xs text-neutral-200 outline-none focus:border-amber-300/50"
+            >
+              <option value="all">Mọi sao</option>
+              {[1, 2, 3, 4, 5].map((star) => <option key={star} value={star}>{star}★</option>)}
+            </select>
+          </label>
+          <label className="text-[10px] text-neutral-500">
+            Đối tượng
+            <select
+              value={audienceFilter}
+              onChange={(event) => setAudienceFilter(event.target.value as 'all' | CardAudience)}
+              className="mt-1 min-h-10 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-2 text-xs text-neutral-200 outline-none focus:border-amber-300/50"
+            >
+              <option value="all">Tất cả</option>
+              <option value="male">Nam</option>
+              <option value="female">Nữ</option>
+              <option value="both">Cả hai</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       {/* CARD GRID */}
@@ -693,14 +888,14 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                 onToggleFavorite={onToggleFavorite}
               />
               {isDeveloper && pendingDeleteCardId !== selectedCard.id && (
-                <div className={`mt-3 grid gap-2 ${onDeleteCard ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <div className={`mt-3 grid gap-2 ${onDeleteCard && selectedCard.position?.family !== 'have_sex' ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <button
                     onClick={() => openEditEditor(selectedCard)}
                     className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-rose-400/40 bg-rose-600/20 px-3 text-sm font-semibold text-rose-200 transition-colors hover:bg-rose-600/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 motion-reduce:transition-none"
                   >
                     <Pencil className="w-4 h-4" /> Chỉnh sửa
                   </button>
-                  {onDeleteCard && (
+                  {onDeleteCard && selectedCard.position?.family !== 'have_sex' && (
                     <button
                       onClick={() => setPendingDeleteCardId(selectedCard.id)}
                       className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-neutral-600/70 bg-neutral-950/70 px-3 text-sm font-semibold text-neutral-300 transition-colors hover:border-red-400/50 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 motion-reduce:transition-none"
@@ -711,7 +906,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                 </div>
               )}
 
-              {isDeveloper && onDeleteCard && pendingDeleteCardId === selectedCard.id && (
+              {isDeveloper && onDeleteCard && selectedCard.position?.family !== 'have_sex' && pendingDeleteCardId === selectedCard.id && (
                 <div className="mt-3 rounded-2xl border border-red-400/30 bg-neutral-950/95 p-3" aria-live="polite">
                   <p className="text-center text-xs leading-relaxed text-neutral-300">
                     Xóa lá bài này khỏi bộ sưu tập?
@@ -773,14 +968,46 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
               </p>
 
               <form onSubmit={handleCreateCustomCard} className="space-y-4">
+                <div>
+                  <label htmlFor="card-deck" className="text-xs text-neutral-300 mb-1 block">Bộ bài</label>
+                  <select
+                    id="card-deck"
+                    value={customDeck}
+                    onChange={(event) => {
+                      const nextDeck = event.target.value as CardDeck;
+                      setCustomDeck(nextDeck);
+                      setPositionTouched(true);
+                      setProgressionTouched(true);
+                      if (nextDeck === 'position') {
+                        setCustomType('dare');
+                        setCustomLevel('passionate');
+                        setCustomTimerEnabled(false);
+                        setTimerTouched(true);
+                      }
+                    }}
+                    className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-amber-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300"
+                  >
+                    <option value="standard">Bài thường</option>
+                    <option value="position">✦ Bộ Tư thế</option>
+                  </select>
+                </div>
+
                 {/* Type & Level */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-neutral-300 mb-1 block">Thể loại</label>
                     <select
                       value={customType}
-                      onChange={(e) => setCustomType(e.target.value as CardType)}
-                      className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-rose-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300"
+                      disabled={customDeck === 'position'}
+                      onChange={(event) => {
+                        const nextType = event.target.value as CardType;
+                        setCustomType(nextType);
+                        if (nextType === 'truth' && customTimerEnabled) {
+                          setCustomTimerEnabled(false);
+                          setTimerTouched(true);
+                        }
+                      }}
+                      className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-rose-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="truth">🔍 Sự Thật</option>
                       <option value="dare">⚡ Thử Thách</option>
@@ -790,8 +1017,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                     <label className="text-xs text-neutral-300 mb-1 block">Cấp độ</label>
                     <select
                       value={customLevel}
+                      disabled={customDeck === 'position'}
                       onChange={(e) => setCustomLevel(e.target.value as CardLevel)}
-                      className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-amber-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300"
+                      className="appearance-none w-full bg-neutral-900 border border-neutral-700 hover:border-amber-500/50 text-xs text-white rounded-xl p-2.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="gentle">🌸 Nhẹ nhàng</option>
                       <option value="intimate">🔥 Thân mật</option>
@@ -799,6 +1027,167 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                     </select>
                   </div>
                 </div>
+
+                {/* Journey metadata */}
+                <section className="space-y-3 rounded-2xl border border-amber-300/20 bg-amber-300/[0.035] p-3.5" aria-labelledby="card-progression-title">
+                  <div>
+                    <h4 id="card-progression-title" className="text-xs font-semibold text-amber-100">Tiến triển thân mật</h4>
+                    <p className="mt-0.5 text-[10px] text-neutral-500">Sao quyết định tỉ lệ xuất hiện và điểm mặc định.</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-neutral-400">Độ khó</span>
+                    <div className="mt-1.5 grid grid-cols-5 gap-1.5">
+                      {([1, 2, 3, 4, 5] as DifficultyStars[]).map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          aria-pressed={customStars === star}
+                          onClick={() => { setCustomStars(star); setProgressionTouched(true); }}
+                          className={`min-h-11 rounded-xl border text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 ${
+                            customStars === star
+                              ? 'border-amber-200/60 bg-amber-200/15 text-amber-100'
+                              : 'border-neutral-700 bg-neutral-950/60 text-neutral-500 hover:text-neutral-200'
+                          }`}
+                        >
+                          {star}★
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {customDeck === 'standard' ? (
+                    <label className="block text-[10px] text-neutral-400">
+                      Người chơi phù hợp
+                      <select
+                        value={customAudience}
+                        onChange={(event) => { setCustomAudience(event.target.value as CardAudience); setProgressionTouched(true); }}
+                        className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 text-xs text-white outline-none focus:border-amber-300/50"
+                      >
+                        <option value="both">Cả hai</option>
+                        <option value="male">Nam</option>
+                        <option value="female">Nữ</option>
+                      </select>
+                    </label>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="text-[10px] text-neutral-400">
+                        Nhóm Tư thế
+                        <select
+                          value={customPositionFamily}
+                          onChange={(event) => {
+                            const family = event.target.value as PositionFamily;
+                            setCustomPositionFamily(family);
+                            setCustomPositionOrder(family === 'oral' ? 1 : family === 'blowjob' ? 2 : family === 'handjob' ? 3 : 4);
+                            setCustomPositionRarity(family === 'have_sex' ? 'mythic' : 'luxury');
+                            setPositionTouched(true);
+                          }}
+                          className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none focus:border-amber-300/50"
+                        >
+                          <option value="oral">Oral sex</option>
+                          <option value="blowjob">Blowjob</option>
+                          <option value="handjob">Handjob</option>
+                          <option value="have_sex">Have sex</option>
+                        </select>
+                      </label>
+                      <label className="text-[10px] text-neutral-400">
+                        Người nhận
+                        <select
+                          value={customPositionRecipient}
+                          onChange={(event) => { setCustomPositionRecipient(event.target.value as PositionRecipient); setPositionTouched(true); }}
+                          className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none focus:border-amber-300/50"
+                        >
+                          <option value="male">Nam</option>
+                          <option value="female">Nữ</option>
+                          <option value="both">Cả hai</option>
+                        </select>
+                      </label>
+                      <label className="text-[10px] text-neutral-400">
+                        Thứ tự nhóm
+                        <select
+                          disabled={customPositionFamily === 'have_sex'}
+                          value={customPositionFamily === 'have_sex' ? 4 : customPositionOrder}
+                          onChange={(event) => { setCustomPositionOrder(Number(event.target.value) as 1 | 2 | 3 | 4); setPositionTouched(true); }}
+                          className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none disabled:opacity-50"
+                        >
+                          <option value={1}>1 · Oral</option>
+                          <option value={2}>2 · Blowjob</option>
+                          <option value={3}>3 · Handjob</option>
+                          <option value={4}>4 · Cuối</option>
+                        </select>
+                      </label>
+                      <label className="text-[10px] text-neutral-400">
+                        Độ hiếm
+                        <select
+                          disabled={customPositionFamily === 'have_sex'}
+                          value={customPositionFamily === 'have_sex' ? 'mythic' : customPositionRarity}
+                          onChange={(event) => { setCustomPositionRarity(event.target.value as PositionRarity); setPositionTouched(true); }}
+                          className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none disabled:opacity-50"
+                        >
+                          <option value="luxury">Luxury</option>
+                          <option value="mythic">Mythic</option>
+                        </select>
+                      </label>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="text-[10px] text-neutral-400">
+                      Đồ người đang lượt
+                      <select
+                        value={customActorStage}
+                        onChange={(event) => { setCustomActorStage(event.target.value as StageSelection); setProgressionTouched(true); }}
+                        className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none"
+                      >
+                        <option value="any">Không giới hạn</option>
+                        <option value="dressed">Đang mặc đồ</option>
+                        <option value="underwear_only">Chỉ đồ lót</option>
+                        <option value="empty">Hết đồ</option>
+                      </select>
+                    </label>
+                    <label className="text-[10px] text-neutral-400">
+                      Đồ đối phương
+                      <select
+                        value={customPartnerStage}
+                        onChange={(event) => { setCustomPartnerStage(event.target.value as StageSelection); setProgressionTouched(true); }}
+                        className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none"
+                      >
+                        <option value="any">Không giới hạn</option>
+                        <option value="dressed">Đang mặc đồ</option>
+                        <option value="underwear_only">Chỉ đồ lót</option>
+                        <option value="empty">Hết đồ</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={customGainEnabled}
+                      onClick={() => { setCustomGainEnabled((value) => !value); setProgressionTouched(true); }}
+                      className={`relative h-11 w-[68px] shrink-0 rounded-full border ${customGainEnabled ? 'border-rose-300/50 bg-rose-400/20' : 'border-neutral-700 bg-neutral-900'}`}
+                    >
+                      <span className={`absolute top-1/2 h-7 w-7 -translate-y-1/2 rounded-full bg-white transition-[left] motion-reduce:transition-none ${customGainEnabled ? 'left-[34px]' : 'left-1'}`} />
+                      <span className="sr-only">Dùng điểm thân mật riêng</span>
+                    </button>
+                    <label className="flex-1 text-[10px] text-neutral-400">
+                      Điểm thân mật riêng
+                      <div className="relative mt-1">
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          disabled={!customGainEnabled}
+                          value={customGain}
+                          onChange={(event) => { setCustomGain(event.target.value); setProgressionTouched(true); }}
+                          className="min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 pr-9 text-xs text-white outline-none disabled:opacity-40"
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-600">%</span>
+                      </div>
+                    </label>
+                  </div>
+                  {!hasValidCustomGain && <p role="alert" className="text-[10px] text-rose-300">Điểm riêng phải nằm trong 0–100%.</p>}
+                </section>
 
                 {/* Content */}
                 <div>
@@ -836,6 +1225,157 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                   </p>
                 </div>
 
+                {/* Per-card countdown (Dare only) */}
+                {customDeck === 'standard' && customType === 'dare' && (
+                  <section
+                    aria-labelledby="card-timer-label"
+                    className="overflow-hidden rounded-2xl border border-amber-300/20 bg-amber-400/[0.04]"
+                  >
+                    <div className="flex min-h-14 items-center justify-between gap-4 px-3.5 py-2.5">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-300/10 text-amber-200">
+                          <Timer className="h-[18px] w-[18px]" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0">
+                          <p id="card-timer-label" className="text-xs font-semibold text-neutral-100">
+                            Thời gian đếm ngược
+                          </p>
+                          <p className="mt-0.5 text-[10px] leading-relaxed text-neutral-500">
+                            {customTimerEnabled
+                              ? `${customTimerSeconds || '—'} giây cho riêng lá này`
+                              : 'Lá bài này không có đếm ngược'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={customTimerEnabled}
+                        aria-labelledby="card-timer-label"
+                        aria-controls="card-timer-options"
+                        onClick={() => {
+                          const nextEnabled = !customTimerEnabled;
+                          setCustomTimerEnabled(nextEnabled);
+                          setTimerTouched(true);
+                          if (
+                            nextEnabled
+                            && !(
+                              Number.isInteger(parsedCustomTimerSeconds)
+                              && parsedCustomTimerSeconds >= 1
+                              && parsedCustomTimerSeconds <= MAX_CARD_TIMER_SECONDS
+                            )
+                          ) {
+                            setCustomTimerSeconds(String(DEFAULT_CARD_TIMER_SECONDS));
+                          }
+                        }}
+                        className={`relative h-11 w-[68px] shrink-0 rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/60 motion-reduce:transition-none ${
+                          customTimerEnabled
+                            ? 'border-amber-200/60 bg-amber-300/25'
+                            : 'border-neutral-600 bg-neutral-800'
+                        }`}
+                      >
+                        <span className="sr-only">Đếm ngược cho lá này</span>
+                        <span
+                          aria-hidden="true"
+                          className={`absolute top-1/2 h-7 w-7 -translate-y-1/2 rounded-full shadow-sm transition-[left,background-color] duration-200 motion-reduce:transition-none ${
+                            customTimerEnabled
+                              ? 'left-[34px] bg-amber-100'
+                              : 'left-1 bg-neutral-400'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <AnimatePresence initial={false}>
+                      {customTimerEnabled && (
+                        <motion.div
+                          id="card-timer-options"
+                          initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0, y: -4 }}
+                          animate={prefersReducedMotion ? { opacity: 1 } : { height: 'auto', opacity: 1, y: 0 }}
+                          exit={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0, y: -4 }}
+                          transition={{ duration: prefersReducedMotion ? 0.1 : 0.18 }}
+                          className="overflow-hidden border-t border-amber-200/10"
+                        >
+                          <div className="space-y-3 p-3.5">
+                            <div>
+                              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-100/70">
+                                Chọn nhanh
+                              </p>
+                              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                                {CARD_TIMER_PRESETS.map((seconds) => {
+                                  const isSelected = customTimerSeconds === String(seconds);
+                                  return (
+                                    <button
+                                      key={seconds}
+                                      type="button"
+                                      aria-pressed={isSelected}
+                                      onClick={() => {
+                                        setCustomTimerSeconds(String(seconds));
+                                        setTimerTouched(true);
+                                      }}
+                                      className={`min-h-11 rounded-xl border px-2 text-xs font-semibold transition-[border-color,background-color,color,transform] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/60 motion-reduce:transform-none motion-reduce:transition-none ${
+                                        isSelected
+                                          ? 'border-amber-200/70 bg-amber-200/15 text-amber-100'
+                                          : 'border-neutral-700 bg-neutral-950/50 text-neutral-400 hover:-translate-y-0.5 hover:border-amber-300/30 hover:text-neutral-200'
+                                      }`}
+                                    >
+                                      {seconds}s
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            <div>
+                              <label htmlFor="card-timer-seconds" className="mb-1.5 block text-[11px] text-neutral-300">
+                                Số giây tùy chỉnh
+                              </label>
+                              <div className="relative">
+                                <input
+                                  id="card-timer-seconds"
+                                  type="number"
+                                  inputMode="numeric"
+                                  min={1}
+                                  max={MAX_CARD_TIMER_SECONDS}
+                                  step={1}
+                                  required={customTimerEnabled}
+                                  value={customTimerSeconds}
+                                  aria-invalid={!hasValidCustomTimer}
+                                  aria-describedby="card-timer-help"
+                                  onChange={(event) => {
+                                    setCustomTimerSeconds(event.target.value);
+                                    setTimerTouched(true);
+                                  }}
+                                  className={`min-h-11 w-full rounded-xl border bg-neutral-950/70 px-3 pr-14 text-sm text-white outline-none transition-colors focus:ring-2 focus:ring-amber-200/30 ${
+                                    hasValidCustomTimer
+                                      ? 'border-neutral-700 focus:border-amber-200/50'
+                                      : 'border-rose-400/70 focus:border-rose-300'
+                                  }`}
+                                />
+                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] text-neutral-500">
+                                  giây
+                                </span>
+                              </div>
+                              <p
+                                id="card-timer-help"
+                                role={!hasValidCustomTimer ? 'alert' : undefined}
+                                className={`mt-1.5 text-[10px] leading-relaxed ${
+                                  hasValidCustomTimer ? 'text-neutral-500' : 'text-rose-300'
+                                }`}
+                              >
+                                {hasValidCustomTimer
+                                  ? 'Nhập số nguyên từ 1 đến 3600 giây.'
+                                  : 'Thời gian phải là số nguyên từ 1 đến 3600 giây.'}
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </section>
+                )}
+
                 {/* Hint */}
                 <div>
                   <label className="text-xs text-neutral-300 mb-1 block">
@@ -867,7 +1407,10 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                             type="button"
                             title={iconName}
                             aria-label={`Chọn biểu tượng ${iconName}`}
-                            onClick={() => setCustomIcon(iconName)}
+                            onClick={() => {
+                              setCustomIcon(iconName);
+                              setIllustrationTouched(true);
+                            }}
                             className={`aspect-square rounded-lg p-1.5 transition-all hover:-translate-y-0.5 hover:bg-rose-500/15 ${customIcon === iconName ? 'bg-rose-500/20 ring-1 ring-rose-400' : 'bg-white/[0.03]'}`}
                           >
                             <Icon className="w-full h-full text-rose-400" />
@@ -1044,13 +1587,24 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-full font-bold text-sm text-neutral-950 bg-gold-gradient shadow-md hover:shadow-lg transition-all cursor-pointer mt-2"
+                  disabled={!hasValidCustomTimer || !hasValidCustomGain}
+                  className="mt-2 w-full rounded-full bg-gold-gradient py-3 text-sm font-bold text-neutral-950 shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   {editingCard ? 'Lưu Thay Đổi' : 'Lưu Vào Bộ Sưu Tập'}
                 </button>
               </form>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showProgressionConfig && isDeveloper && (
+          <ProgressionConfigModal
+            config={progressionConfig}
+            onChange={onProgressionConfigChange}
+            onClose={() => setShowProgressionConfig(false)}
+          />
         )}
       </AnimatePresence>
     </div>

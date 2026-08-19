@@ -1,6 +1,12 @@
 export type CardLevel = 'gentle' | 'intimate' | 'passionate';
 export type CardType = 'truth' | 'dare';
 export type PlayerIndex = 0 | 1;
+export type CardDeck = 'standard' | 'position';
+export type DifficultyStars = 1 | 2 | 3 | 4 | 5;
+export type CardAudience = 'male' | 'female' | 'both';
+export type PositionFamily = 'oral' | 'blowjob' | 'handjob' | 'have_sex';
+export type PositionRecipient = 'male' | 'female' | 'both';
+export type PositionRarity = 'luxury' | 'mythic';
 
 export type PlayerPresentation = 'male' | 'female';
 export type GarmentSlot = 'shirt' | 'pants' | 'bra' | 'underwear';
@@ -26,6 +32,47 @@ export interface ClothingEffect {
   target: 'self' | 'opponent';
 }
 
+export interface CardProgressionMetadata {
+  difficultyStars: DifficultyStars;
+  /** Standard-card eligibility for the player whose turn it is. */
+  audience: CardAudience;
+  /** Overrides the global gain for this star rating when supplied. */
+  intimacyGain?: number;
+  actorStages?: OutfitStage[];
+  partnerStages?: OutfitStage[];
+}
+
+export interface PositionMetadata {
+  family: PositionFamily;
+  recipient: PositionRecipient;
+  /** Oral=1, blowjob=2, handjob=3, final rare card=4. */
+  orderGroup: 1 | 2 | 3 | 4;
+  rarity: PositionRarity;
+}
+
+export interface ProgressionBand {
+  minPercent: number;
+  maxPercent: number;
+  typeWeights: Record<CardType, number>;
+  starWeights: Record<DifficultyStars, number>;
+}
+
+export interface ProgressionConfig {
+  bands: ProgressionBand[];
+  starGains: Record<DifficultyStars, number>;
+  cardRemovalBonus: number;
+}
+
+export type JourneyPhase = 'standard' | 'position_consent' | 'position' | 'final';
+
+export interface IntimacyEvent {
+  cardId: string;
+  amount: number;
+  source: 'completed_card' | 'card_clothing_removal';
+  round: number;
+  timestamp: number;
+}
+
 export type ClothingRemovalSource = 'card' | 'penalty';
 
 export interface ClothingRemovalEvent {
@@ -45,11 +92,22 @@ export interface CardItem {
   level: CardLevel;
   content: string;
   hint?: string;
-  timerSeconds?: number; // Optional timer for dares
+  /**
+   * Optional per-card countdown for dares.
+   * `undefined` inherits built-in metadata during edit merging, while `null`
+   * records that a developer explicitly disabled the timer for this card.
+   */
+  timerSeconds?: number | null;
   isCustom?: boolean;
   icon?: string; // SVG icon name for card illustration
   customImage?: string; // Base64 data URL for custom uploaded icon
+  /** Marks a deliberate illustration override on an edited built-in card. */
+  illustrationOverride?: boolean;
   clothingEffect?: ClothingEffect | null;
+  /** Missing means a legacy/custom standard card. */
+  deck?: CardDeck;
+  progression?: CardProgressionMetadata | null;
+  position?: PositionMetadata | null;
 }
 
 export interface Player {

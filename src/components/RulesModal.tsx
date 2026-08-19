@@ -137,7 +137,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
               <div className="pt-0.5">
                 <h3 className="text-sm font-semibold text-white sm:text-base">1. Chuẩn bị cùng nhau</h3>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
-                  Nhập tên, chọn cấp độ, số lượt, cách rút bài và trang phục ban đầu cho hai nhân vật. Nói rõ điều hai bạn thoải mái, điều không muốn làm và một từ dừng dễ nhớ.
+                  Nhập tên, chọn các cấp độ được phép, cách rút bài và trang phục ban đầu cho hai nhân vật. Mỗi ván là một hành trình từ 0–100%; nói rõ điều hai bạn thoải mái, điều không muốn làm và một từ dừng dễ nhớ.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
                   Chỉ bắt đầu sau khi cả hai đều là người trưởng thành, tự nguyện và đã thống nhất giới hạn.
@@ -167,14 +167,14 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
               <div className="pt-0.5">
                 <h3 className="text-sm font-semibold text-white sm:text-base">3. Mỗi lượt chơi</h3>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
-                  Đến lượt ai, người đó rút bài Sự Thật hoặc Thử Thách. Nếu thẻ có tác động trang phục, hãy chọn một món trên nhân vật hoặc trong danh sách rồi xác nhận trước khi chuyển lượt.
+                  Đến lượt ai, người đó rút bài Sự Thật hoặc Thử Thách phù hợp với nhãn Nam, Nữ hoặc Cả hai. Bài bắt đầu từ 1★ và tăng dần xác suất xuất hiện bài nhiều sao hơn khi mức thân mật tăng.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
-                  Lựa chọn đầu tiên chỉ là xem trước. Bấm hủy sẽ giữ nguyên trang phục; có thể đổi thẻ, bỏ qua hoặc dừng mà không cần giải thích.
+                  Hoàn thành bài sẽ cộng điểm theo số sao. Cởi đồ do hiệu ứng của thẻ có thưởng thêm; bỏ qua và cởi đồ do luật phạt không cộng điểm. Có thể đổi thẻ, bỏ qua hoặc dừng mà không cần giải thích.
                 </p>
                 <div className="mt-2 flex items-start gap-2 text-[11px] leading-relaxed text-amber-200/80">
                   <Percent className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span>Rút ngẫu nhiên dùng tỉ lệ Sự thật/Thử thách 50/50 và Nhẹ nhàng/Thân mật/Nồng nhiệt 70/20/10. Khi cả hai còn tối đa 1 món, Nồng nhiệt tăng lên 40% nếu cấp này đã được bật.</span>
+                  <span>Tỉ lệ Sự thật/Thử thách và 1★–5★ thay đổi theo năm mốc thân mật. Xác suất luôn được chuẩn hóa theo những lá còn hợp lệ và không tự mở cấp độ đã tắt.</span>
                 </div>
               </div>
             </li>
@@ -202,12 +202,12 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
                 <LockOpen className="h-4.5 w-4.5" />
               </span>
               <div className="pt-0.5">
-                <h3 className="text-sm font-semibold text-white sm:text-base">5. Mở khóa bộ sưu tập</h3>
+                <h3 className="text-sm font-semibold text-white sm:text-base">5. Đạt 100% và bộ Tư thế</h3>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
-                  Trong Player mode, thẻ chưa khám phá được che bằng dấu hỏi. Hoàn thành thành công một thẻ sẽ mở khóa vĩnh viễn thẻ đó trong Bộ sưu tập.
+                  Khi đạt 100%, bộ bài thường dừng và hai người xác nhận đồng thuận lần nữa. Có thể kết thúc ngay hoặc cùng mở các nhóm Oral → Blowjob → Handjob → lá Have sex hiếm nhất.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-blue-200/75">
-                  Developer mode xem toàn bộ nội dung và cung cấp công cụ thêm, sửa, xóa; không tự mở khóa tiến trình của Player.
+                  Lá Tư thế vừa lật được tính là đã khám phá dù bỏ qua; mọi hành động vẫn là đề xuất có thể từ chối. Mở lá Have sex chỉ kết thúc hành trình sau khi xem và xác nhận, không bắt buộc thực hiện.
                 </p>
               </div>
             </li>

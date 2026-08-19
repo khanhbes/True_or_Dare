@@ -1,6 +1,6 @@
-import { CardItem } from '../types';
+import { CardItem, DifficultyStars } from '../types';
 
-export const INITIAL_CARDS: CardItem[] = [
+const BASE_CARDS: CardItem[] = [
   // ==================== 🌸 NHẸ NHÀNG (GENTLE) - TRUTH ====================
   {
     id: 'g-t-1',
@@ -23,7 +23,7 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'truth',
     level: 'gentle',
     content: 'Trang phục hoặc kiểu tóc nào của đối phương khiến bạn cảm thấy họ cuốn hút nhất?',
-    icon: 'sparkle',
+    icon: 'mirror',
   },
   {
     id: 'g-t-4',
@@ -37,7 +37,7 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'truth',
     level: 'gentle',
     content: 'Nếu có một ngày hẹn hò mơ ước trọn vẹn chỉ có 2 người, bạn muốn chúng ta sẽ làm gì cùng nhau?',
-    icon: 'dance',
+    icon: 'location',
   },
   {
     id: 'g-t-6',
@@ -51,7 +51,7 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'truth',
     level: 'gentle',
     content: 'Điều ngốc nghếch nhất mà bạn từng làm để gây sự chú ý với đối phương là gì?',
-    icon: 'sparkle',
+    icon: 'playful_attention',
   },
   {
     id: 'g-t-8',
@@ -126,7 +126,7 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'dare',
     level: 'gentle',
     content: 'Hát ngẫu hứng một câu hát tình ca hoặc đọc 2 câu thơ ngọt ngào tặng riêng cho đối phương.',
-    icon: 'music',
+    icon: 'love_song_poem',
   },
   {
     id: 'g-d-8',
@@ -185,14 +185,14 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'truth',
     level: 'intimate',
     content: 'Bạn cảm thấy góc nghiêng hoặc đường nét nào trên cơ thể người ấy quyến rũ nhất?',
-    icon: 'sparkle',
+    icon: 'body',
   },
   {
     id: 'i-t-6',
     type: 'truth',
     level: 'intimate',
     content: 'Bản nhạc hay mùi hương nào làm bạn cảm thấy tràn ngập cảm hứng lãng mạn khi ở bên nhau?',
-    icon: 'music',
+    icon: 'music_perfume',
   },
   {
     id: 'i-t-7',
@@ -244,7 +244,7 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'dare',
     level: 'intimate',
     content: 'Dùng đầu ngón tay lướt nhẹ từ xương đòn xuống bàn tay đối phương một cách chậm rãi.',
-    icon: 'hand',
+    icon: 'collarbone_trace',
   },
   {
     id: 'i-d-4',
@@ -312,28 +312,28 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'truth',
     level: 'passionate',
     content: 'Trang phục quyến rũ nào bạn muốn nhìn thấy người ấy mặc riêng cho mình trong một buổi tối lãng mạn?',
-    icon: 'sparkle',
+    icon: 'romantic_outfit',
   },
   {
     id: 'p-t-3',
     type: 'truth',
     level: 'passionate',
     content: 'Nơi nào là địa điểm lãng mạn & riêng tư nhất bạn ước hai người có thể cùng trao nhau những nụ hôn cháy bỏng?',
-    icon: 'kiss_lips',
+    icon: 'location',
   },
   {
     id: 'p-t-4',
     type: 'truth',
     level: 'passionate',
     content: 'Nụ hôn ở vị trí nào trên cơ thể làm tim bạn đập nhanh nhất?',
-    icon: 'kiss_lips',
+    icon: 'body_kiss',
   },
   {
     id: 'p-t-5',
     type: 'truth',
     level: 'passionate',
     content: 'Điều gì ở ánh mắt hoặc giọng nói của đối phương dễ khiến bạn "tan chảy" hoàn toàn?',
-    icon: 'eyes',
+    icon: 'eyes_voice',
   },
   {
     id: 'p-t-6',
@@ -363,7 +363,7 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'dare',
     level: 'passionate',
     content: 'Đặt 3 nụ hôn nồng nàn lên 3 vị trí khác nhau trên khuôn mặt và cổ của người ấy.',
-    icon: 'kiss_cheek',
+    icon: 'triple_kiss',
   },
   {
     id: 'p-d-2',
@@ -378,7 +378,7 @@ export const INITIAL_CARDS: CardItem[] = [
     level: 'passionate',
     content: 'Tự tay tháo một cúc áo hoặc vuốt ve dịu dàng lưng đối phương trong 30 giây.',
     timerSeconds: 30,
-    icon: 'couple_back_caress',
+    icon: 'unbutton_back_caress',
   },
   {
     id: 'p-d-4',
@@ -386,7 +386,7 @@ export const INITIAL_CARDS: CardItem[] = [
     level: 'passionate',
     content: 'Bịt mắt đối phương trong 30 giây và trao cho họ một nụ hôn bất ngờ ở vị trí họ không đoán trước.',
     timerSeconds: 30,
-    icon: 'kiss_surprise',
+    icon: 'blindfold_kiss',
   },
   {
     id: 'p-d-5',
@@ -400,7 +400,7 @@ export const INITIAL_CARDS: CardItem[] = [
     type: 'dare',
     level: 'passionate',
     content: 'Dùng một viên đá lạnh/ngón tay ấm lướt nhẹ theo sống lưng người ấy một cách thật quyến rũ.',
-    icon: 'ice',
+    icon: 'ice_back_trace',
   },
   {
     id: 'p-d-7',
@@ -416,8 +416,152 @@ export const INITIAL_CARDS: CardItem[] = [
     content: 'Trao một nụ hôn cháy bỏng kéo dài 30 giây không ngắt quãng.',
     timerSeconds: 30,
     icon: 'kiss_lips',
-  }
+  },
+
+  // ==================== ✦ BỘ TƯ THẾ — ORAL SEX ====================
+  {
+    id: 'pos-oral-male',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Người nam là người nhận trong thử thách Oral sex. Chỉ bắt đầu khi cả hai đã cùng thống nhất giới hạn.',
+    hint: 'Có thể bỏ qua bất cứ lúc nào mà không bị phạt.',
+    icon: 'position_oral',
+    progression: { difficultyStars: 3, audience: 'both', intimacyGain: 0 },
+    position: { family: 'oral', recipient: 'male', orderGroup: 1, rarity: 'luxury' },
+  },
+  {
+    id: 'pos-oral-female',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Người nữ là người nhận trong thử thách Oral sex. Chỉ bắt đầu khi cả hai đã cùng thống nhất giới hạn.',
+    hint: 'Có thể bỏ qua bất cứ lúc nào mà không bị phạt.',
+    icon: 'position_oral',
+    progression: { difficultyStars: 3, audience: 'both', intimacyGain: 0 },
+    position: { family: 'oral', recipient: 'female', orderGroup: 1, rarity: 'luxury' },
+  },
+  {
+    id: 'pos-oral-both',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Cả hai cùng là người nhận trong thử thách Oral sex. Hãy chọn cách thể hiện chỉ khi đôi bên đều thoải mái.',
+    hint: 'Nghe “Dừng” là dừng ngay.',
+    icon: 'position_oral',
+    progression: { difficultyStars: 3, audience: 'both', intimacyGain: 0 },
+    position: { family: 'oral', recipient: 'both', orderGroup: 1, rarity: 'luxury' },
+  },
+
+  // ==================== ✦ BỘ TƯ THẾ — BLOWJOB ====================
+  {
+    id: 'pos-blowjob-male',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Người nam là người nhận trong thử thách Blowjob. Hai bạn tự thống nhất cách thực hiện và có thể dừng bất cứ lúc nào.',
+    hint: 'Chỉ tiếp tục khi cả hai cùng đồng ý ở hiện tại.',
+    icon: 'position_blowjob',
+    progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
+    position: { family: 'blowjob', recipient: 'male', orderGroup: 2, rarity: 'luxury' },
+  },
+  {
+    id: 'pos-blowjob-female',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Người nữ là người nhận trong thử thách Blowjob. Hai bạn tự chọn cách thể hiện phù hợp với giới hạn đã thống nhất.',
+    hint: 'Không thoải mái có thể bỏ qua ngay.',
+    icon: 'position_blowjob',
+    progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
+    position: { family: 'blowjob', recipient: 'female', orderGroup: 2, rarity: 'luxury' },
+  },
+  {
+    id: 'pos-blowjob-both',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Cả hai cùng là người nhận trong thử thách Blowjob. Chỉ thực hiện cách mà đôi bên đều chủ động đồng thuận.',
+    hint: 'Bỏ qua không làm mất quyền tiếp tục trò chơi.',
+    icon: 'position_blowjob',
+    progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
+    position: { family: 'blowjob', recipient: 'both', orderGroup: 2, rarity: 'luxury' },
+  },
+
+  // ==================== ✦ BỘ TƯ THẾ — HANDJOB ====================
+  {
+    id: 'pos-handjob-male',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Người nam là người nhận trong thử thách Handjob. Hãy trao đổi nhịp độ và giới hạn trước khi bắt đầu.',
+    hint: 'Mỗi người đều có quyền đổi ý.',
+    icon: 'position_handjob',
+    progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
+    position: { family: 'handjob', recipient: 'male', orderGroup: 3, rarity: 'luxury' },
+  },
+  {
+    id: 'pos-handjob-female',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Người nữ là người nhận trong thử thách Handjob. Hãy trao đổi nhịp độ và giới hạn trước khi bắt đầu.',
+    hint: 'Mỗi người đều có quyền đổi ý.',
+    icon: 'position_handjob',
+    progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
+    position: { family: 'handjob', recipient: 'female', orderGroup: 3, rarity: 'luxury' },
+  },
+  {
+    id: 'pos-handjob-both',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Cả hai cùng là người nhận trong thử thách Handjob. Hãy chọn cách thể hiện mà đôi bên đều cảm thấy an toàn.',
+    hint: 'Dừng ngay khi một người nói “Dừng”.',
+    icon: 'position_handjob',
+    progression: { difficultyStars: 4, audience: 'both', intimacyGain: 0 },
+    position: { family: 'handjob', recipient: 'both', orderGroup: 3, rarity: 'luxury' },
+  },
+
+  // ==================== ◆ LÁ HIẾM KẾT THÚC ====================
+  {
+    id: 'pos-have-sex',
+    type: 'dare',
+    level: 'passionate',
+    deck: 'position',
+    content: 'Nếu cả hai vẫn đồng thuận, hãy cùng quyết định có tiếp tục quan hệ tình dục hay khép lại trò chơi tại đây.',
+    hint: 'Mở lá bài không tạo nghĩa vụ phải thực hiện.',
+    icon: 'position_final',
+    progression: { difficultyStars: 5, audience: 'both', intimacyGain: 0 },
+    position: { family: 'have_sex', recipient: 'both', orderGroup: 4, rarity: 'mythic' },
+  },
 ];
+
+const STAR_GROUPS: Record<DifficultyStars, readonly string[]> = {
+  1: ['g-t-1', 'g-t-2', 'g-t-4', 'g-t-5', 'g-t-6', 'g-t-9', 'g-t-10', 'g-d-1', 'g-d-4', 'g-d-5', 'g-d-10'],
+  2: ['g-t-3', 'g-t-7', 'g-t-8', 'g-d-2', 'g-d-3', 'g-d-6', 'g-d-7', 'g-d-8', 'g-d-9', 'i-t-1', 'i-t-3', 'i-t-6', 'i-t-8', 'i-t-10', 'i-d-1', 'i-d-8', 'i-d-9'],
+  3: ['i-t-2', 'i-t-4', 'i-t-5', 'i-t-7', 'i-t-9', 'i-d-2', 'i-d-3', 'i-d-4', 'i-d-7', 'i-d-10', 'p-t-3', 'p-t-5', 'p-t-6', 'p-d-2'],
+  4: ['i-d-5', 'i-d-6', 'p-t-1', 'p-t-2', 'p-t-4', 'p-t-7', 'p-t-8', 'p-d-1', 'p-d-3', 'p-d-4', 'p-d-5', 'p-d-6'],
+  5: ['p-d-7', 'p-d-8'],
+};
+
+const STAR_BY_ID = new Map<string, DifficultyStars>(
+  Object.entries(STAR_GROUPS).flatMap(([star, ids]) =>
+    ids.map((id) => [id, Number(star) as DifficultyStars]),
+  ),
+);
+
+export const INITIAL_CARDS: CardItem[] = BASE_CARDS.map((card) => {
+  if (card.deck === 'position') return card;
+  return {
+    ...card,
+    deck: 'standard',
+    progression: {
+      difficultyStars: STAR_BY_ID.get(card.id) ?? 1,
+      audience: 'both',
+    },
+  };
+});
 
 export const LEVEL_INFO = {
   gentle: {

@@ -24,6 +24,16 @@ assets/.aistudio/
 .env*
 !.env.example
 
+# Credentials and private keys
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials.*.json
+secrets/
+*.secret
+
 # Logs
 *.log
 npm-debug.log*
