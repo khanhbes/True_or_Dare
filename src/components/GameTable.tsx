@@ -850,9 +850,11 @@ export const GameTable: React.FC<GameTableProps> = ({
   const isMythicPositionCard = isPositionCard && activeCard?.position?.rarity === 'mythic';
   const activeIconScale = Math.min(1.8, Math.max(0.5, activeCard?.appearance?.iconScale ?? 1));
   const activeTextScale = Math.min(1.5, Math.max(0.75, activeCard?.appearance?.textScale ?? 1));
+  const activeIconTextGap = Math.min(48, Math.max(0, activeCard?.appearance?.iconTextGap ?? 8));
   const activeIconScaleStyle = { transform: `scale(${activeIconScale})` };
   const activeIconSpacingStyle = {
-    marginBlock: `${Math.max(0, activeIconScale - 1) * 34}px`,
+    marginTop: `${Math.max(0, activeIconScale - 1) * 24}px`,
+    marginBottom: `${activeIconTextGap + Math.max(0, activeIconScale - 1) * 16}px`,
   };
   const removalTargetIndices = activeCard ? getRemovalTargetIndices(activeCard, currentPlayerIndex) : [];
   const completionActionLabel = activeCard?.clothingEffect?.kind === 'swap_garments'
@@ -1380,7 +1382,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                         <motion.div
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="space-y-4 flex flex-col items-center"
+                          className="flex flex-col items-center"
                         >
                           {/* Card Icon (custom image or SVG) */}
                           {activeCard.customImage ? (
@@ -1409,7 +1411,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                             {activeCard.content}
                           </p>
                           {activeCard.hint && (
-                            <p style={{ fontSize: `${12 * activeTextScale}px` }} className="text-rose-300/80 italic font-light">
+                            <p style={{ fontSize: `${12 * activeTextScale}px` }} className="mt-4 text-rose-300/80 italic font-light">
                               💡 Gợi ý: {activeCard.hint}
                             </p>
                           )}

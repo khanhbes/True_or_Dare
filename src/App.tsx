@@ -133,7 +133,10 @@ const isStoredCard = (value: unknown): value is CardItem => {
           appearance.iconScale >= 0.5 && appearance.iconScale <= 1.8)) &&
       (appearance.textScale === undefined ||
         (typeof appearance.textScale === 'number' && Number.isFinite(appearance.textScale) &&
-          appearance.textScale >= 0.75 && appearance.textScale <= 1.5)));
+          appearance.textScale >= 0.75 && appearance.textScale <= 1.5)) &&
+      (appearance.iconTextGap === undefined ||
+        (typeof appearance.iconTextGap === 'number' && Number.isFinite(appearance.iconTextGap) &&
+          appearance.iconTextGap >= 0 && appearance.iconTextGap <= 48)));
 
   return (
     typeof value.id === 'string' &&

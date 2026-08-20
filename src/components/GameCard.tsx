@@ -91,10 +91,11 @@ export const GameCard: React.FC<GameCardProps> = ({
   const s = sizeStyles[size];
   const iconScale = Math.min(1.8, Math.max(0.5, card.appearance?.iconScale ?? 1));
   const textScale = Math.min(1.5, Math.max(0.75, card.appearance?.textScale ?? 1));
+  const iconTextGap = Math.min(48, Math.max(0, card.appearance?.iconTextGap ?? 8));
   const iconScaleStyle = { transform: `scale(${iconScale})` };
   const iconWrapperSpacingStyle = {
     marginTop: `${Math.max(0, iconScale - 1) * 28}px`,
-    marginBottom: `${12 + Math.max(0, iconScale - 1) * 36}px`,
+    marginBottom: `${iconTextGap + Math.max(0, iconScale - 1) * 16}px`,
   };
 
   return (

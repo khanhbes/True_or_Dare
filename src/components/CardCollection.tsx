@@ -410,6 +410,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [imgWhiteOutlineWidth, setImgWhiteOutlineWidth] = useState(3);
   const [cardIconScale, setCardIconScale] = useState(1);
   const [cardTextScale, setCardTextScale] = useState(1);
+  const [cardIconTextGap, setCardIconTextGap] = useState(8);
   const [imageError, setImageError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const deleteCancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -585,6 +586,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setImgContrast(1.5);
     setCardIconScale(1);
     setCardTextScale(1);
+    setCardIconTextGap(8);
     setOriginalImage(null);
     setProcessedImage(null);
     setImageError('');
@@ -718,6 +720,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setImgWhiteOutlineWidth(0);
     setCardIconScale(card.appearance?.iconScale ?? 1);
     setCardTextScale(card.appearance?.textScale ?? 1);
+    setCardIconTextGap(card.appearance?.iconTextGap ?? 8);
     setImageError('');
     setIsAdding(true);
     setSelectedCard(null);
@@ -739,9 +742,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       isCustom: editingCard ? editingCard.isCustom : true,
       customImage: processedImage || undefined,
       customImageId: processedImage ? editingCard?.customImageId : undefined,
-      appearance: cardIconScale === 1 && cardTextScale === 1
+      appearance: cardIconScale === 1 && cardTextScale === 1 && cardIconTextGap === 8
         ? undefined
-        : { iconScale: cardIconScale, textScale: cardTextScale },
+        : { iconScale: cardIconScale, textScale: cardTextScale, iconTextGap: cardIconTextGap },
       timerSeconds: customTimerMode === 'custom'
         ? parsedCustomTimerSeconds
         : customTimerMode === 'disabled'
@@ -1656,12 +1659,12 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                       <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <div>
-                      <h4 id="card-appearance-title" className="text-xs font-semibold text-neutral-100">Kích thước hiển thị</h4>
-                      <p className="mt-0.5 text-[10px] leading-relaxed text-neutral-500">Áp dụng cho icon và toàn bộ chữ bên trong lá bài.</p>
+                      <h4 id="card-appearance-title" className="text-xs font-semibold text-neutral-100">Bố cục hiển thị</h4>
+                      <p className="mt-0.5 text-[10px] leading-relaxed text-neutral-500">Chỉnh kích thước và khoảng cách giữa icon với nội dung.</p>
                     </div>
                   </div>
 
-                  <div className="flex min-h-24 items-center gap-4 overflow-hidden rounded-xl border border-white/10 bg-[#140b13] px-4 py-3">
+                  <div className="flex min-h-44 flex-col items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#140b13] px-4 py-4 text-center">
                     <div className="grid h-16 w-16 shrink-0 place-items-center overflow-visible text-rose-300">
                       <div
                         className="h-14 w-14 transition-transform duration-200 motion-reduce:transition-none"
@@ -1675,7 +1678,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         })()}
                       </div>
                     </div>
-                    <div className="min-w-0 flex-1 text-center">
+                    <div className="min-w-0" style={{ marginTop: `${cardIconTextGap}px` }}>
                       <p
                         className="font-medium leading-relaxed text-white transition-[font-size] duration-200 motion-reduce:transition-none"
                         style={{ fontSize: `${12 * cardTextScale}px` }}
@@ -1722,13 +1725,28 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                       />
                       <output htmlFor="card-text-scale" className="w-10 text-right text-[10px] tabular-nums text-neutral-400">{Math.round(cardTextScale * 100)}%</output>
                     </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-3.5 shrink-0 text-center text-sm leading-none text-violet-200" aria-hidden="true">↕</span>
+                      <label htmlFor="card-icon-text-gap" className="w-20 shrink-0 text-[10px] text-neutral-400">Icon ↔ chữ</label>
+                      <input
+                        id="card-icon-text-gap"
+                        type="range"
+                        min="0"
+                        max="48"
+                        step="2"
+                        value={cardIconTextGap}
+                        onChange={(event) => setCardIconTextGap(Number(event.target.value))}
+                        className="h-1 flex-1 accent-violet-400"
+                      />
+                      <output htmlFor="card-icon-text-gap" className="w-10 text-right text-[10px] tabular-nums text-neutral-400">{cardIconTextGap}px</output>
+                    </div>
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setCardIconScale(1); setCardTextScale(1); }}
+                    onClick={() => { setCardIconScale(1); setCardTextScale(1); setCardIconTextGap(8); }}
                     className="min-h-11 w-full rounded-xl border border-white/10 bg-white/[0.035] text-[10px] font-semibold text-neutral-400 transition-colors hover:border-violet-200/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200/50"
                   >
-                    Đặt kích thước về 100%
+                    Khôi phục bố cục mặc định
                   </button>
                 </section>
 

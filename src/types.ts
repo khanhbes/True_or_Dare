@@ -73,6 +73,8 @@ export interface CardAppearance {
   iconScale?: number;
   /** Display scale applied to every text group rendered inside the card. */
   textScale?: number;
+  /** Visual distance in pixels between the illustration and the main card copy. */
+  iconTextGap?: number;
 }
 
 export interface ProgressionBand {
