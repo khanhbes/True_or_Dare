@@ -3,6 +3,7 @@ import test from 'node:test';
 import { INITIAL_CARDS } from '../data/cards';
 import { CardAudience, CardItem, DifficultyStars, PositionDifficultyStars } from '../types';
 import { createOutfitState, DEFAULT_GAME_SETTINGS } from './wardrobe';
+import { compareCollectionCards } from './cardOrdering';
 import {
   DEFAULT_PROGRESSION_CONFIG,
   DEFAULT_LUXURY_PROGRESSION_CONFIG,
@@ -82,6 +83,21 @@ test('all 92 standard cards receive the expanded star and audience distribution'
     current: 0,
     opponent: 0,
   });
+});
+
+test('collection order groups decks and sorts standard and position cards deterministically', () => {
+  const standardDare = makeCard('g-d-10', 'dare', 1);
+  const standardTruthTwoStars = makeCard('g-t-2', 'truth', 2);
+  const standardTruthOneStarTen = makeCard('g-t-10', 'truth', 1);
+  const standardTruthOneStarTwo = makeCard('g-t-2a', 'truth', 1);
+  const positionFive = makePositionCard('pos-5', 5);
+  const positionTwo = makePositionCard('pos-2', 2);
+
+  const sorted = [positionFive, standardDare, standardTruthTwoStars, positionTwo, standardTruthOneStarTen, standardTruthOneStarTwo]
+    .sort(compareCollectionCards)
+    .map((card) => card.id);
+
+  assert.deepEqual(sorted, ['g-t-2a', 'g-t-10', 'g-t-2', 'g-d-10', 'pos-2', 'pos-5']);
 });
 
 test('relative audiences resolve the correct performer without changing gender audiences', () => {

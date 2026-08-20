@@ -18,6 +18,8 @@ import {
   Timer,
   SlidersHorizontal,
   Crop,
+  ChevronsUp,
+  ChevronsDown,
 } from 'lucide-react';
 import {
   CardAudience,
@@ -40,6 +42,7 @@ import { GameCard } from './GameCard';
 import { CARD_ICON_NAMES, autoAssignIcon, getCardIcon } from './CardIcons';
 import { ProgressionConfigModal } from './ProgressionConfigModal';
 import { deriveDifficultyStars, derivePositionDifficultyStars, getCardAudience, getCardDeck, POSITION_DIFFICULTY_STARS } from '../utils/progression';
+import { compareCollectionCards } from '../utils/cardOrdering';
 
 export type CardCollectionMode = 'player' | 'developer';
 
@@ -72,17 +75,6 @@ export interface CardCollectionProps {
   onLuxuryProgressionConfigChange: (config: LuxuryProgressionConfig) => void;
   onBack: () => void;
 }
-
-const LEVEL_SORT_ORDER: Record<CardLevel, number> = {
-  gentle: 0,
-  intimate: 1,
-  passionate: 2,
-};
-
-const TYPE_SORT_ORDER: Record<CardType, number> = {
-  truth: 0,
-  dare: 1,
-};
 
 type ClothingEffectSelection = 'none' | 'self' | 'opponent' | 'male' | 'female' | 'both' | 'swap';
 type CollectionTab = 'all' | 'truth' | 'dare' | 'favorites' | CardLevel;
@@ -413,6 +405,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [cardIconTextGap, setCardIconTextGap] = useState(8);
   const [imageError, setImageError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageProcessingEnabledRef = useRef(false);
+  const imageRenderGenerationRef = useRef(0);
   const cropDragRef = useRef<{
     pointerId: number;
     startX: number;
@@ -433,7 +427,12 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       : 'Rose-gold · platinum';
 
   const clampCropOffset = (value: number) => Math.max(-50, Math.min(50, value));
+  const enableImageProcessing = () => {
+    imageProcessingEnabledRef.current = true;
+    setIllustrationTouched(true);
+  };
   const resetCrop = () => {
+    enableImageProcessing();
     setImgAutoCrop(true);
     setImgZoom(1);
     setImgOffsetX(0);
@@ -456,6 +455,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const handleCropPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = cropDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+    enableImageProcessing();
     setImgOffsetX(clampCropOffset(drag.startOffsetX + ((event.clientX - drag.startX) / drag.width) * 100));
     setImgOffsetY(clampCropOffset(drag.startOffsetY + ((event.clientY - drag.startY) / drag.height) * 100));
   };
@@ -468,12 +468,13 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   };
   const handleCropKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const step = event.shiftKey ? 5 : 2;
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home'].includes(event.key)) return;
+    enableImageProcessing();
     if (event.key === 'ArrowLeft') setImgOffsetX((value) => clampCropOffset(value - step));
     else if (event.key === 'ArrowRight') setImgOffsetX((value) => clampCropOffset(value + step));
     else if (event.key === 'ArrowUp') setImgOffsetY((value) => clampCropOffset(value - step));
     else if (event.key === 'ArrowDown') setImgOffsetY((value) => clampCropOffset(value + step));
-    else if (event.key === 'Home') resetCrop();
-    else return;
+    else resetCrop();
     event.preventDefault();
   };
   const imagePreviewToneClass = imagePalette === 'standard'
@@ -539,11 +540,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
         ? card.position?.recipient === audienceFilter
         : getCardAudience(card) === audienceFilter;
     })
-    .sort((firstCard, secondCard) => {
-      const levelDifference = LEVEL_SORT_ORDER[firstCard.level] - LEVEL_SORT_ORDER[secondCard.level];
-      if (levelDifference !== 0) return levelDifference;
-      return TYPE_SORT_ORDER[firstCard.type] - TYPE_SORT_ORDER[secondCard.type];
-    });
+    .sort(compareCollectionCards);
 
   const loadImageFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -559,6 +556,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
+      imageProcessingEnabledRef.current = true;
+      imageRenderGenerationRef.current += 1;
       setOriginalImage(dataUrl);
       setImgZoom(1);
       setImgOffsetX(0);
@@ -577,7 +576,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   }, [loadImageFile]);
 
   useEffect(() => {
-    if (!originalImage) return;
+    if (!originalImage || !imageProcessingEnabledRef.current) return;
+    const renderGeneration = ++imageRenderGenerationRef.current;
     renderCardIcon(originalImage, {
       threshold: imgThreshold,
       contrast: imgContrast,
@@ -590,11 +590,20 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       autoCrop: imgAutoCrop,
       palette: imagePalette,
     }, (result) => {
-      setProcessedImage(result);
+      if (imageRenderGenerationRef.current === renderGeneration) {
+        setProcessedImage(result);
+      }
     });
+    return () => {
+      if (imageRenderGenerationRef.current === renderGeneration) {
+        imageRenderGenerationRef.current += 1;
+      }
+    };
   }, [originalImage, imgThreshold, imgContrast, imgZoom, imgOffsetX, imgOffsetY, imgAutoCrop, imgRemoveBackground, imgBackgroundTolerance, imgWhiteOutlineWidth, imagePalette]);
 
   const handleClearImage = useCallback(() => {
+    imageProcessingEnabledRef.current = false;
+    imageRenderGenerationRef.current += 1;
     setOriginalImage(null);
     setProcessedImage(null);
     setImageError('');
@@ -603,6 +612,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   }, []);
 
   const resetEditor = useCallback(() => {
+    imageProcessingEnabledRef.current = false;
+    imageRenderGenerationRef.current += 1;
     setEditingCard(null);
     setCustomType('truth');
     setCustomLevel('gentle');
@@ -767,6 +778,8 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setCustomPositionRarity(card.position?.rarity ?? 'luxury');
     setProgressionTouched(false);
     setPositionTouched(false);
+    imageProcessingEnabledRef.current = false;
+    imageRenderGenerationRef.current += 1;
     setOriginalImage(card.customImage || null);
     setProcessedImage(card.customImage || null);
     setImgAutoCrop(true);
@@ -821,7 +834,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
             recipient: customPositionRecipient,
             orderGroup: customPositionFamily === 'have_sex' ? 4 : customPositionOrder,
             rarity: customPositionFamily === 'have_sex' ? 'mythic' : customPositionRarity,
-            difficultyStars: customPositionFamily === 'have_sex' ? 10 : customStars,
+            difficultyStars: customStars,
             luxuryGain: customDeck === 'position' && customGainEnabled ? parsedCustomGain : undefined,
           }
         : null,
@@ -863,8 +876,39 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setSelectedCard(null);
   };
 
+  const scrollToCollectionEdge = (edge: 'top' | 'bottom') => {
+    soundEngine.playTick();
+    window.scrollTo({
+      top: edge === 'top' ? 0 : document.documentElement.scrollHeight,
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    });
+  };
+
   return (
     <div className="relative z-10 max-w-6xl mx-auto px-4 py-6 text-white min-h-screen flex flex-col">
+      <nav
+        aria-label="Điều hướng nhanh Bộ sưu tập"
+        className="fixed bottom-4 right-3 z-30 flex flex-col overflow-hidden rounded-2xl border border-white/12 bg-[#130b13]/90 shadow-2xl backdrop-blur-md sm:right-5"
+      >
+        <button
+          type="button"
+          onClick={() => scrollToCollectionEdge('top')}
+          aria-label="Nhảy lên đầu Bộ sưu tập"
+          title="Lên đầu trang"
+          className="grid h-12 w-12 place-items-center border-b border-white/10 text-neutral-300 transition-colors hover:bg-rose-400/12 hover:text-rose-100 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-rose-300 motion-reduce:transition-none"
+        >
+          <ChevronsUp className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => scrollToCollectionEdge('bottom')}
+          aria-label="Nhảy xuống cuối Bộ sưu tập"
+          title="Xuống cuối trang"
+          className="grid h-12 w-12 place-items-center text-neutral-300 transition-colors hover:bg-amber-300/12 hover:text-amber-100 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-200 motion-reduce:transition-none"
+        >
+          <ChevronsDown className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </nav>
       {/* Header Bar */}
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:gap-4 mb-6 pb-4 border-b border-rose-500/20">
         <button
@@ -1207,7 +1251,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                       if (nextDeck === 'position') {
                         setCustomType('dare');
                         setCustomLevel('passionate');
-                        setCustomStars(customPositionFamily === 'have_sex' ? 10 : customPositionFamily === 'handjob' ? 7 : customPositionFamily === 'blowjob' ? 5 : 3);
+                        if (customPositionFamily !== 'have_sex') {
+                          setCustomStars(customPositionFamily === 'handjob' ? 7 : customPositionFamily === 'blowjob' ? 5 : 3);
+                        }
                         if (customClothingEffect === 'self' || customClothingEffect === 'opponent') {
                           setCustomClothingEffect(customPositionRecipient);
                           setClothingEffectTouched(true);
@@ -1270,7 +1316,6 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                           key={star}
                           type="button"
                           aria-pressed={customStars === star}
-                          disabled={customDeck === 'position' && customPositionFamily === 'have_sex' && star !== 10}
                           onClick={() => {
                             setCustomStars(star);
                             if (customDeck === 'position') setPositionTouched(true);
@@ -1286,6 +1331,11 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         </button>
                       ))}
                     </div>
+                    {customDeck === 'position' && customPositionFamily === 'have_sex' && (
+                      <p className="mt-2 text-[9px] leading-relaxed text-amber-100/65">
+                        Có thể chọn tự do từ 1–10★. Lá Have sex vẫn kết thúc ván theo nhóm thẻ, không phụ thuộc số sao.
+                      </p>
+                    )}
                   </div>
 
                   {customDeck === 'standard' ? (
@@ -1314,10 +1364,12 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                           value={customPositionFamily}
                           onChange={(event) => {
                             const family = event.target.value as PositionFamily;
-                            setCustomPositionFamily(family);
-                            setCustomPositionOrder(family === 'oral' ? 1 : family === 'blowjob' ? 2 : family === 'handjob' ? 3 : family === 'have_sex' ? 4 : 1);
-                            setCustomPositionRarity(family === 'have_sex' ? 'mythic' : 'luxury');
-                            setCustomStars(family === 'have_sex' ? 10 : family === 'handjob' ? 7 : family === 'blowjob' ? 5 : 3);
+                          setCustomPositionFamily(family);
+                          setCustomPositionOrder(family === 'oral' ? 1 : family === 'blowjob' ? 2 : family === 'handjob' ? 3 : family === 'have_sex' ? 4 : 1);
+                          setCustomPositionRarity(family === 'have_sex' ? 'mythic' : 'luxury');
+                          if (family !== 'have_sex') {
+                            setCustomStars(family === 'handjob' ? 7 : family === 'blowjob' ? 5 : 3);
+                          }
                             if (family === 'have_sex') {
                               setCustomClothingEffect('none');
                               setClothingEffectTouched(true);
@@ -1810,6 +1862,11 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                     <Upload className="w-3.5 h-3.5" />
                     Ảnh minh hoạ (không bắt buộc)
                   </label>
+                  {editingCard?.customImage && !illustrationTouched && (
+                    <p className="rounded-lg border border-emerald-300/15 bg-emerald-300/[0.05] px-3 py-2 text-[9px] leading-relaxed text-emerald-100/70">
+                      Ảnh đã lưu đang được giữ nguyên. Chỉ xử lý lại khi bạn dùng crop, xóa nền, màu hoặc tải ảnh mới.
+                    </p>
+                  )}
 
                   {/* Upload button */}
                   {!originalImage ? (
@@ -1898,7 +1955,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                             role="switch"
                             aria-checked={imgAutoCrop}
                             aria-label="Tự crop ảnh theo chủ thể"
-                            onClick={() => setImgAutoCrop((enabled) => !enabled)}
+                            onClick={() => { enableImageProcessing(); setImgAutoCrop((enabled) => !enabled); }}
                             className={`flex h-8 w-12 items-center rounded-full p-1 transition-colors ${imgAutoCrop ? 'justify-end bg-amber-500' : 'justify-start bg-neutral-700'}`}
                           >
                             <span className="h-6 w-6 rounded-full bg-white shadow" />
@@ -1916,7 +1973,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                             type="button"
                             role="switch"
                             aria-checked={imgRemoveBackground}
-                            onClick={() => setImgRemoveBackground((enabled) => !enabled)}
+                            onClick={() => { enableImageProcessing(); setImgRemoveBackground((enabled) => !enabled); }}
                             className={`w-10 h-5 rounded-full p-0.5 transition-colors flex items-center ${imgRemoveBackground ? 'bg-rose-500 justify-end' : 'bg-neutral-700 justify-start'}`}
                           >
                             <span className="w-4 h-4 rounded-full bg-white shadow" />
@@ -1926,7 +1983,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                           <div className="flex items-center gap-3">
                             <Eraser className="w-3.5 h-3.5 text-rose-300" />
                             <label className="text-[10px] text-neutral-400 w-14 shrink-0">Độ xóa</label>
-                            <input type="range" min="10" max="180" value={imgBackgroundTolerance} onChange={(e) => setImgBackgroundTolerance(Number(e.target.value))} className="flex-1 h-1 accent-rose-500" />
+                            <input type="range" min="10" max="180" value={imgBackgroundTolerance} onChange={(e) => { enableImageProcessing(); setImgBackgroundTolerance(Number(e.target.value)); }} className="flex-1 h-1 accent-rose-500" />
                             <span className="text-[10px] text-neutral-500 w-9 text-right">{imgBackgroundTolerance}</span>
                           </div>
                         )}
@@ -1940,7 +1997,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                             max="12"
                             step="1"
                             value={imgWhiteOutlineWidth}
-                            onChange={(event) => setImgWhiteOutlineWidth(Number(event.target.value))}
+                            onChange={(event) => { enableImageProcessing(); setImgWhiteOutlineWidth(Number(event.target.value)); }}
                             className="h-1 flex-1 accent-white"
                           />
                           <output htmlFor="image-white-outline" className="w-9 text-right text-[10px] tabular-nums text-neutral-400">
@@ -1951,20 +2008,20 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         <div className="flex items-center gap-3">
                           <ZoomIn className="w-3.5 h-3.5 text-rose-300" />
                           <label className="text-[10px] text-neutral-400 w-14 shrink-0">Scale icon</label>
-                          <input type="range" min="100" max="300" step="10" value={imgZoom * 100} onChange={(e) => setImgZoom(Number(e.target.value) / 100)} className="flex-1 h-1 accent-rose-500" />
+                          <input type="range" min="100" max="300" step="10" value={imgZoom * 100} onChange={(e) => { enableImageProcessing(); setImgZoom(Number(e.target.value) / 100); }} className="flex-1 h-1 accent-rose-500" />
                           <span className="text-[10px] text-neutral-500 w-9 text-right">{imgZoom.toFixed(1)}×</span>
                         </div>
                         <p className="text-[9px] text-neutral-500 -mt-1 pl-7">1× luôn hiển thị trọn ảnh; tối đa 3× trong khung icon.</p>
                         <div className="flex items-center gap-3">
                           <Move className="w-3.5 h-3.5 text-rose-300" />
                           <label className="text-[10px] text-neutral-400 w-14 shrink-0">Ngang</label>
-                          <input type="range" min="-50" max="50" value={imgOffsetX} onChange={(e) => setImgOffsetX(Number(e.target.value))} className="flex-1 h-1 accent-rose-500" />
+                          <input type="range" min="-50" max="50" value={imgOffsetX} onChange={(e) => { enableImageProcessing(); setImgOffsetX(Number(e.target.value)); }} className="flex-1 h-1 accent-rose-500" />
                           <span className="text-[10px] text-neutral-500 w-9 text-right">{Math.round(imgOffsetX)}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <Move className="w-3.5 h-3.5 rotate-90 text-rose-300" />
                           <label className="text-[10px] text-neutral-400 w-14 shrink-0">Dọc</label>
-                          <input type="range" min="-50" max="50" value={imgOffsetY} onChange={(e) => setImgOffsetY(Number(e.target.value))} className="flex-1 h-1 accent-rose-500" />
+                          <input type="range" min="-50" max="50" value={imgOffsetY} onChange={(e) => { enableImageProcessing(); setImgOffsetY(Number(e.target.value)); }} className="flex-1 h-1 accent-rose-500" />
                           <span className="text-[10px] text-neutral-500 w-9 text-right">{Math.round(imgOffsetY)}</span>
                         </div>
                         <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2.5">
@@ -1987,7 +2044,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                             min="50"
                             max="220"
                             value={imgThreshold}
-                            onChange={(e) => setImgThreshold(Number(e.target.value))}
+                            onChange={(e) => { enableImageProcessing(); setImgThreshold(Number(e.target.value)); }}
                             className="flex-1 h-1 accent-rose-500"
                           />
                           <span className="text-[10px] text-neutral-500 w-8 text-right">{imgThreshold}</span>
@@ -1999,14 +2056,14 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                             min="50"
                             max="300"
                             value={imgContrast * 100}
-                            onChange={(e) => setImgContrast(Number(e.target.value) / 100)}
+                            onChange={(e) => { enableImageProcessing(); setImgContrast(Number(e.target.value) / 100); }}
                             className="flex-1 h-1 accent-amber-500"
                           />
                           <span className="text-[10px] text-neutral-500 w-8 text-right">{imgContrast.toFixed(1)}</span>
                         </div>
 
                         <div className="flex gap-2">
-                          <button type="button" onClick={() => { setImgZoom(1); setImgOffsetX(0); setImgOffsetY(0); setImgThreshold(140); setImgContrast(1.5); setImgAutoCrop(true); setImgRemoveBackground(true); setImgBackgroundTolerance(55); setImgWhiteOutlineWidth(3); }} className="flex-1 py-1.5 rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-center gap-1.5 hover:bg-rose-600/30 transition-all cursor-pointer">
+                          <button type="button" onClick={() => { enableImageProcessing(); setImgZoom(1); setImgOffsetX(0); setImgOffsetY(0); setImgThreshold(140); setImgContrast(1.5); setImgAutoCrop(true); setImgRemoveBackground(true); setImgBackgroundTolerance(55); setImgWhiteOutlineWidth(3); }} className="flex-1 py-1.5 rounded-lg bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs flex items-center justify-center gap-1.5 hover:bg-rose-600/30 transition-all cursor-pointer">
                             <RotateCcw className="w-3 h-3" /> Đặt lại
                           </button>
                           <button
