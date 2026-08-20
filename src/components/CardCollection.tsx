@@ -413,6 +413,15 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [cardIconTextGap, setCardIconTextGap] = useState(8);
   const [imageError, setImageError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cropDragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startOffsetX: number;
+    startOffsetY: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const deleteCancelButtonRef = useRef<HTMLButtonElement>(null);
   const imagePalette: IconPalette = customDeck === 'position'
     ? (customPositionFamily === 'have_sex' || customPositionRarity === 'mythic' ? 'mythic' : 'position')
@@ -422,6 +431,51 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     : imagePalette === 'position'
       ? 'Champagne · ivory'
       : 'Rose-gold · platinum';
+
+  const clampCropOffset = (value: number) => Math.max(-50, Math.min(50, value));
+  const resetCrop = () => {
+    setImgAutoCrop(true);
+    setImgZoom(1);
+    setImgOffsetX(0);
+    setImgOffsetY(0);
+  };
+  const handleCropPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    cropDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startOffsetX: imgOffsetX,
+      startOffsetY: imgOffsetY,
+      width: Math.max(1, bounds.width),
+      height: Math.max(1, bounds.height),
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+  const handleCropPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = cropDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    setImgOffsetX(clampCropOffset(drag.startOffsetX + ((event.clientX - drag.startX) / drag.width) * 100));
+    setImgOffsetY(clampCropOffset(drag.startOffsetY + ((event.clientY - drag.startY) / drag.height) * 100));
+  };
+  const handleCropPointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (cropDragRef.current?.pointerId !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    cropDragRef.current = null;
+  };
+  const handleCropKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = event.shiftKey ? 5 : 2;
+    if (event.key === 'ArrowLeft') setImgOffsetX((value) => clampCropOffset(value - step));
+    else if (event.key === 'ArrowRight') setImgOffsetX((value) => clampCropOffset(value + step));
+    else if (event.key === 'ArrowUp') setImgOffsetY((value) => clampCropOffset(value - step));
+    else if (event.key === 'ArrowDown') setImgOffsetY((value) => clampCropOffset(value + step));
+    else if (event.key === 'Home') resetCrop();
+    else return;
+    event.preventDefault();
+  };
   const imagePreviewToneClass = imagePalette === 'standard'
     ? 'border-rose-500/30 text-rose-300'
     : imagePalette === 'position'
@@ -1799,17 +1853,32 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         {/* Processed (pink/white) */}
                         <div className="flex-1 text-center">
                           <p className={`mb-1.5 text-[10px] ${imagePreviewToneClass}`}>Icon · {imagePaletteLabel}</p>
-                          <div className={`transparency-grid flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border ${imagePreviewToneClass}`}>
+                          <div
+                            role="group"
+                            tabIndex={0}
+                            aria-label="Khung crop ảnh. Kéo ảnh hoặc dùng phím mũi tên để căn chủ thể; giữ Shift để dịch nhanh."
+                            onPointerDown={handleCropPointerDown}
+                            onPointerMove={handleCropPointerMove}
+                            onPointerUp={handleCropPointerEnd}
+                            onPointerCancel={handleCropPointerEnd}
+                            onKeyDown={handleCropKeyDown}
+                            className={`transparency-grid group/crop relative flex aspect-square w-full touch-none select-none items-center justify-center overflow-hidden rounded-xl border cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70 ${imagePreviewToneClass}`}
+                          >
                             {processedImage ? (
                               <img
                                 src={processedImage}
                                 alt="processed"
-                                className="w-full h-full object-contain"
+                                draggable={false}
+                                className="pointer-events-none h-full w-full object-contain"
                                 style={{ filter: imagePreviewShadow }}
                               />
                             ) : (
                               <span className="text-xs text-neutral-500">Đang xử lý...</span>
                             )}
+                            <span className="pointer-events-none absolute inset-2 rounded-lg border border-dashed border-white/55 opacity-70 transition-opacity group-hover/crop:opacity-100 group-focus-visible/crop:opacity-100" aria-hidden="true" />
+                            <span className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/65 px-2 py-1 text-[8px] text-white/80 opacity-0 transition-opacity group-hover/crop:opacity-100 group-focus-visible/crop:opacity-100">
+                              Kéo để crop
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -1890,13 +1959,26 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                           <Move className="w-3.5 h-3.5 text-rose-300" />
                           <label className="text-[10px] text-neutral-400 w-14 shrink-0">Ngang</label>
                           <input type="range" min="-50" max="50" value={imgOffsetX} onChange={(e) => setImgOffsetX(Number(e.target.value))} className="flex-1 h-1 accent-rose-500" />
-                          <span className="text-[10px] text-neutral-500 w-9 text-right">{imgOffsetX}</span>
+                          <span className="text-[10px] text-neutral-500 w-9 text-right">{Math.round(imgOffsetX)}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <Move className="w-3.5 h-3.5 rotate-90 text-rose-300" />
                           <label className="text-[10px] text-neutral-400 w-14 shrink-0">Dọc</label>
                           <input type="range" min="-50" max="50" value={imgOffsetY} onChange={(e) => setImgOffsetY(Number(e.target.value))} className="flex-1 h-1 accent-rose-500" />
-                          <span className="text-[10px] text-neutral-500 w-9 text-right">{imgOffsetY}</span>
+                          <span className="text-[10px] text-neutral-500 w-9 text-right">{Math.round(imgOffsetY)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2.5">
+                          <div>
+                            <p className="text-[10px] font-medium text-neutral-300">Crop vuông 1:1</p>
+                            <p className="mt-0.5 text-[9px] text-neutral-500">Kéo trực tiếp trên preview, phóng bằng Scale icon.</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={resetCrop}
+                            className="min-h-11 shrink-0 rounded-lg border border-white/10 px-3 text-[10px] font-semibold text-neutral-300 transition-colors hover:border-amber-300/35 hover:text-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/60"
+                          >
+                            Đặt lại crop
+                          </button>
                         </div>
                         <div className="flex items-center gap-3">
                           <label className="text-[10px] text-neutral-400 w-16 shrink-0">Ngưỡng sáng</label>

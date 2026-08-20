@@ -477,7 +477,7 @@
 .card-position-rare .mythic-icon-aura {
   position: relative;
   z-index: 1;
-  animation: mythic-icon-breathe 3.6s ease-in-out infinite;
+  transition: filter 180ms ease;
 }
 
 .card-position-rare .mythic-icon-aura::before {
@@ -489,15 +489,23 @@
   pointer-events: none;
   background: radial-gradient(circle, rgba(244, 232, 255, 0.22), rgba(232, 164, 140, 0.08) 48%, transparent 72%);
   filter: blur(7px);
-  animation: mythic-icon-halo 3.6s ease-in-out infinite;
+  opacity: 0.42;
+  transform: scale(0.98);
 }
 
 .card-position-rare .mythic-icon-aura svg {
-  animation: mythic-icon-color-shift 6.4s ease-in-out infinite;
+  color: #f4e8ff;
+  filter: drop-shadow(0 0 12px rgba(215, 177, 255, 0.34));
 }
 
 .card-position-rare .mythic-icon-aura .card-custom-icon {
-  animation: mythic-image-color-shift 6.4s ease-in-out infinite;
+  filter: brightness(1.02) saturate(0.96);
+}
+
+@media (hover: hover) {
+  .game-card:hover .mythic-icon-aura {
+    filter: brightness(1.04);
+  }
 }
 
 @keyframes position-foil-drift {
@@ -536,36 +544,6 @@
       0 0 52px rgba(232, 164, 140, 0.22),
       inset 0 0 0 1px rgba(244, 232, 255, 0.3);
   }
-}
-
-@keyframes mythic-icon-breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.035); }
-}
-
-@keyframes mythic-icon-halo {
-  0%, 100% { opacity: 0.42; transform: scale(0.92); }
-  50% { opacity: 0.9; transform: scale(1.12); }
-}
-
-@keyframes mythic-icon-color-shift {
-  0%, 100% {
-    color: #f4e8ff;
-    filter: drop-shadow(0 0 12px rgba(215, 177, 255, 0.45));
-  }
-  34% {
-    color: #e8a48c;
-    filter: drop-shadow(0 0 18px rgba(232, 164, 140, 0.58));
-  }
-  67% {
-    color: #fff6df;
-    filter: drop-shadow(0 0 16px rgba(255, 246, 223, 0.54));
-  }
-}
-
-@keyframes mythic-image-color-shift {
-  0%, 100% { filter: brightness(1.02) saturate(0.92) drop-shadow(0 0 10px rgba(215, 177, 255, 0.38)); }
-  50% { filter: brightness(1.12) saturate(1.08) sepia(0.08) drop-shadow(0 0 17px rgba(232, 164, 140, 0.52)); }
 }
 
 .luxury-heart-fill::after {
