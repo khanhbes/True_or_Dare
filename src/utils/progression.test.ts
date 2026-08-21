@@ -173,6 +173,70 @@ test('default journey probabilities match every configured intimacy boundary', (
   }
 });
 
+test('difficulty boost shifts probability to the next available star without changing card type odds', () => {
+  const cards = (['truth', 'dare'] as const).flatMap((type) =>
+    ([1, 2, 3, 4, 5] as DifficultyStars[]).map((star) => makeCard(`${type}-${star}`, type, star)),
+  );
+  const early = getJourneyDrawProbabilities({
+    cards,
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    levels: ['gentle'],
+    intimacyPercent: 0,
+    config: DEFAULT_PROGRESSION_CONFIG,
+    difficultyBoost: true,
+  });
+  assert.equal(early.types.truth, 0.65);
+  assert.deepEqual(early.stars, { 1: 0, 2: 0.7, 3: 0.25, 4: 0.05, 5: 0 });
+
+  const late = getJourneyDrawProbabilities({
+    cards,
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    levels: ['gentle'],
+    intimacyPercent: 80,
+    config: DEFAULT_PROGRESSION_CONFIG,
+    difficultyBoost: true,
+  });
+  assert.deepEqual(late.stars, { 1: 0, 2: 0.05, 3: 0.1, 4: 0.2, 5: 0.65 });
+});
+
+test('difficulty boost uses the next actually available star and hard exclusions survive pool reset', () => {
+  const sparseCards = [
+    makeCard('one', 'truth', 1),
+    makeCard('three', 'truth', 3),
+    makeCard('five', 'truth', 5),
+  ];
+  const probabilities = getJourneyDrawProbabilities({
+    cards: sparseCards,
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    levels: ['gentle'],
+    intimacyPercent: 0,
+    config: DEFAULT_PROGRESSION_CONFIG,
+    difficultyBoost: true,
+  });
+  assert.equal(probabilities.stars[1], 0);
+  assert.ok(probabilities.stars[3] > probabilities.stars[5]);
+
+  const excluded = selectJourneyCard({
+    cards: [sparseCards[0]],
+    actorIndex: 0,
+    outfits,
+    usedCardIds: ['one'],
+    excludedCardIds: ['one'],
+    levels: ['gentle'],
+    intimacyPercent: 0,
+    config: DEFAULT_PROGRESSION_CONFIG,
+    difficultyBoost: true,
+  });
+  assert.equal(excluded.card, null);
+  assert.equal(excluded.errorCode, 'no_cards');
+});
+
 test('audience and outfit requirements filter cards before weighted selection', () => {
   const male = makeCard('male', 'truth', 1, 'male');
   const female = makeCard('female', 'truth', 1, 'female');

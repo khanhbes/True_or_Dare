@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { Trophy, Heart, RotateCcw, X, CheckCircle2, Layers3 } from 'lucide-react';
-import { ClothingRemovalEvent, GameEndReason, IntimacyEvent, JourneyPhase, OutfitState, Player } from '../types';
+import { Trophy, Heart, RotateCcw, X, CheckCircle2, Layers3, Star, Shuffle, TrendingUp } from 'lucide-react';
+import { ClothingRemovalEvent, GameEndReason, IntimacyEvent, JourneyPhase, OutfitState, Player, PlayerRewardState, RewardEvent } from '../types';
 import { getPresentGarmentSlots } from '../utils/wardrobe';
 
 interface SummaryModalProps {
@@ -16,6 +16,8 @@ interface SummaryModalProps {
   intimacyEvents?: IntimacyEvent[];
   positionCardsRevealed?: number;
   journeyPhase?: JourneyPhase;
+  playerRewards?: [PlayerRewardState, PlayerRewardState];
+  rewardEvents?: RewardEvent[];
   onRestart: () => void;
   onClose: () => void;
   onHome?: () => void;
@@ -55,6 +57,8 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   intimacyEvents,
   positionCardsRevealed = 0,
   journeyPhase,
+  playerRewards,
+  rewardEvents,
   onRestart,
   onClose,
   onHome,
@@ -78,6 +82,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
     .reduce((total, event) => total + event.amount, 0) ?? 0;
   const swapCount = Math.floor((removalEvents?.filter((event) => event.action === 'transferred').length ?? 0) / 2);
   const replacedCount = removalEvents?.filter((event) => event.action === 'replaced').length ?? 0;
+  const rewardEventCount = rewardEvents?.length ?? 0;
 
   let intimacyBadge = 'Gắn Kết Nhẹ Nhàng 🌸';
   if (intimacyScore > 75) intimacyBadge = 'Cặp Đôi Bùng Nổ Nồng Nhiệt 💋';
@@ -171,6 +176,34 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
             Do luật phạt: <span className="font-semibold text-neutral-200">{penaltyRemovalCount}</span>
           </p>
         )}
+      </div>
+    );
+  };
+
+  const renderRewardSummary = (playerIndex: 0 | 1) => {
+    const reward = playerRewards?.[playerIndex];
+    if (!reward) return null;
+    return (
+      <div className="mt-3 border-t border-white/10 pt-3">
+        <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-200/80">
+          <Star className="h-3.5 w-3.5 fill-amber-300/20" aria-hidden="true" />
+          Phần thưởng
+        </div>
+        <dl className="grid grid-cols-3 gap-1 text-center">
+          <div className="rounded-lg bg-amber-500/[0.07] px-1 py-1.5">
+            <dt className="text-[9px] text-neutral-500">Đã kiếm</dt>
+            <dd className="mt-0.5 text-sm font-bold text-amber-200">{reward.totalStarsEarned}★</dd>
+          </div>
+          <div className="rounded-lg bg-white/[0.04] px-1 py-1.5">
+            <dt className="flex items-center justify-center gap-1 text-[9px] text-neutral-500"><Shuffle className="h-2.5 w-2.5" />Đổi</dt>
+            <dd className="mt-0.5 text-sm font-bold text-white">{reward.rerollsUsed}</dd>
+          </div>
+          <div className="rounded-lg bg-orange-500/[0.06] px-1 py-1.5">
+            <dt className="flex items-center justify-center gap-1 text-[9px] text-neutral-500"><TrendingUp className="h-2.5 w-2.5" />Tăng</dt>
+            <dd className="mt-0.5 text-sm font-bold text-orange-200">{reward.difficultyBoostsUsed}</dd>
+          </div>
+        </dl>
+        <p className="mt-2 text-[10px] text-neutral-400">Còn lại: <strong className="text-amber-200">{reward.starBalance}★</strong></p>
       </div>
     );
   };
@@ -282,6 +315,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               <span>{player1.completedCount} thử thách hoàn thành</span>
             </div>
+            {renderRewardSummary(0)}
             {renderOutfitSummary(0)}
           </div>
 
@@ -291,9 +325,14 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               <span>{player2.completedCount} thử thách hoàn thành</span>
             </div>
+            {renderRewardSummary(1)}
             {renderOutfitSummary(1)}
           </div>
         </div>
+
+        {playerRewards && (
+          <p className="mb-5 text-[10px] text-neutral-500">Đã ghi {rewardEventCount} sự kiện cộng hoặc sử dụng sao trong ván.</p>
+        )}
 
         {/* Favorites count */}
         <div className="text-xs text-neutral-300 mb-6 flex items-center justify-center gap-2">

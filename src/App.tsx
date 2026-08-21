@@ -15,8 +15,11 @@ import {
   JourneyPhase,
   LuxuryProgressionConfig,
   OutfitState,
+  PendingDifficultyBoost,
   Player,
+  PlayerRewardState,
   ProgressionConfig,
+  RewardEvent,
 } from './types';
 import { INITIAL_CARDS } from './data/cards';
 import { mergeEditedSystemCard, normalizeCardClothingEffect } from './utils/cardSelection';
@@ -24,6 +27,7 @@ import { createOutfitState, hydrateGameSettings } from './utils/wardrobe';
 import { getCardDeck, hydrateLuxuryProgressionConfig, hydrateProgressionConfig } from './utils/progression';
 import { browserCardImageStore, hydrateCardImages, prepareCardsForStorage } from './utils/cardImageStore';
 import { DEFAULT_PLAYER_1, DEFAULT_PLAYER_2, loadStoredPlayer } from './utils/playerStorage';
+import { createRewardStates } from './utils/rewards';
 import { PlayerLoginScreen } from './components/PlayerLoginScreen';
 import {
   fetchAdminPlayerStats,
@@ -198,6 +202,9 @@ export default function App() {
   const [journeyPhase, setJourneyPhase] = useState<JourneyPhase>('standard');
   const [sessionPositionCardIds, setSessionPositionCardIds] = useState<string[]>([]);
   const [sessionPositionRevealCount, setSessionPositionRevealCount] = useState(0);
+  const [playerRewards, setPlayerRewards] = useState<[PlayerRewardState, PlayerRewardState]>(createRewardStates);
+  const [pendingDifficultyBoosts, setPendingDifficultyBoosts] = useState<PendingDifficultyBoost[]>([]);
+  const [rewardEvents, setRewardEvents] = useState<RewardEvent[]>([]);
 
   useEffect(() => {
     if (appMode === 'developer') return;
@@ -744,6 +751,9 @@ export default function App() {
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
     setSessionPositionRevealCount(0);
+    setPlayerRewards(createRewardStates());
+    setPendingDifficultyBoosts([]);
+    setRewardEvents([]);
     setGameEndReason(null);
     setShowSummary(false);
     setScreen('game');
@@ -772,6 +782,9 @@ export default function App() {
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
     setSessionPositionRevealCount(0);
+    setPlayerRewards(createRewardStates());
+    setPendingDifficultyBoosts([]);
+    setRewardEvents([]);
     setShowSummary(false);
     setGameEndReason(null);
     setScreen('setup');
@@ -884,11 +897,15 @@ export default function App() {
             onLuxuryIntimacyPercentChange={setLuxuryIntimacyPercent}
             onAddIntimacyEvents={(events) => setIntimacyEvents((current) => [...current, ...events])}
             onJourneyPhaseChange={setJourneyPhase}
-            onRevealPositionCard={(cardId) => {
-              handleUnlockCard(cardId);
+            onRevealPositionCard={() => {
               setSessionPositionRevealCount((count) => count + 1);
             }}
             onSessionPositionCardIdsChange={setSessionPositionCardIds}
+            playerRewards={playerRewards}
+            pendingDifficultyBoosts={pendingDifficultyBoosts}
+            onPlayerRewardsChange={setPlayerRewards}
+            onPendingDifficultyBoostsChange={setPendingDifficultyBoosts}
+            onAddRewardEvent={(event) => setRewardEvents((events) => [...events, event])}
           />
           </div>
         )}
@@ -934,6 +951,8 @@ export default function App() {
           intimacyEvents={intimacyEvents}
           positionCardsRevealed={sessionPositionRevealCount}
           journeyPhase={journeyPhase}
+          playerRewards={playerRewards}
+          rewardEvents={rewardEvents}
           onRestart={handleRestartSession}
           onClose={() => {
             if (!gameEndReason) setShowSummary(false);

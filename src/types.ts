@@ -112,6 +112,28 @@ export interface IntimacyEvent {
   timestamp: number;
 }
 
+export interface PlayerRewardState {
+  starBalance: number;
+  totalStarsEarned: number;
+  rerollsUsed: number;
+  difficultyBoostsUsed: number;
+}
+
+export interface PendingDifficultyBoost {
+  ownerPlayerIndex: PlayerIndex;
+  targetPlayerIndex: PlayerIndex;
+  queuedRound: number;
+}
+
+export interface RewardEvent {
+  kind: 'earned_stars' | 'rerolled_card' | 'queued_difficulty_boost' | 'refunded_difficulty_boost';
+  playerIndex: PlayerIndex;
+  amount: number;
+  round: number;
+  timestamp: number;
+  cardId?: string;
+}
+
 export type ClothingRemovalSource = 'card' | 'penalty';
 
 export interface ClothingRemovalEvent {

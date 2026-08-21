@@ -20,6 +20,9 @@ import {
   Zap,
   LockOpen,
   Percent,
+  Star,
+  Shuffle,
+  TrendingUp,
 } from 'lucide-react';
 import {
   CardItem,
@@ -32,9 +35,12 @@ import {
   JourneyPhase,
   LuxuryProgressionConfig,
   OutfitState,
+  PendingDifficultyBoost,
   Player,
   PlayerIndex,
+  PlayerRewardState,
   ProgressionConfig,
+  RewardEvent,
 } from '../types';
 import { LEVEL_INFO } from '../data/cards';
 import { soundEngine } from '../utils/audio';
@@ -58,6 +64,13 @@ import {
   swapGarments,
 } from '../utils/wardrobe';
 import { resolveCardTimerSeconds } from '../utils/cardTimer';
+import {
+  DIFFICULTY_BOOST_STAR_COST,
+  REROLL_STAR_COST,
+  awardStars,
+  refundPendingDifficultyBoost,
+  spendReward,
+} from '../utils/rewards';
 import {
   DIFFICULTY_STARS,
   calculateCompletedCardIntimacy,
@@ -107,12 +120,19 @@ interface GameTableProps {
   onJourneyPhaseChange: (phase: JourneyPhase) => void;
   onRevealPositionCard: (cardId: string) => void;
   onSessionPositionCardIdsChange: (cardIds: string[]) => void;
+  playerRewards: [PlayerRewardState, PlayerRewardState];
+  pendingDifficultyBoosts: PendingDifficultyBoost[];
+  onPlayerRewardsChange: (rewards: [PlayerRewardState, PlayerRewardState]) => void;
+  onPendingDifficultyBoostsChange: (boosts: PendingDifficultyBoost[]) => void;
+  onAddRewardEvent: (event: RewardEvent) => void;
   onNavigationLockChange?: (locked: boolean) => void;
 }
 
 interface PlayerOutfitStatusProps {
   player: Player;
   outfitState: OutfitState;
+  rewardState: PlayerRewardState;
+  hasPendingDifficultyBoost: boolean;
   active: boolean;
   mobile?: boolean;
 }
@@ -149,6 +169,8 @@ const getPositionFamilyLabel = (card: CardItem) =>
 const PlayerOutfitStatus: React.FC<PlayerOutfitStatusProps> = ({
   player,
   outfitState,
+  rewardState,
+  hasPendingDifficultyBoost,
   active,
   mobile = false,
 }) => {
@@ -162,7 +184,7 @@ const PlayerOutfitStatus: React.FC<PlayerOutfitStatusProps> = ({
           ? 'border-rose-400/50 bg-rose-500/[0.08] shadow-[0_0_24px_rgba(255,107,157,0.14)]'
           : 'border-white/10 bg-black/20 opacity-80'
       }`}
-      aria-label={`${player.name}: ${OUTFIT_STAGE_COPY[stage]}, còn ${count} món`}
+      aria-label={`${player.name}: ${OUTFIT_STAGE_COPY[stage]}, còn ${count} món, ví ${rewardState.starBalance} sao${hasPendingDifficultyBoost ? ', đang bị tăng khó' : ''}`}
     >
       <OutfitFigure
         outfit={outfitState.initial}
@@ -176,6 +198,15 @@ const PlayerOutfitStatus: React.FC<PlayerOutfitStatusProps> = ({
         <div className="truncate text-xs font-bold text-white">{player.avatar} {player.name}</div>
         <div className={`mt-0.5 text-[10px] font-medium ${stage === 'empty' ? 'text-neutral-400' : stage === 'underwear_only' ? 'text-amber-300' : 'text-rose-200'}`}>
           {OUTFIT_STAGE_COPY[stage]} · {count} món
+        </div>
+        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] font-bold text-amber-200">
+          <Star className="h-3 w-3 fill-amber-300/25" aria-hidden="true" />
+          {rewardState.starBalance}★
+          {hasPendingDifficultyBoost && (
+            <span className="ml-1 rounded-full border border-orange-300/30 bg-orange-500/10 px-1.5 py-0.5 text-[8px] uppercase tracking-wide text-orange-200">
+              Tăng khó
+            </span>
+          )}
         </div>
       </div>
     </aside>
@@ -215,6 +246,11 @@ export const GameTable: React.FC<GameTableProps> = ({
   onJourneyPhaseChange,
   onRevealPositionCard,
   onSessionPositionCardIdsChange,
+  playerRewards,
+  pendingDifficultyBoosts,
+  onPlayerRewardsChange,
+  onPendingDifficultyBoostsChange,
+  onAddRewardEvent,
   onNavigationLockChange,
 }) => {
   const [isMusicOn, setIsMusicOn] = useState(soundEngine.isMusicOn());
@@ -244,6 +280,8 @@ export const GameTable: React.FC<GameTableProps> = ({
   // Timer state for Dares
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+  const [hasTimerStarted, setHasTimerStarted] = useState(false);
+  const [activeCardWasRerolled, setActiveCardWasRerolled] = useState(false);
   const didPlayTimerAlarmRef = useRef(false);
   const completionCommittedRef = useRef(false);
   const drawTimeoutsRef = useRef<number[]>([]);
@@ -259,6 +297,9 @@ export const GameTable: React.FC<GameTableProps> = ({
       (card) => card.type === type && isStandardJourneyCardEligible(card, currentPlayerIndex, outfitStates),
     ),
   );
+  const activeDifficultyBoost = pendingDifficultyBoosts.find(
+    (boost) => boost.targetPlayerIndex === currentPlayerIndex,
+  ) ?? null;
   const drawProbabilities = getJourneyDrawProbabilities({
     cards: availableCards,
     actorIndex: currentPlayerIndex,
@@ -267,6 +308,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     levels: settings.levels,
     intimacyPercent,
     config: progressionConfig,
+    difficultyBoost: Boolean(activeDifficultyBoost),
   });
   const luxuryDrawProbabilities = selectLuxuryPositionCard({
     cards: availableCards,
@@ -367,6 +409,14 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   const handleTimerControl = () => {
     if (isSuspended) return;
+    if (!hasTimerStarted) {
+      if (timerSeconds === null || timerSeconds <= 0) return;
+      didPlayTimerAlarmRef.current = false;
+      setHasTimerStarted(true);
+      setIsTimerRunning(true);
+      setLiveMessage(`Đã bắt đầu thực hiện. Còn ${timerSeconds} giây.`);
+      return;
+    }
     if (timerSeconds === 0) {
       const resetSeconds = resolveCardTimerSeconds(activeCard, settings);
       if (resetSeconds === null) return;
@@ -375,6 +425,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       didPlayTimerAlarmRef.current = false;
       setTimerSeconds(resetSeconds);
       setIsTimerRunning(true);
+      setHasTimerStarted(true);
       setLiveMessage('Đã bắt đầu đếm lại thời gian.');
       return;
     }
@@ -407,6 +458,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       levels: settings.levels,
       intimacyPercent,
       config: progressionConfig,
+      difficultyBoost: Boolean(activeDifficultyBoost),
     });
 
     if (!selection.card) {
@@ -424,10 +476,20 @@ export const GameTable: React.FC<GameTableProps> = ({
 
     const randomCard = selection.card;
     completionCommittedRef.current = false;
+    setActiveCardWasRerolled(false);
     setUsedCardIds(selection.nextUsedCardIds);
     setDrawError(null);
     setDrawState('shuffling');
+    setTimerSeconds(null);
+    setHasTimerStarted(false);
+    setIsTimerRunning(false);
     soundEngine.playShuffle();
+    if (activeDifficultyBoost) {
+      onPendingDifficultyBoostsChange(
+        pendingDifficultyBoosts.filter((boost) => boost !== activeDifficultyBoost),
+      );
+      setLiveMessage(`Lượt tăng khó của ${activeDifficultyBoost.ownerPlayerIndex === 0 ? player1.name : player2.name} đã được áp dụng.`);
+    }
 
     scheduleDrawStep(() => {
       setActiveCard(randomCard);
@@ -448,15 +510,111 @@ export const GameTable: React.FC<GameTableProps> = ({
           soundEngine.stopTimerAlarm();
           didPlayTimerAlarmRef.current = false;
           setTimerSeconds(cardTimerSeconds);
+          setHasTimerStarted(false);
           setIsTimerRunning(false);
         } else {
           soundEngine.stopTimerAlarm();
           didPlayTimerAlarmRef.current = false;
           setTimerSeconds(null);
+          setHasTimerStarted(false);
           setIsTimerRunning(false);
         }
       }, 500);
     }, 900);
+  };
+
+  const handleQueueDifficultyBoost = () => {
+    if (journeyPhase !== 'standard' || drawState !== 'idle') return;
+    const targetPlayerIndex: PlayerIndex = currentPlayerIndex === 0 ? 1 : 0;
+    if (pendingDifficultyBoosts.some((boost) => boost.targetPlayerIndex === targetPlayerIndex)) {
+      setDrawError('Đối phương đã có một lượt tăng khó đang chờ.');
+      return;
+    }
+    const nextRewards = spendReward(playerRewards, currentPlayerIndex, 'difficulty_boost');
+    if (!nextRewards) {
+      setDrawError(`Cần ${DIFFICULTY_BOOST_STAR_COST}★ để tăng độ khó cho đối phương.`);
+      return;
+    }
+    const pending: PendingDifficultyBoost = {
+      ownerPlayerIndex: currentPlayerIndex,
+      targetPlayerIndex,
+      queuedRound: currentRound,
+    };
+    onPlayerRewardsChange(nextRewards);
+    onPendingDifficultyBoostsChange([...pendingDifficultyBoosts, pending]);
+    onAddRewardEvent({
+      kind: 'queued_difficulty_boost',
+      playerIndex: currentPlayerIndex,
+      amount: -DIFFICULTY_BOOST_STAR_COST,
+      round: currentRound,
+      timestamp: Date.now(),
+    });
+    setDrawError(null);
+    setLiveMessage(`${currentPlayer.name} đã dùng ${DIFFICULTY_BOOST_STAR_COST} sao. Lượt rút kế tiếp của ${targetPlayerIndex === 0 ? player1.name : player2.name} sẽ khó hơn một bậc.`);
+  };
+
+  const handleReroll = () => {
+    if (!activeCard || getCardDeck(activeCard) !== 'standard' || drawState !== 'drawn' || activeCardWasRerolled) return;
+    const nextRewards = spendReward(playerRewards, performingPlayerIndex, 'reroll');
+    if (!nextRewards) {
+      setDrawError(`Cần ${REROLL_STAR_COST}★ để đổi lá bài.`);
+      return;
+    }
+    const selection = selectJourneyCard({
+      cards: availableCards,
+      preferredType: settings.drawMode === 'choose' ? activeCard.type : null,
+      actorIndex: currentPlayerIndex,
+      outfits: outfitStates,
+      usedCardIds,
+      excludedCardIds: [activeCard.id],
+      levels: settings.levels,
+      intimacyPercent,
+      config: progressionConfig,
+    });
+    if (!selection.card) {
+      setDrawError('Không còn lá khác phù hợp để đổi. Sao của bạn được giữ nguyên.');
+      return;
+    }
+
+    const previousCardId = activeCard.id;
+    const replacement = selection.card;
+    onPlayerRewardsChange(nextRewards);
+    onAddRewardEvent({
+      kind: 'rerolled_card',
+      playerIndex: performingPlayerIndex,
+      amount: -REROLL_STAR_COST,
+      cardId: previousCardId,
+      round: currentRound,
+      timestamp: Date.now(),
+    });
+    setUsedCardIds(selection.nextUsedCardIds);
+    setDrawError(null);
+    setLiveMessage(`${performingPlayer.name} đã dùng ${REROLL_STAR_COST} sao để đổi bài. Lá cũ không được mở khóa.`);
+    soundEngine.stopTimerAlarm();
+    didPlayTimerAlarmRef.current = false;
+    completionCommittedRef.current = false;
+    setIsTimerRunning(false);
+    setTimerSeconds(null);
+    setHasTimerStarted(false);
+    setActiveCard(null);
+    setCardFlipped(false);
+    setDrawState('shuffling');
+    soundEngine.playShuffle();
+
+    scheduleDrawStep(() => {
+      setActiveCard(replacement);
+      setDrawState('drawing');
+      setIsRevealed(!settings.privacyDefault);
+      scheduleDrawStep(() => {
+        setCardFlipped(true);
+        setDrawState('drawn');
+        soundEngine.playCardFlip();
+        setTimerSeconds(resolveCardTimerSeconds(replacement, settings));
+        setHasTimerStarted(false);
+        setIsTimerRunning(false);
+        setActiveCardWasRerolled(true);
+      }, 400);
+    }, 650);
   };
 
   const fireCompletionFeedback = () => {
@@ -513,8 +671,32 @@ export const GameTable: React.FC<GameTableProps> = ({
     }
     onIntimacyPercentChange(nextIntimacy);
     if (events.length > 0) onAddIntimacyEvents(events);
+    const earnedStars = deriveDifficultyStars(activeCard);
+    let nextRewardStates = awardStars(playerRewards, performingPlayerIndex, earnedStars);
+    onAddRewardEvent({
+      kind: 'earned_stars',
+      playerIndex: performingPlayerIndex,
+      amount: earnedStars,
+      cardId: activeCard.id,
+      round: currentRound,
+      timestamp: now,
+    });
+    if (nextIntimacy >= 100 && pendingDifficultyBoosts.length > 0) {
+      for (const pending of pendingDifficultyBoosts) {
+        nextRewardStates = refundPendingDifficultyBoost(nextRewardStates, pending);
+        onAddRewardEvent({
+          kind: 'refunded_difficulty_boost',
+          playerIndex: pending.ownerPlayerIndex,
+          amount: DIFFICULTY_BOOST_STAR_COST,
+          round: currentRound,
+          timestamp: now,
+        });
+      }
+      onPendingDifficultyBoostsChange([]);
+    }
+    onPlayerRewardsChange(nextRewardStates);
     setIntimacyGainNotice(
-      `+${appliedTotal}% thân mật${appliedRemoval > 0 ? ` · gồm +${appliedRemoval}% bỏ đồ` : ''}`,
+      `+${appliedTotal}% thân mật · +${earnedStars}★ cho ${performingPlayer.name}${appliedRemoval > 0 ? ` · gồm +${appliedRemoval}% bỏ đồ` : ''}`,
     );
     if (performingPlayerIndex === 0) {
       onUpdatePlayers(
@@ -595,10 +777,18 @@ export const GameTable: React.FC<GameTableProps> = ({
   // Action: Complete Challenge
   const handleComplete = () => {
     if (!activeCard || completionCommittedRef.current) return;
+    if (timerSeconds !== null && !hasTimerStarted) {
+      setLiveMessage('Hãy bấm Bắt đầu thực hiện trước khi xác nhận kết quả.');
+      return;
+    }
     soundEngine.stopTimerAlarm();
     setIsTimerRunning(false);
     if (activeCard.position?.family === 'have_sex') {
       completionCommittedRef.current = true;
+      if (!unlockedCardIds.includes(activeCard.id)) {
+        onUnlockCard(activeCard.id);
+        setUnlockNotice('Đã mở khóa lá Have Sex trong Bộ sưu tập');
+      }
       onFinishGame('have_sex');
       return;
     }
@@ -624,6 +814,10 @@ export const GameTable: React.FC<GameTableProps> = ({
   // Action: Skip Challenge
   const handleSkip = () => {
     if (!activeCard || completionCommittedRef.current) return;
+    if (timerSeconds !== null && !hasTimerStarted) {
+      setLiveMessage('Hãy bấm Bắt đầu thực hiện trước khi chọn không hoàn thành.');
+      return;
+    }
     soundEngine.playTick();
     soundEngine.stopTimerAlarm();
     setIsTimerRunning(false);
@@ -768,6 +962,8 @@ export const GameTable: React.FC<GameTableProps> = ({
     setIsRevealed(!settings.privacyDefault);
     setTimerSeconds(null);
     setIsTimerRunning(false);
+    setHasTimerStarted(false);
+    setActiveCardWasRerolled(false);
     setDrawError(null);
     setRemovalRequest(null);
     setShowPenaltyPrompt(false);
@@ -805,6 +1001,8 @@ export const GameTable: React.FC<GameTableProps> = ({
     completionCommittedRef.current = false;
     setTimerSeconds(resolveCardTimerSeconds(nextCard, settings));
     setIsTimerRunning(false);
+    setHasTimerStarted(false);
+    setActiveCardWasRerolled(false);
     setActiveCard(nextCard);
     setIsRevealed(true);
     setCardFlipped(false);
@@ -825,6 +1023,10 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   const handlePositionAdvance = (completed: boolean) => {
     if (!activeCard || completionCommittedRef.current) return;
+    if (timerSeconds !== null && !hasTimerStarted) {
+      setLiveMessage('Hãy bấm Bắt đầu thực hiện trước khi xác nhận kết quả.');
+      return;
+    }
     if (completed) {
       handleComplete();
       return;
@@ -1017,6 +1219,11 @@ export const GameTable: React.FC<GameTableProps> = ({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:justify-end">
           {journeyPhase === 'standard' ? (
             <>
+              {activeDifficultyBoost && (
+                <span className="rounded-full border border-orange-300/30 bg-orange-500/10 px-2 py-0.5 font-bold text-orange-200">
+                  Tăng khó +1 bậc
+                </span>
+              )}
               <span>Sự thật <strong className="text-blue-200">{chance(drawProbabilities.types.truth)}</strong></span>
               <span>Thử thách <strong className="text-rose-200">{chance(drawProbabilities.types.dare)}</strong></span>
               <span aria-hidden="true" className="hidden text-white/15 sm:inline">|</span>
@@ -1060,14 +1267,14 @@ export const GameTable: React.FC<GameTableProps> = ({
       </AnimatePresence>
 
       <div className="game-outfit-mobile" aria-label="Trang phục hiện tại của hai người chơi">
-        <PlayerOutfitStatus player={player1} outfitState={outfitStates[0]} active={currentPlayerIndex === 0} mobile />
-        <PlayerOutfitStatus player={player2} outfitState={outfitStates[1]} active={currentPlayerIndex === 1} mobile />
+        <PlayerOutfitStatus player={player1} outfitState={outfitStates[0]} rewardState={playerRewards[0]} hasPendingDifficultyBoost={pendingDifficultyBoosts.some((boost) => boost.targetPlayerIndex === 0)} active={currentPlayerIndex === 0} mobile />
+        <PlayerOutfitStatus player={player2} outfitState={outfitStates[1]} rewardState={playerRewards[1]} hasPendingDifficultyBoost={pendingDifficultyBoosts.some((boost) => boost.targetPlayerIndex === 1)} active={currentPlayerIndex === 1} mobile />
       </div>
 
       {/* MAIN GAME TABLE AREA */}
       <div className="game-table-stage my-auto py-6">
         <div className="game-outfit-desktop">
-          <PlayerOutfitStatus player={player1} outfitState={outfitStates[0]} active={currentPlayerIndex === 0} />
+          <PlayerOutfitStatus player={player1} outfitState={outfitStates[0]} rewardState={playerRewards[0]} hasPendingDifficultyBoost={pendingDifficultyBoosts.some((boost) => boost.targetPlayerIndex === 0)} active={currentPlayerIndex === 0} />
         </div>
         <div className="game-table-stage__center">
         {journeyPhase === 'position_consent' && (
@@ -1166,6 +1373,22 @@ export const GameTable: React.FC<GameTableProps> = ({
               <span className="font-bold text-amber-300">{currentPlayer.name}</span>
               <span>rút lá bài tình yêu</span>
             </p>
+
+            <button
+              type="button"
+              onClick={handleQueueDifficultyBoost}
+              disabled={
+                playerRewards[currentPlayerIndex].starBalance < DIFFICULTY_BOOST_STAR_COST
+                || pendingDifficultyBoosts.some((boost) => boost.targetPlayerIndex === (currentPlayerIndex === 0 ? 1 : 0))
+              }
+              className="mb-3 flex min-h-11 items-center justify-center gap-2 rounded-full border border-orange-300/25 bg-orange-500/[0.08] px-4 text-xs font-semibold text-orange-100 transition-colors hover:border-orange-300/50 hover:bg-orange-500/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300/60 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label={`Tăng một bậc độ khó cho lượt kế tiếp của ${currentPlayerIndex === 0 ? player2.name : player1.name}, tốn ${DIFFICULTY_BOOST_STAR_COST} sao`}
+            >
+              <TrendingUp className="h-4 w-4" aria-hidden="true" />
+              {pendingDifficultyBoosts.some((boost) => boost.targetPlayerIndex === (currentPlayerIndex === 0 ? 1 : 0))
+                ? `Đã đặt tăng khó cho ${currentPlayerIndex === 0 ? player2.name : player1.name}`
+                : `Tăng khó ${currentPlayerIndex === 0 ? player2.name : player1.name} · ${DIFFICULTY_BOOST_STAR_COST}★`}
+            </button>
 
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -1435,16 +1658,22 @@ export const GameTable: React.FC<GameTableProps> = ({
                             </span>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={handleTimerControl}
-                            aria-label={timerSeconds === 0 ? 'Đếm lại thời gian thử thách' : isTimerRunning ? 'Tạm dừng đếm giờ' : 'Bắt đầu đếm giờ'}
-                            style={{ fontSize: `${12 * activeTextScale}px` }}
-                            className="flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/60 px-3 py-1 text-neutral-200 hover:text-white"
-                          >
-                            {timerSeconds === 0 && <RotateCcw className="h-3 w-3" aria-hidden="true" />}
-                            {timerSeconds === 0 ? 'Đếm lại' : isTimerRunning ? 'Tạm dừng' : 'Bắt đầu đếm'}
-                          </button>
+                          {hasTimerStarted ? (
+                            <button
+                              type="button"
+                              onClick={handleTimerControl}
+                              aria-label={timerSeconds === 0 ? 'Đếm lại thời gian thử thách' : isTimerRunning ? 'Tạm dừng đếm giờ' : 'Tiếp tục đếm giờ'}
+                              style={{ fontSize: `${12 * activeTextScale}px` }}
+                              className="flex min-h-9 items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/60 px-3 py-1 text-neutral-200 hover:text-white"
+                            >
+                              {timerSeconds === 0 && <RotateCcw className="h-3 w-3" aria-hidden="true" />}
+                              {timerSeconds === 0 ? 'Đếm lại' : isTimerRunning ? 'Tạm dừng' : 'Tiếp tục'}
+                            </button>
+                          ) : (
+                            <span className="rounded-full border border-amber-300/20 bg-amber-500/[0.07] px-2.5 py-1 text-[10px] font-semibold text-amber-100/80">
+                              Chờ bắt đầu
+                            </span>
+                          )}
                         </div>
                       )}
                   </div>
@@ -1457,9 +1686,30 @@ export const GameTable: React.FC<GameTableProps> = ({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full flex items-center justify-center gap-3 mt-4"
+                className="mt-4 flex w-full flex-wrap items-center justify-center gap-3"
               >
-                {isFinalPositionCard ? (
+                {!isPositionCard && (
+                  <button
+                    type="button"
+                    onClick={handleReroll}
+                    disabled={activeCardWasRerolled || playerRewards[performingPlayerIndex].starBalance < REROLL_STAR_COST}
+                    aria-label={`Đổi lá bài, tốn ${REROLL_STAR_COST} sao của ${performingPlayer.name}`}
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-amber-300/25 bg-amber-500/[0.07] px-4 text-xs font-semibold text-amber-100 transition-colors hover:border-amber-300/50 hover:bg-amber-500/[0.13] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/60 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Shuffle className="h-4 w-4" aria-hidden="true" />
+                    {activeCardWasRerolled ? 'Đã đổi bài trong lượt này' : `Đổi bài · ${REROLL_STAR_COST}★ của ${performingPlayer.name}`}
+                  </button>
+                )}
+                {timerSeconds !== null && !hasTimerStarted ? (
+                  <button
+                    type="button"
+                    onClick={handleTimerControl}
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gold-gradient px-5 text-sm font-bold text-neutral-950 shadow-[0_0_22px_rgba(212,175,55,.32)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 motion-reduce:transform-none"
+                  >
+                    <TimerIcon className="h-4 w-4" aria-hidden="true" />
+                    Bắt đầu thực hiện · {timerSeconds}s
+                  </button>
+                ) : isFinalPositionCard ? (
                   <button
                     type="button"
                     onClick={handleComplete}
@@ -1509,7 +1759,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         )}
         </div>
         <div className="game-outfit-desktop">
-          <PlayerOutfitStatus player={player2} outfitState={outfitStates[1]} active={currentPlayerIndex === 1} />
+          <PlayerOutfitStatus player={player2} outfitState={outfitStates[1]} rewardState={playerRewards[1]} hasPendingDifficultyBoost={pendingDifficultyBoosts.some((boost) => boost.targetPlayerIndex === 1)} active={currentPlayerIndex === 1} />
         </div>
       </div>
 

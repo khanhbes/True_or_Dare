@@ -172,6 +172,15 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
                   Hoàn thành bài sẽ cộng điểm theo số sao. Cởi đồ do hiệu ứng của thẻ có thưởng thêm; bỏ qua và cởi đồ do luật phạt không cộng điểm. Bỏ qua được xử lý theo luật phạt đã cấu hình; cả hai luôn có thể dừng mà không cần giải thích.
                 </p>
+                <p className="mt-2 text-[11px] leading-relaxed text-amber-200/80">
+                  Lá có đồng hồ chỉ bắt đầu khi bấm “Bắt đầu thực hiện”. Hết giờ sẽ reo khoảng 3 giây; hai bạn vẫn tự xác nhận kết quả, game không tự phạt.
+                </p>
+                <p className="mt-2 text-[11px] leading-relaxed text-amber-200/80">
+                  Hoàn thành bài thường cộng đúng số ★ trên lá cho người thực hiện. Mỗi người có ví riêng: 8★ để đổi một lá và 10★ để làm lượt rút kế tiếp của đối phương khó hơn một bậc. Mỗi loại chỉ dùng một lần trên một lượt, sao chưa dùng được giữ đến hết ván.
+                </p>
+                <p className="mt-2 text-[11px] leading-relaxed text-neutral-400">
+                  Lá bị bỏ qua hoặc đổi đi không được mở khóa trong Bộ sưu tập. Chỉ xác nhận hoàn thành mới mở khóa lá.
+                </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
                   Với thẻ có tác động trang phục, hãy chọn đúng món theo lời thẻ rồi xác nhận. Thẻ đổi đồ yêu cầu mỗi người chọn một món; bản xem trước có thể hủy mà không làm thay đổi nhân vật.
                 </p>

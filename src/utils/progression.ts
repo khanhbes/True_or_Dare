@@ -340,7 +340,16 @@ const chooseWeighted = <Key extends string | number>(
 const starWeightsForAvailable = (
   availableStars: readonly DifficultyStars[],
   band: ProgressionBand,
+  difficultyBoost = false,
 ): Record<DifficultyStars, number> => {
+  if (difficultyBoost) {
+    const shifted = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<DifficultyStars, number>;
+    for (const sourceStar of availableStars) {
+      const destinationStar = availableStars.find((star) => star > sourceStar) ?? sourceStar;
+      shifted[destinationStar] += band.starWeights[sourceStar];
+    }
+    return normalize(DIFFICULTY_STARS, shifted);
+  }
   const zeroed = Object.fromEntries(
     DIFFICULTY_STARS.map((star) => [
       star,
@@ -364,6 +373,10 @@ export interface SelectJourneyCardOptions {
   levels: readonly CardLevel[];
   intimacyPercent: number;
   config: ProgressionConfig;
+  /** Hard exclusions stay excluded even when the normal no-repeat pool resets. */
+  excludedCardIds?: readonly string[];
+  /** Shifts each available star weight to the next higher available star. */
+  difficultyBoost?: boolean;
   random?: () => number;
 }
 
@@ -378,8 +391,11 @@ export interface JourneyCardSelectionResult {
 
 const getJourneyPool = (options: SelectJourneyCardOptions) => {
   const enabledLevels = new Set(options.levels);
+  const excluded = new Set(options.excludedCardIds ?? []);
   const eligible = options.cards.filter(
-    (card) => enabledLevels.has(card.level) && isStandardJourneyCardEligible(card, options.actorIndex, options.outfits),
+    (card) => !excluded.has(card.id)
+      && enabledLevels.has(card.level)
+      && isStandardJourneyCardEligible(card, options.actorIndex, options.outfits),
   );
   const pool = options.preferredType
     ? eligible.filter((card) => card.type === options.preferredType)
@@ -396,6 +412,7 @@ const probabilitiesForCandidates = (
   intimacyPercent: number,
   config: ProgressionConfig,
   preferredType: CardType | null,
+  difficultyBoost = false,
 ): JourneyDrawProbabilities => {
   const band = getProgressionBand(intimacyPercent, config);
   const availableTypes = STANDARD_CARD_TYPES.filter((type) =>
@@ -418,7 +435,7 @@ const probabilitiesForCandidates = (
       candidates.some((card) => card.type === type && deriveDifficultyStars(card) === star),
     );
     if (availableStars.length === 0) continue;
-    const conditional = starWeightsForAvailable(availableStars, band);
+    const conditional = starWeightsForAvailable(availableStars, band, difficultyBoost);
     for (const star of DIFFICULTY_STARS) stars[star] += types[type] * conditional[star];
   }
   return { types, stars };
@@ -433,6 +450,7 @@ export const getJourneyDrawProbabilities = (
     options.intimacyPercent,
     options.config,
     options.preferredType ?? null,
+    options.difficultyBoost ?? false,
   );
 };
 
@@ -447,6 +465,7 @@ export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCar
     options.intimacyPercent,
     options.config,
     options.preferredType ?? null,
+    options.difficultyBoost ?? false,
   );
   if (candidates.length === 0) {
     return {
@@ -487,7 +506,11 @@ export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCar
     typeCards.some((card) => deriveDifficultyStars(card) === star),
   );
   const band = getProgressionBand(options.intimacyPercent, options.config);
-  const conditionalStars = starWeightsForAvailable(availableStars, band);
+  const conditionalStars = starWeightsForAvailable(
+    availableStars,
+    band,
+    options.difficultyBoost ?? false,
+  );
   const selectedStar = chooseWeighted(availableStars, conditionalStars, random);
   if (!selectedStar) {
     return {
