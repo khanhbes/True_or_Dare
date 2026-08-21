@@ -54,10 +54,9 @@ const cards = [
     mergeEditedSystemCard(card, overrides.get(card.id))),
   ...bundle.customCards,
 ];
-if (INITIAL_CARDS.length !== 108 || bundle.customCards.length !== 51 ||
-    bundle.editedCards.length !== 38 || bundle.deletedSystemCardIds.length !== 2 ||
-    bundle.assets.length !== 43 || cards.length !== 157) {
-  throw new Error('Số lượng catalog không khớp bộ phục hồi đã xác nhận');
+if (INITIAL_CARDS.length !== 108 ||
+    cards.length !== INITIAL_CARDS.length - bundle.deletedSystemCardIds.length + bundle.customCards.length) {
+  throw new Error('Số lượng catalog sau merge không hợp lệ');
 }
 if (new Set(cards.map((card) => card.id)).size !== cards.length) throw new Error('Catalog có ID thẻ trùng');
 

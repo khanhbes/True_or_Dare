@@ -16,6 +16,15 @@ Tạo lại snapshot local từ gói backup đã xác minh:
 npm run catalog:materialize -- C:\path\to\backup.todbackup.zip
 ```
 
+Đồng bộ trực tiếp catalog công khai và toàn bộ ảnh từ staging về source local:
+
+```powershell
+npm run catalog:pull
+```
+
+Lệnh chỉ thay `data/catalog` sau khi payload và checksum ảnh hợp lệ. Có thể truyền
+origin khác làm tham số đầu tiên, ví dụ `npm run catalog:pull -- https://example.pages.dev`.
+
 ## Chạy frontend nhanh
 
 **Yêu cầu:** Node.js 20 trở lên.

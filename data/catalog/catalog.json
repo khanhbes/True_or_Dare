@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceCreatedAt": "2026-08-20T18:02:25.961123+00:00",
+  "sourceCreatedAt": "2026-08-21T05:29:29.856Z",
+  "sourceDatasetRevision": 1,
   "systemCardCount": 108,
   "visibleCardCount": 157,
   "cards": [
@@ -1594,74 +1595,220 @@
       "timerSeconds": null
     },
     {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 8,
-        "textScale": 0.9
-      },
-      "content": "Bạn nữ dùng gối tựa lưng hoặc dựa vào vật gì đó thoải mái và chắc chắn, trong khi bạn nam nằm ngang trên đùi bạn nữ. Trong khi anh ấy bú vú bạn nữ, bạn nữ dùng tay còn lại gần caube của anh ấy để kích thích anh ấy.",
-      "customImageId": "card-image:custom-1787230294200",
-      "deck": "position",
-      "hint": "Tư thế The Cradle",
-      "id": "custom-1787230294200",
+      "content": "Điều bạn không thích ở đối phương là gì?",
+      "deck": "standard",
+      "icon": "lips",
+      "id": "custom-1787156774186",
       "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 7,
-        "family": "handjob",
-        "orderGroup": 3,
-        "rarity": "luxury",
-        "recipient": "female"
-      },
+      "level": "gentle",
+      "position": null,
       "progression": {
-        "actorStages": [
-          "empty"
-        ],
         "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
+        "difficultyStars": 1
       },
-      "type": "dare"
+      "type": "truth"
     },
     {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 8,
-        "textScale": 0.9
-      },
-      "content": "Bạn nữ đặt mình giữa hai chân anh ấy, lấy tay nhẹ nhàng vuốt caube và \"khoai\" của bạn nam",
-      "customImageId": "card-image:custom-1787224227727",
-      "deck": "position",
-      "hint": "Tư thế Standard",
-      "id": "custom-1787224227727",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 6,
-        "family": "handjob",
-        "orderGroup": 3,
-        "rarity": "luxury",
-        "recipient": "female"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "content": "Bạn thích xem thể loại phim gì?",
+      "content": "Cả 2 cùng nói ngày mình yêu nhau là ngày bao nhiêu?",
       "deck": "standard",
       "icon": "heart",
-      "id": "custom-1787215366327",
+      "id": "custom-1787156981530",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Cảm giác lần đầu bạn hôn đối phương như nào?",
+      "deck": "standard",
+      "icon": "kiss_nose",
+      "id": "custom-1787157101000",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Ai là người tỏ tình?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787157155421",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Bạn cảm thấy như nào khi nghe lời tỏ tình của đối phương?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787157262837",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Đối phương có điểm mạnh gì mà bạn thích?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787157371296",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Hãy kể tên một việc bạn chỉ làm khi ở một mình?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787159182393",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "current",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Nỗi sợ lớn nhất của bạn là gì?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787159286475",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Ngôn ngữ tình yêu của bạn là gì?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787159321163",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "current",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Bạn đã bao giờ mơ về đối phương chưa?",
+      "deck": "standard",
+      "icon": "kiss",
+      "id": "custom-1787160670812",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Đối phương có phải người hài hước không?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787162156643",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "current",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Ai có nhiều mập mờ hơn?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787162883931",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Ai có nhiều người yêu cũ hơn?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787162960686",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Khi nào bạn nhận ra đối phương thích bạn?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787163723419",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Cả hai cùng nói sinh nhật của nhau",
+      "deck": "standard",
+      "icon": "gift",
+      "id": "custom-1787165355696",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Đâu là địa điểm hẹn hò hai bạn thích nhất?",
+      "deck": "standard",
+      "icon": "location",
+      "id": "custom-1787165412664",
       "isCustom": true,
       "level": "gentle",
       "position": null,
@@ -1674,18 +1821,78 @@
     {
       "appearance": {
         "iconScale": 1.7,
-        "iconTextGap": 20,
+        "iconTextGap": 16,
         "textScale": 0.9
       },
-      "content": "Bạn nam đứng yên và bạn nữ đứng bên cạnh, quay lưng về phía anh ta. Nếu cần, bạn nữ có thể nhón chân để giúp thâm nhập sâu hơn. bạn nữ có thể đặt đầu lên vai anh ta để vuốt ve cổ anh ta.",
-      "customImageId": "card-image:custom-1787215106989",
+      "content": "Bạn nam nằm nửa người trên ghế. Đầu ngả ra sau tựa vào lưng ghế. Chân duỗi thẳng về phía trước và hơi dang rộng. Bạn nữ ngồi lên caube, quay lưng về phía bạn nam. Bạn nữ đưa tay ra sau và đặt lòng bàn tay lên tay vịn. Phần thân trên của bạn nữ hơi xoay sang một bên. Chân bạn nữ dang rộng và các ngón chân chạm sàn.",
+      "customImageId": "card-image:custom-1787197977369",
       "deck": "position",
-      "hint": "Tư thế Candle",
-      "id": "custom-1787215106989",
+      "hint": "Tư thế Erotic Poster",
+      "id": "custom-1787197977369",
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 8,
+        "difficultyStars": 10,
+        "family": "have_sex",
+        "orderGroup": 4,
+        "rarity": "mythic",
+        "recipient": "both"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "content": "Kể tên ca sĩ bạn thích",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787199365133",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Kể tên bài hát bạn thích",
+      "deck": "standard",
+      "icon": "music",
+      "id": "custom-1787199398185",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.7,
+        "iconTextGap": 14,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam ngồi trên giường với hai chân gập lại ở đầu gối và đặt bàn chân trên sàn. Bạn nữ ngồi lên hông, đối mặt với bạn nam, hai chân gập lại ở đầu gối và đặt lên hai bên mông của bạn nam. Bạn nữ đưa hai tay ra sau lưng và nắm chặt lại. Bạn nữ hơi ngả người ra sau, để bạn nam hôn lên ngực mình. Lòng bàn tay của bạn nam chạm mông cô ấy và di chuyển lên xuống.",
+      "customImageId": "card-image:custom-1787200034578",
+      "deck": "position",
+      "hint": "Tư thế Merger",
+      "id": "custom-1787200034578",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 10,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -1709,47 +1916,15 @@
         "iconTextGap": 8,
         "textScale": 0.9
       },
-      "content": "Bạn và người yêu nằm nghiêng, áp sát vào nhau. Bạn nam ôm bạn nữ từ phía sau, thâm nhập từ phía sau",
-      "customImageId": "card-image:custom-1787214958700",
+      "content": "Bạn nữ nằm ngửa, gập đầu gối và dang rộng hai chân. Cô ấy luồn tay xuống dưới đầu gối và nắm lấy mắt cá chân, dựa vào cơ bụng để giữ thăng bằng. Bạn nam quỳ xuống trước mông bạn nữ và hơi nghiêng người về phía trước, hai chân vẫn dang rộng. Bạn nam đặt tay lên đùi người bạn nữ.",
+      "customImageId": "card-image:custom-1787200408561",
       "deck": "position",
-      "hint": "Tư thế Spoon",
-      "id": "custom-1787214958700",
+      "hint": "Tư thế Launch Pad",
+      "id": "custom-1787200408561",
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 8,
-        "family": "have_sex",
-        "orderGroup": 4,
-        "rarity": "mythic",
-        "recipient": "both"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 0,
-        "textScale": 0.9
-      },
-      "content": "Bạn nam chống đỡ cơ thể bằng tay và cánh tay, tạo nên một tư thế vững chắc và ổn định. Anh ta có thể kiểm soát độ sâu và tốc độ của những cú đẩy, cho phép anh ta đáp ứng được khoái cảm của đối tác. Bạn nữ nằm ngửa, hai chân thường dang rộng hoặc quấn quanh người bạn tình.",
-      "customImageId": "card-image:custom-1787214696681",
-      "deck": "position",
-      "hint": "Tư thế Missionary",
-      "id": "custom-1787214696681",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 10,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -1773,29 +1948,23 @@
         "iconTextGap": 8,
         "textScale": 0.9
       },
-      "content": "Bạn nam nằm trên sàn, hai chân dang rộng và hơi cong ở đầu gối, sẽ rất hợp lý nếu đặt một chiếc gối nhỏ giữa hai chân. Bạn nữ nằm với đầu tựa trên gối, hai tay duỗi dọc theo cơ thể bạn nam và hai chân vắt lên vai anh ấy",
-      "customImageId": "card-image:custom-1787214401588",
+      "content": "Bạn nam nằm ngửa, đầu hơi nâng lên. Chân duỗi thẳng nhưng hơi dang ra, caube mở rộng. Bạn nữ ngồi lên bạn nam, nghiêng người về phía trước và đặt hai tay lên mắt cá chân của anh ấy. Bàn chân của cô ấy đặt trong nách bạn nam. Bạn nữ giữ chặt người yêu trên giường và bắt đầu di chuyển tới lui, từ trước ra sau.",
+      "customImageId": "card-image:custom-1787200722253",
       "deck": "position",
-      "hint": "Tư thế Eraser",
-      "id": "custom-1787214401588",
+      "hint": "Tư thế Shameless",
+      "id": "custom-1787200722253",
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 6,
-        "family": "blowjob",
-        "orderGroup": 2,
-        "rarity": "luxury",
-        "recipient": "male"
+        "difficultyStars": 10,
+        "family": "have_sex",
+        "orderGroup": 4,
+        "rarity": "mythic",
+        "recipient": "both"
       },
       "progression": {
-        "actorStages": [
-          "empty"
-        ],
         "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
+        "difficultyStars": 5
       },
       "type": "dare"
     },
@@ -1805,11 +1974,43 @@
         "iconTextGap": 14,
         "textScale": 0.9
       },
-      "content": "Bạn nữ đứng ở tư thế \"kiểu chó\", khuỷu tay và đầu gối gập lại, dang rộng sang hai bên, giữ thẳng đầu. Bạn nam ở phía sau, quỳ xuống, ôm lấy eo cô ấy và thâm nhập không chỉ bằng cơ bắp mà còn bằng mông, theo nhịp điệu chuyển động của mình.",
-      "customImageId": "card-image:custom-1787214101711",
+      "content": "Bạn nữ trèo lên giường và quỳ trên mép giường, cúi người về phía trước và chống đỡ bằng lòng bàn tay, hai cánh tay duỗi thẳng. Bạn nam đứng phía sau, đầu gối đặt trên giường bên cạnh chân của bạn nữ. Đầu anh ta ngửa ra sau. Anh ta ôm lấy eo bạn nữ.",
+      "customImageId": "card-image:custom-1787201237223",
       "deck": "position",
-      "hint": "Tư thế Doggy",
-      "id": "custom-1787214101711",
+      "hint": "Tư thế Doggy in the Edge",
+      "id": "custom-1787201237223",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 10,
+        "family": "have_sex",
+        "orderGroup": 4,
+        "rarity": "mythic",
+        "recipient": "both"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 4,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam nằm ngửa và chỉ tận hưởng việc bạn nữ đóng vai trò chủ động và điều khiển diễn biến của cuộc yêu, trong khi cô ấy cưỡi lên caube của anh ta, giữ tư thế ngồi xổm.",
+      "customImageId": "card-image:custom-1787201390554",
+      "deck": "position",
+      "hint": "Tư thế Princess",
+      "id": "custom-1787201390554",
       "isCustom": true,
       "level": "passionate",
       "position": {
@@ -1834,14 +2035,46 @@
     {
       "appearance": {
         "iconScale": 1.8,
+        "iconTextGap": 8,
+        "textScale": 0.9
+      },
+      "content": "Bạn nữ quỳ xuống bằng hai tay và hai đầu gối theo kiểu \"Doggy style\". Cô ấy gập đầu gối và dang rộng hai tay và đầu gối sang hai bên. bạn nam quỳ phía sau, ôm lấy eo cô ấy và áp sát thân mình vào người cô ấy. Anh ấy dùng một tay ôm lấy người yêu để giữ cho mọi thứ diễn ra suôn sẻ. Tay còn lại đặt phía trước để giữ thăng bằng.",
+      "customImageId": "card-image:custom-1787201616676",
+      "deck": "position",
+      "hint": "Tư thế Tight Squeeze",
+      "id": "custom-1787201616676",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 7,
+        "family": "have_sex",
+        "orderGroup": 4,
+        "rarity": "mythic",
+        "recipient": "both"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.7,
         "iconTextGap": 18,
         "textScale": 0.9
       },
-      "content": "Bạn nam quỳ gối, giữ thẳng lưng, bạn nữ cũng quỳ gối, áp sát lưng vào ngực người yêu. Chân cô ấy đặt giữa hai chân anh ấy, một tay cô ấy ôm lấy cổ anh ấy, để lộ bầu ngực.",
-      "customImageId": "card-image:custom-1787213753008",
+      "content": "Bạn nữ đứng ở bàn, nhón chân lên. Hai chân khép sát vào nhau. Cô ấy chống khuỷu tay lên mặt bàn và nghiêng người về phía trước. Bạn nam đứng thẳng lưng phía sau người yêu, một chân đưa về phía trước. Hai tay anh đặt lên eo bạn nữ và anh đưa caube vào cobe của cô ấy từ phía sau.",
+      "customImageId": "card-image:custom-1787201733227",
       "deck": "position",
-      "hint": "Tư thế Oath",
-      "id": "custom-1787213753008",
+      "hint": "Tư thế Mature Lady",
+      "id": "custom-1787201733227",
       "isCustom": true,
       "level": "passionate",
       "position": {
@@ -1866,394 +2099,14 @@
     {
       "appearance": {
         "iconScale": 1.8,
-        "iconTextGap": 12,
-        "textScale": 0.9
-      },
-      "content": "Bạn nam nằm nghiêng, hai chân hơi dang ra, một chân hơi gập đầu gối. Bạn nữ nằm ngửa, mông hướng về phía caube của anh ấy, đầu gối gập lại và đặt lên vai và mông của bạn nam, một tay đặt trên hông anh ta, tay kia gập khuỷu tay. Bạn nam dùng một tay luồn xuống dưới đầu gối của bạn nữ và giữ lấy hông cô ấy, tay còn lại vuốt ve ngực cô ấy.",
-      "customImageId": "card-image:custom-1787213327120",
-      "deck": "position",
-      "hint": "Tư thế Spork",
-      "id": "custom-1787213327120",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 8,
-        "family": "have_sex",
-        "orderGroup": 4,
-        "rarity": "mythic",
-        "recipient": "both"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 20,
-        "textScale": 0.9
-      },
-      "content": "Bạn nam đứng, hai chân rộng bằng vai, đầu gối hơi cong. bạn nữ ngồi giữa hai chân của bạn tình nam, ngẩng đầu lên, hai chân cong và dang rộng, một tay đặt lên eo bạn tình nam, tay kia đặt lên caube của anh ta. Tay của bạn nam đặt lên mặt bạn nữ, nhờ đó anh ta có thể thực hiện các động tác. Bạn nữ có thể vừa vuốt ve caube vừa blow \"trứng cút\" của bạn nam",
-      "customImageId": "card-image:custom-1787209997733",
-      "deck": "position",
-      "hint": "Tư thế Jackhammer",
-      "id": "custom-1787209997733",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 5,
-        "family": "blowjob",
-        "orderGroup": 2,
-        "rarity": "luxury",
-        "recipient": "female"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 20,
-        "textScale": 0.9
-      },
-      "content": "Bạn nữ nằm ngửa trên ghế. Đầu gối cô ấy gập lại, bàn chân đặt trên sàn. bạn nam đứng ở phía đầu người tình, dang rộng hai chân bằng vai. Anh ta đặt một tay lên hông. Tay kia nắm lấy lưng ghế. Một tay bạn nữ nắm lấy mông anh ta. Tay còn lại, cô ấy kích thích caube của anh ta",
-      "customImageId": "card-image:custom-1787209789032",
-      "deck": "position",
-      "hint": "Tư thế Special fellatio",
-      "id": "custom-1787209789032",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 5,
-        "family": "blowjob",
-        "orderGroup": 2,
-        "rarity": "luxury",
-        "recipient": "female"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 8,
-        "textScale": 0.9
-      },
-      "content": "Bạn nữ nằm ngửa, hai chân gập lại, và bạn nam ngồi lên trên cô ấy sao cho đầu cô ấy nằm giữa hai chân anh ta. ạn nam không ngồi hoàn toàn lên bạn nữ, anh ta ấn tối đa lên đầu gối, nằm phía sau vai của bạn nữ, dùng tay anh ta có thể di chuyển đầu bạn nữ và vuốt ve khuôn mặt cô ấy.",
-      "customImageId": "card-image:custom-1787209622650",
-      "deck": "position",
-      "hint": "Tư thế Anaconda",
-      "id": "custom-1787209622650",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 5,
-        "family": "blowjob",
-        "orderGroup": 2,
-        "rarity": "luxury",
-        "recipient": "female"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 6,
-        "textScale": 0.9
-      },
-      "content": "Anh ấy chỉ cần nằm ngửa và chọn một tư thế thoải mái. Bạn nữ nằm gần đó và đặt đầu xuống bụng anh ấy, dùng một tay vuốt ve caube của anh ấy và thực hiện oral sex",
-      "customImageId": "card-image:custom-1787209509884",
-      "deck": "position",
-      "hint": "Tư thế dier",
-      "id": "custom-1787209509884",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 5,
-        "family": "blowjob",
-        "orderGroup": 2,
-        "rarity": "luxury",
-        "recipient": "female"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
         "iconTextGap": 10,
         "textScale": 0.9
       },
-      "content": "Bạn nam nằm ngửa trên gối, ở tư thế nửa ngồi, hai tay duỗi thẳng dọc theo thân, hai chân duỗi thẳng và dang rộng. bạn nữ nằm sấp, mặt hướng về phía caube của bạn nam, dùng tay vuốt ve caube của anh ấy, hai chân khép lại và gập đầu gối.",
-      "customImageId": "card-image:custom-1787209236371",
+      "content": "Bạn nam ngồi thẳng lưng trong khi bạn nữ ngồi trên đùi anh ta, đối mặt với anh ta và ôm nhau. Bạn nam đưa caube vào cobe và bạn nữ chủ động nhún nhẹ nhàng",
+      "customImageId": "card-image:custom-1787202068222",
       "deck": "position",
-      "hint": "Tư thế Whisper",
-      "id": "custom-1787209236371",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 7,
-        "family": "blowjob",
-        "orderGroup": 2,
-        "rarity": "luxury",
-        "recipient": "female"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.7,
-        "iconTextGap": 20,
-        "textScale": 0.9
-      },
-      "content": "Bạn nam đứng thẳng, hai chân dang rộng bằng vai; bạn nữ quỳ gối trước mặt anh ta, sao cho caube của bạn nam ở ngay trước mặt cô ấy. Bạn nam giữ đầu bạn nữ để điều khiển nhịp điệu; bạn nữ ôm lấy mông anh ta và bắt đầu quá trình",
-      "customImageId": "card-image:custom-1787209029981",
-      "deck": "position",
-      "hint": "Tư thế Zeus",
-      "id": "custom-1787209029981",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 5,
-        "family": "blowjob",
-        "orderGroup": 2,
-        "rarity": "luxury",
-        "recipient": "female"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 8,
-        "textScale": 0.9
-      },
-      "content": "Bạn nam nằm ngửa, bạn nữ ngồi lên cổ anh ta, hơi nghiêng người về phía trước và quỳ gối sao cho vùng kín ngang tầm mặt anh ta. Tay bạn nam đặt trên đùi bạn nữ, và anh ta có thể dùng tay vuốt ve ngực hoặc giữ lấy tay cô ấy.",
-      "customImageId": "card-image:custom-1787207987099",
-      "deck": "position",
-      "hint": "Tư thế Emmanuel",
-      "id": "custom-1787207987099",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 5,
-        "family": "blowjob",
-        "orderGroup": 2,
-        "rarity": "luxury",
-        "recipient": "male"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "content": "Bạn thích nhất điều gì trong tình yêu?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787207656707",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Bạn sợ nhất điều gì trong tình yêu?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787207454914",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 8,
-        "textScale": 0.9
-      },
-      "content": "Bạn nữ nằm ngửa, gập đầu gối, dang rộng hai chân và nâng lên. Một tay cô ấy giữ lấy mắt cá chân, tay kia vuốt ve cobe. Bạn nam nằm nghiêng sao cho caube vào trong cobe của bạn nữ. Chân bạn nam hơi gập ở đầu gối và dang rộng, một tay anh ta giữ lấy đầu gối của bạn nữ, tay kia nâng lên, giữ lấy bàn chân của cô ấy.",
-      "customImageId": "card-image:custom-1787203074760",
-      "deck": "position",
-      "hint": "Tư thế T Square",
-      "id": "custom-1787203074760",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 9,
-        "family": "have_sex",
-        "orderGroup": 4,
-        "rarity": "mythic",
-        "recipient": "both"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.7,
-        "iconTextGap": 8,
-        "textScale": 0.9
-      },
-      "content": "Bạn nữ nằm ngửa, hai chân duỗi thẳng và nâng lên. Bạn nam quỳ xuống bên cạnh mông bạn nữ, hai chân dang rộng. Bằng tay, bạn nam nắm lấy mắt cá chân của bạn tình và dang rộng hai chân cô ấy ra. Một tay bạn nữ vuốt ve cobe của mình, tay kia đặt lên đùi bạn nam.",
-      "customImageId": "card-image:custom-1787202937544",
-      "deck": "position",
-      "hint": "Tư thế Captain",
-      "id": "custom-1787202937544",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 8,
-        "family": "have_sex",
-        "orderGroup": 4,
-        "rarity": "mythic",
-        "recipient": "both"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 20,
-        "textScale": 0.9
-      },
-      "content": "Bạn nam đứng với hai chân rộng bằng vai. bạn nữ đứng quay lưng về phía anh ta, hai chân hơi dang ra và gập đầu gối, thân người cúi về phía trước, hai tay đưa ra sau lưng. bạn nam dùng tay nắm lấy cổ tay bạn nữ và thâm nhập vào cô ấy từ phía sau.",
-      "customImageId": "card-image:custom-1787202727381",
-      "deck": "position",
-      "hint": "Tư thế Prison Guard",
-      "id": "custom-1787202727381",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 8,
-        "family": "have_sex",
-        "orderGroup": 4,
-        "rarity": "mythic",
-        "recipient": "both"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 10,
-        "textScale": 0.9
-      },
-      "content": "Bạn nam nằm nghiêng, hai chân duỗi thẳng, hơi dang ra nhưng hai bàn chân chạm vào nhau. bạn nữ nằm quay lưng về phía bạn nam, thậm chí hơi nghiêng sang một bên so với vị trí của anh ta. Hai chân cô ấy dang rộng, đầu gối cong, một tay bạn nam nắm lấy mắt cá chân của cô ấy, cô ấy đặt mình lên cùng một đầu gối, tay kia bạn nam có thể vuốt ve ngực cô ấy.",
-      "customImageId": "card-image:custom-1787202632802",
-      "deck": "position",
-      "hint": "Tư thế Unicorn",
-      "id": "custom-1787202632802",
+      "hint": "Tư thế Lotus Flower",
+      "id": "custom-1787202068222",
       "isCustom": true,
       "level": "passionate",
       "position": {
@@ -2313,15 +2166,47 @@
         "iconTextGap": 10,
         "textScale": 0.9
       },
-      "content": "Bạn nam ngồi thẳng lưng trong khi bạn nữ ngồi trên đùi anh ta, đối mặt với anh ta và ôm nhau. Bạn nam đưa caube vào cobe và bạn nữ chủ động nhún nhẹ nhàng",
-      "customImageId": "card-image:custom-1787202068222",
+      "content": "Bạn nam nằm nghiêng, hai chân duỗi thẳng, hơi dang ra nhưng hai bàn chân chạm vào nhau. bạn nữ nằm quay lưng về phía bạn nam, thậm chí hơi nghiêng sang một bên so với vị trí của anh ta. Hai chân cô ấy dang rộng, đầu gối cong, một tay bạn nam nắm lấy mắt cá chân của cô ấy, cô ấy đặt mình lên cùng một đầu gối, tay kia bạn nam có thể vuốt ve ngực cô ấy.",
+      "customImageId": "card-image:custom-1787202632802",
       "deck": "position",
-      "hint": "Tư thế Lotus Flower",
-      "id": "custom-1787202068222",
+      "hint": "Tư thế Unicorn",
+      "id": "custom-1787202632802",
       "isCustom": true,
       "level": "passionate",
       "position": {
         "difficultyStars": 7,
+        "family": "have_sex",
+        "orderGroup": 4,
+        "rarity": "mythic",
+        "recipient": "both"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 20,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam đứng với hai chân rộng bằng vai. bạn nữ đứng quay lưng về phía anh ta, hai chân hơi dang ra và gập đầu gối, thân người cúi về phía trước, hai tay đưa ra sau lưng. bạn nam dùng tay nắm lấy cổ tay bạn nữ và thâm nhập vào cô ấy từ phía sau.",
+      "customImageId": "card-image:custom-1787202727381",
+      "deck": "position",
+      "hint": "Tư thế Prison Guard",
+      "id": "custom-1787202727381",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -2342,78 +2227,14 @@
     {
       "appearance": {
         "iconScale": 1.7,
-        "iconTextGap": 18,
-        "textScale": 0.9
-      },
-      "content": "Bạn nữ đứng ở bàn, nhón chân lên. Hai chân khép sát vào nhau. Cô ấy chống khuỷu tay lên mặt bàn và nghiêng người về phía trước. Bạn nam đứng thẳng lưng phía sau người yêu, một chân đưa về phía trước. Hai tay anh đặt lên eo bạn nữ và anh đưa caube vào cobe của cô ấy từ phía sau.",
-      "customImageId": "card-image:custom-1787201733227",
-      "deck": "position",
-      "hint": "Tư thế Mature Lady",
-      "id": "custom-1787201733227",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 7,
-        "family": "have_sex",
-        "orderGroup": 4,
-        "rarity": "mythic",
-        "recipient": "both"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
         "iconTextGap": 8,
         "textScale": 0.9
       },
-      "content": "Bạn nữ quỳ xuống bằng hai tay và hai đầu gối theo kiểu \"Doggy style\". Cô ấy gập đầu gối và dang rộng hai tay và đầu gối sang hai bên. bạn nam quỳ phía sau, ôm lấy eo cô ấy và áp sát thân mình vào người cô ấy. Anh ấy dùng một tay ôm lấy người yêu để giữ cho mọi thứ diễn ra suôn sẻ. Tay còn lại đặt phía trước để giữ thăng bằng.",
-      "customImageId": "card-image:custom-1787201616676",
+      "content": "Bạn nữ nằm ngửa, hai chân duỗi thẳng và nâng lên. Bạn nam quỳ xuống bên cạnh mông bạn nữ, hai chân dang rộng. Bằng tay, bạn nam nắm lấy mắt cá chân của bạn tình và dang rộng hai chân cô ấy ra. Một tay bạn nữ vuốt ve cobe của mình, tay kia đặt lên đùi bạn nam.",
+      "customImageId": "card-image:custom-1787202937544",
       "deck": "position",
-      "hint": "Tư thế Tight Squeeze",
-      "id": "custom-1787201616676",
-      "isCustom": true,
-      "level": "passionate",
-      "position": {
-        "difficultyStars": 7,
-        "family": "have_sex",
-        "orderGroup": 4,
-        "rarity": "mythic",
-        "recipient": "both"
-      },
-      "progression": {
-        "actorStages": [
-          "empty"
-        ],
-        "audience": "both",
-        "difficultyStars": 5,
-        "partnerStages": [
-          "empty"
-        ]
-      },
-      "type": "dare"
-    },
-    {
-      "appearance": {
-        "iconScale": 1.8,
-        "iconTextGap": 4,
-        "textScale": 0.9
-      },
-      "content": "Bạn nam nằm ngửa và chỉ tận hưởng việc bạn nữ đóng vai trò chủ động và điều khiển diễn biến của cuộc yêu, trong khi cô ấy cưỡi lên caube của anh ta, giữ tư thế ngồi xổm.",
-      "customImageId": "card-image:custom-1787201390554",
-      "deck": "position",
-      "hint": "Tư thế Princess",
-      "id": "custom-1787201390554",
+      "hint": "Tư thế Captain",
+      "id": "custom-1787202937544",
       "isCustom": true,
       "level": "passionate",
       "position": {
@@ -2438,18 +2259,366 @@
     {
       "appearance": {
         "iconScale": 1.8,
-        "iconTextGap": 14,
+        "iconTextGap": 8,
         "textScale": 0.9
       },
-      "content": "Bạn nữ trèo lên giường và quỳ trên mép giường, cúi người về phía trước và chống đỡ bằng lòng bàn tay, hai cánh tay duỗi thẳng. Bạn nam đứng phía sau, đầu gối đặt trên giường bên cạnh chân của bạn nữ. Đầu anh ta ngửa ra sau. Anh ta ôm lấy eo bạn nữ.",
-      "customImageId": "card-image:custom-1787201237223",
+      "content": "Bạn nữ nằm ngửa, gập đầu gối, dang rộng hai chân và nâng lên. Một tay cô ấy giữ lấy mắt cá chân, tay kia vuốt ve cobe. Bạn nam nằm nghiêng sao cho caube vào trong cobe của bạn nữ. Chân bạn nam hơi gập ở đầu gối và dang rộng, một tay anh ta giữ lấy đầu gối của bạn nữ, tay kia nâng lên, giữ lấy bàn chân của cô ấy.",
+      "customImageId": "card-image:custom-1787203074760",
       "deck": "position",
-      "hint": "Tư thế Doggy in the Edge",
-      "id": "custom-1787201237223",
+      "hint": "Tư thế T Square",
+      "id": "custom-1787203074760",
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 9,
+        "family": "have_sex",
+        "orderGroup": 4,
+        "rarity": "mythic",
+        "recipient": "both"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "content": "Bạn sợ nhất điều gì trong tình yêu?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787207454914",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Bạn thích nhất điều gì trong tình yêu?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787207656707",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "audience": "both",
+        "difficultyStars": 1
+      },
+      "type": "truth"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 8,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam nằm ngửa, bạn nữ ngồi lên cổ anh ta, hơi nghiêng người về phía trước và quỳ gối sao cho vùng kín ngang tầm mặt anh ta. Tay bạn nam đặt trên đùi bạn nữ, và anh ta có thể dùng tay vuốt ve ngực hoặc giữ lấy tay cô ấy.",
+      "customImageId": "card-image:custom-1787207987099",
+      "deck": "position",
+      "hint": "Tư thế Emmanuel",
+      "id": "custom-1787207987099",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 5,
+        "family": "blowjob",
+        "orderGroup": 2,
+        "rarity": "luxury",
+        "recipient": "male"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.7,
+        "iconTextGap": 20,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam đứng thẳng, hai chân dang rộng bằng vai; bạn nữ quỳ gối trước mặt anh ta, sao cho caube của bạn nam ở ngay trước mặt cô ấy. Bạn nam giữ đầu bạn nữ để điều khiển nhịp điệu; bạn nữ ôm lấy mông anh ta và bắt đầu quá trình",
+      "customImageId": "card-image:custom-1787209029981",
+      "deck": "position",
+      "hint": "Tư thế Zeus",
+      "id": "custom-1787209029981",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 5,
+        "family": "blowjob",
+        "orderGroup": 2,
+        "rarity": "luxury",
+        "recipient": "female"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 10,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam nằm ngửa trên gối, ở tư thế nửa ngồi, hai tay duỗi thẳng dọc theo thân, hai chân duỗi thẳng và dang rộng. bạn nữ nằm sấp, mặt hướng về phía caube của bạn nam, dùng tay vuốt ve caube của anh ấy, hai chân khép lại và gập đầu gối.",
+      "customImageId": "card-image:custom-1787209236371",
+      "deck": "position",
+      "hint": "Tư thế Whisper",
+      "id": "custom-1787209236371",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 7,
+        "family": "blowjob",
+        "orderGroup": 2,
+        "rarity": "luxury",
+        "recipient": "female"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 6,
+        "textScale": 0.9
+      },
+      "content": "Anh ấy chỉ cần nằm ngửa và chọn một tư thế thoải mái. Bạn nữ nằm gần đó và đặt đầu xuống bụng anh ấy, dùng một tay vuốt ve caube của anh ấy và thực hiện oral sex",
+      "customImageId": "card-image:custom-1787209509884",
+      "deck": "position",
+      "hint": "Tư thế dier",
+      "id": "custom-1787209509884",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 5,
+        "family": "blowjob",
+        "orderGroup": 2,
+        "rarity": "luxury",
+        "recipient": "female"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 8,
+        "textScale": 0.9
+      },
+      "content": "Bạn nữ nằm ngửa, hai chân gập lại, và bạn nam ngồi lên trên cô ấy sao cho đầu cô ấy nằm giữa hai chân anh ta. ạn nam không ngồi hoàn toàn lên bạn nữ, anh ta ấn tối đa lên đầu gối, nằm phía sau vai của bạn nữ, dùng tay anh ta có thể di chuyển đầu bạn nữ và vuốt ve khuôn mặt cô ấy.",
+      "customImageId": "card-image:custom-1787209622650",
+      "deck": "position",
+      "hint": "Tư thế Anaconda",
+      "id": "custom-1787209622650",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 5,
+        "family": "blowjob",
+        "orderGroup": 2,
+        "rarity": "luxury",
+        "recipient": "female"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 20,
+        "textScale": 0.9
+      },
+      "content": "Bạn nữ nằm ngửa trên ghế. Đầu gối cô ấy gập lại, bàn chân đặt trên sàn. bạn nam đứng ở phía đầu người tình, dang rộng hai chân bằng vai. Anh ta đặt một tay lên hông. Tay kia nắm lấy lưng ghế. Một tay bạn nữ nắm lấy mông anh ta. Tay còn lại, cô ấy kích thích caube của anh ta",
+      "customImageId": "card-image:custom-1787209789032",
+      "deck": "position",
+      "hint": "Tư thế Special fellatio",
+      "id": "custom-1787209789032",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 5,
+        "family": "blowjob",
+        "orderGroup": 2,
+        "rarity": "luxury",
+        "recipient": "female"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 20,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam đứng, hai chân rộng bằng vai, đầu gối hơi cong. bạn nữ ngồi giữa hai chân của bạn tình nam, ngẩng đầu lên, hai chân cong và dang rộng, một tay đặt lên eo bạn tình nam, tay kia đặt lên caube của anh ta. Tay của bạn nam đặt lên mặt bạn nữ, nhờ đó anh ta có thể thực hiện các động tác. Bạn nữ có thể vừa vuốt ve caube vừa blow \"trứng cút\" của bạn nam",
+      "customImageId": "card-image:custom-1787209997733",
+      "deck": "position",
+      "hint": "Tư thế Jackhammer",
+      "id": "custom-1787209997733",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 5,
+        "family": "blowjob",
+        "orderGroup": 2,
+        "rarity": "luxury",
+        "recipient": "female"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 12,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam nằm nghiêng, hai chân hơi dang ra, một chân hơi gập đầu gối. Bạn nữ nằm ngửa, mông hướng về phía caube của anh ấy, đầu gối gập lại và đặt lên vai và mông của bạn nam, một tay đặt trên hông anh ta, tay kia gập khuỷu tay. Bạn nam dùng một tay luồn xuống dưới đầu gối của bạn nữ và giữ lấy hông cô ấy, tay còn lại vuốt ve ngực cô ấy.",
+      "customImageId": "card-image:custom-1787213327120",
+      "deck": "position",
+      "hint": "Tư thế Spork",
+      "id": "custom-1787213327120",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 8,
+        "family": "have_sex",
+        "orderGroup": 4,
+        "rarity": "mythic",
+        "recipient": "both"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 18,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam quỳ gối, giữ thẳng lưng, bạn nữ cũng quỳ gối, áp sát lưng vào ngực người yêu. Chân cô ấy đặt giữa hai chân anh ấy, một tay cô ấy ôm lấy cổ anh ấy, để lộ bầu ngực.",
+      "customImageId": "card-image:custom-1787213753008",
+      "deck": "position",
+      "hint": "Tư thế Oath",
+      "id": "custom-1787213753008",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 7,
+        "family": "have_sex",
+        "orderGroup": 4,
+        "rarity": "mythic",
+        "recipient": "both"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 14,
+        "textScale": 0.9
+      },
+      "content": "Bạn nữ đứng ở tư thế \"kiểu chó\", khuỷu tay và đầu gối gập lại, dang rộng sang hai bên, giữ thẳng đầu. Bạn nam ở phía sau, quỳ xuống, ôm lấy eo cô ấy và thâm nhập không chỉ bằng cơ bắp mà còn bằng mông, theo nhịp điệu chuyển động của mình.",
+      "customImageId": "card-image:custom-1787214101711",
+      "deck": "position",
+      "hint": "Tư thế Doggy",
+      "id": "custom-1787214101711",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -2473,23 +2642,61 @@
         "iconTextGap": 8,
         "textScale": 0.9
       },
-      "content": "Bạn nam nằm ngửa, đầu hơi nâng lên. Chân duỗi thẳng nhưng hơi dang ra, caube mở rộng. Bạn nữ ngồi lên bạn nam, nghiêng người về phía trước và đặt hai tay lên mắt cá chân của anh ấy. Bàn chân của cô ấy đặt trong nách bạn nam. Bạn nữ giữ chặt người yêu trên giường và bắt đầu di chuyển tới lui, từ trước ra sau.",
-      "customImageId": "card-image:custom-1787200722253",
+      "content": "Bạn nam nằm trên sàn, hai chân dang rộng và hơi cong ở đầu gối, sẽ rất hợp lý nếu đặt một chiếc gối nhỏ giữa hai chân. Bạn nữ nằm với đầu tựa trên gối, hai tay duỗi dọc theo cơ thể bạn nam và hai chân vắt lên vai anh ấy",
+      "customImageId": "card-image:custom-1787214401588",
       "deck": "position",
-      "hint": "Tư thế Shameless",
-      "id": "custom-1787200722253",
+      "hint": "Tư thế Eraser",
+      "id": "custom-1787214401588",
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 6,
+        "family": "blowjob",
+        "orderGroup": 2,
+        "rarity": "luxury",
+        "recipient": "male"
+      },
+      "progression": {
+        "actorStages": [
+          "empty"
+        ],
+        "audience": "both",
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
+      },
+      "type": "dare"
+    },
+    {
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 0,
+        "textScale": 0.9
+      },
+      "content": "Bạn nam chống đỡ cơ thể bằng tay và cánh tay, tạo nên một tư thế vững chắc và ổn định. Anh ta có thể kiểm soát độ sâu và tốc độ của những cú đẩy, cho phép anh ta đáp ứng được khoái cảm của đối tác. Bạn nữ nằm ngửa, hai chân thường dang rộng hoặc quấn quanh người bạn tình.",
+      "customImageId": "card-image:custom-1787214696681",
+      "deck": "position",
+      "hint": "Tư thế Missionary",
+      "id": "custom-1787214696681",
+      "isCustom": true,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 7,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
         "recipient": "both"
       },
       "progression": {
+        "actorStages": [
+          "empty"
+        ],
         "audience": "both",
-        "difficultyStars": 5
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
       },
       "type": "dare"
     },
@@ -2499,15 +2706,15 @@
         "iconTextGap": 8,
         "textScale": 0.9
       },
-      "content": "Bạn nữ nằm ngửa, gập đầu gối và dang rộng hai chân. Cô ấy luồn tay xuống dưới đầu gối và nắm lấy mắt cá chân, dựa vào cơ bụng để giữ thăng bằng. Bạn nam quỳ xuống trước mông bạn nữ và hơi nghiêng người về phía trước, hai chân vẫn dang rộng. Bạn nam đặt tay lên đùi người bạn nữ.",
-      "customImageId": "card-image:custom-1787200408561",
+      "content": "Bạn và người yêu nằm nghiêng, áp sát vào nhau. Bạn nam ôm bạn nữ từ phía sau, thâm nhập từ phía sau",
+      "customImageId": "card-image:custom-1787214958700",
       "deck": "position",
-      "hint": "Tư thế Launch Pad",
-      "id": "custom-1787200408561",
+      "hint": "Tư thế Spoon",
+      "id": "custom-1787214958700",
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -2528,18 +2735,18 @@
     {
       "appearance": {
         "iconScale": 1.7,
-        "iconTextGap": 14,
+        "iconTextGap": 20,
         "textScale": 0.9
       },
-      "content": "Bạn nam ngồi trên giường với hai chân gập lại ở đầu gối và đặt bàn chân trên sàn. Bạn nữ ngồi lên hông, đối mặt với bạn nam, hai chân gập lại ở đầu gối và đặt lên hai bên mông của bạn nam. Bạn nữ đưa hai tay ra sau lưng và nắm chặt lại. Bạn nữ hơi ngả người ra sau, để bạn nam hôn lên ngực mình. Lòng bàn tay của bạn nam chạm mông cô ấy và di chuyển lên xuống.",
-      "customImageId": "card-image:custom-1787200034578",
+      "content": "Bạn nam đứng yên và bạn nữ đứng bên cạnh, quay lưng về phía anh ta. Nếu cần, bạn nữ có thể nhón chân để giúp thâm nhập sâu hơn. bạn nữ có thể đặt đầu lên vai anh ta để vuốt ve cổ anh ta.",
+      "customImageId": "card-image:custom-1787215106989",
       "deck": "position",
-      "hint": "Tư thế Merger",
-      "id": "custom-1787200034578",
+      "hint": "Tư thế Candle",
+      "id": "custom-1787215106989",
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -2558,24 +2765,10 @@
       "type": "dare"
     },
     {
-      "content": "Kể tên bài hát bạn thích",
-      "deck": "standard",
-      "icon": "music",
-      "id": "custom-1787199398185",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Kể tên ca sĩ bạn thích",
+      "content": "Bạn thích xem thể loại phim gì?",
       "deck": "standard",
       "icon": "heart",
-      "id": "custom-1787199365133",
+      "id": "custom-1787215366327",
       "isCustom": true,
       "level": "gentle",
       "position": null,
@@ -2587,23 +2780,23 @@
     },
     {
       "appearance": {
-        "iconScale": 1.7,
-        "iconTextGap": 16,
+        "iconScale": 1.8,
+        "iconTextGap": 8,
         "textScale": 0.9
       },
-      "content": "Bạn nam nằm nửa người trên ghế. Đầu ngả ra sau tựa vào lưng ghế. Chân duỗi thẳng về phía trước và hơi dang rộng. Bạn nữ ngồi lên caube, quay lưng về phía bạn nam. Bạn nữ đưa tay ra sau và đặt lòng bàn tay lên tay vịn. Phần thân trên của bạn nữ hơi xoay sang một bên. Chân bạn nữ dang rộng và các ngón chân chạm sàn.",
-      "customImageId": "card-image:custom-1787197977369",
+      "content": "Bạn nữ đặt mình giữa hai chân anh ấy, lấy tay nhẹ nhàng vuốt caube và \"khoai\" của bạn nam",
+      "customImageId": "card-image:custom-1787224227727",
       "deck": "position",
-      "hint": "Tư thế Erotic Poster",
-      "id": "custom-1787197977369",
+      "hint": "Tư thế Standard",
+      "id": "custom-1787224227727",
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
-        "family": "have_sex",
-        "orderGroup": 4,
-        "rarity": "mythic",
-        "recipient": "both"
+        "difficultyStars": 6,
+        "family": "handjob",
+        "orderGroup": 3,
+        "rarity": "luxury",
+        "recipient": "female"
       },
       "progression": {
         "actorStages": [
@@ -2618,228 +2811,36 @@
       "type": "dare"
     },
     {
-      "content": "Đâu là địa điểm hẹn hò hai bạn thích nhất?",
-      "deck": "standard",
-      "icon": "location",
-      "id": "custom-1787165412664",
+      "appearance": {
+        "iconScale": 1.8,
+        "iconTextGap": 8,
+        "textScale": 0.9
+      },
+      "content": "Bạn nữ dùng gối tựa lưng hoặc dựa vào vật gì đó thoải mái và chắc chắn, trong khi bạn nam nằm ngang trên đùi bạn nữ. Trong khi anh ấy bú vú bạn nữ, bạn nữ dùng tay còn lại gần caube của anh ấy để kích thích anh ấy.",
+      "customImageId": "card-image:custom-1787230294200",
+      "deck": "position",
+      "hint": "Tư thế The Cradle",
+      "id": "custom-1787230294200",
       "isCustom": true,
-      "level": "gentle",
-      "position": null,
+      "level": "passionate",
+      "position": {
+        "difficultyStars": 7,
+        "family": "handjob",
+        "orderGroup": 3,
+        "rarity": "luxury",
+        "recipient": "female"
+      },
       "progression": {
+        "actorStages": [
+          "empty"
+        ],
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 5,
+        "partnerStages": [
+          "empty"
+        ]
       },
-      "type": "truth"
-    },
-    {
-      "content": "Cả hai cùng nói sinh nhật của nhau",
-      "deck": "standard",
-      "icon": "gift",
-      "id": "custom-1787165355696",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Khi nào bạn nhận ra đối phương thích bạn?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787163723419",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Ai có nhiều người yêu cũ hơn?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787162960686",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Ai có nhiều mập mờ hơn?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787162883931",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Đối phương có phải người hài hước không?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787162156643",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "current",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Bạn đã bao giờ mơ về đối phương chưa?",
-      "deck": "standard",
-      "icon": "kiss",
-      "id": "custom-1787160670812",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Ngôn ngữ tình yêu của bạn là gì?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787159321163",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "current",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Nỗi sợ lớn nhất của bạn là gì?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787159286475",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Hãy kể tên một việc bạn chỉ làm khi ở một mình?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787159182393",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "current",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Đối phương có điểm mạnh gì mà bạn thích?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787157371296",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Bạn cảm thấy như nào khi nghe lời tỏ tình của đối phương?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787157262837",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Ai là người tỏ tình?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787157155421",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Cảm giác lần đầu bạn hôn đối phương như nào?",
-      "deck": "standard",
-      "icon": "kiss_nose",
-      "id": "custom-1787157101000",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Cả 2 cùng nói ngày mình yêu nhau là ngày bao nhiêu?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787156981530",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Điều bạn không thích ở đối phương là gì?",
-      "deck": "standard",
-      "icon": "lips",
-      "id": "custom-1787156774186",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
+      "type": "dare"
     }
   ]
 }
