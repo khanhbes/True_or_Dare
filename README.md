@@ -89,6 +89,18 @@ Tạo Access Application dạng self-hosted, dùng Email OTP và allow-list emai
 
 Thêm `ACCESS_TEAM_DOMAIN` và `ACCESS_AUD` vào Pages environment. API tự xác minh JWT Access; việc ẩn nút Developer không được xem là lớp bảo mật.
 
+## Tự động cập nhật staging từ GitHub
+
+Workflow `.github/workflows/deploy-staging.yml` kiểm tra TypeScript, chạy toàn bộ test,
+build và deploy `staging` mỗi khi `main` có commit mới. Trong GitHub repository, mở
+`Settings > Secrets and variables > Actions` và tạo hai repository secrets:
+
+- `CLOUDFLARE_ACCOUNT_ID`: Account ID Cloudflare.
+- `CLOUDFLARE_API_TOKEN`: token chỉ cấp quyền cần thiết để deploy Pages.
+
+Secret không được đặt trong `.env`, source, workflow hoặc commit. Khi workflow xanh,
+bản mới xuất hiện tại `https://staging.true-or-dare-couples.pages.dev`.
+
 ## Backup và phục hồi
 
 - Mỗi mutation tăng `datasetRevision` và ghi before/after vào `catalog_revisions`.
