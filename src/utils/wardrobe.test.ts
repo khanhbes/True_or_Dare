@@ -6,13 +6,32 @@ import {
   DEFAULT_GAME_SETTINGS,
   GARMENT_SLOT_ORDER,
   getOutfitStage,
+  getEquippedGarment,
   getPresentGarmentSlots,
   getRemovableGarments,
   hydrateGameSettings,
   hydrateOutfitConfig,
   isGarmentRemovable,
   removeGarment,
+  removeGarmentsFromBoth,
+  swapGarments,
 } from './wardrobe';
+
+test('dual removal validates both choices and commits both outfits atomically', () => {
+  const outfits = [
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[0]),
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[1]),
+  ] as const;
+  const blocked = removeGarmentsFromBoth(outfits, 'underwear', 'shirt');
+  assert.equal(blocked, null);
+  assert.equal(getPresentGarmentSlots(outfits[0]).length, 3);
+  assert.equal(getPresentGarmentSlots(outfits[1]).length, 4);
+  const committed = removeGarmentsFromBoth(outfits, 'shirt', 'pants');
+  assert.ok(committed);
+  assert.deepEqual(committed.removed.map((garment) => garment.slot), ['shirt', 'pants']);
+  assert.equal(getPresentGarmentSlots(committed.outfits[0]).length, 2);
+  assert.equal(getPresentGarmentSlots(committed.outfits[1]).length, 3);
+});
 
 const powerSet = <T>(items: readonly T[]): T[][] =>
   items.reduce<T[][]>(
@@ -45,6 +64,10 @@ test('hydrate settings migrates legacy values and supplies outfit defaults', () 
   });
 
   assert.deepEqual(settings.levels, ['gentle']);
+  assert.equal(settings.truthTimerEnabled, false);
+  assert.equal(settings.truthTimerDuration, 45);
+  assert.equal(settings.dareTimerEnabled, false);
+  assert.equal(settings.dareTimerDuration, 20);
   assert.equal(settings.penaltyClothingEnabled, true);
   assert.equal(Object.keys(settings.outfits[0].garments).length, 3);
   assert.equal(Object.keys(settings.outfits[1].garments).length, 4);
@@ -193,6 +216,62 @@ test('outer layers expose underwear in the correct order', () => {
   assert.deepEqual(getRemovableGarments(state), ['bra', 'underwear']);
   state = removeGarment(removeGarment(state, 'bra'), 'underwear');
   assert.equal(getOutfitStage(state), 'empty');
+});
+
+test('runtime garments have stable identities and preserve their original design', () => {
+  const state = createOutfitState(DEFAULT_GAME_SETTINGS.outfits[0], 0);
+  const shirt = getEquippedGarment(state, 'shirt');
+  assert.ok(shirt);
+  assert.equal(shirt.originPresentation, 'male');
+  assert.equal(shirt.originalOwnerIndex, 0);
+  assert.equal(shirt.id, 'initial-0-shirt');
+  assert.deepEqual(state.remainingSlots, getPresentGarmentSlots(state));
+});
+
+test('same-slot swap exchanges style and color without changing garment counts', () => {
+  const outfits = [
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[0], 0),
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[1], 1),
+  ] as const;
+  const maleShirt = getEquippedGarment(outfits[0], 'shirt');
+  const femaleShirt = getEquippedGarment(outfits[1], 'shirt');
+  const result = swapGarments(outfits, 'shirt', 'shirt');
+
+  assert.ok(result);
+  assert.equal(result.replaced[0], null);
+  assert.equal(result.replaced[1], null);
+  assert.equal(result.outfits[0].equippedGarments.length, outfits[0].equippedGarments.length);
+  assert.equal(result.outfits[1].equippedGarments.length, outfits[1].equippedGarments.length);
+  assert.equal(getEquippedGarment(result.outfits[0], 'shirt')?.id, femaleShirt?.id);
+  assert.equal(getEquippedGarment(result.outfits[1], 'shirt')?.id, maleShirt?.id);
+});
+
+test('different-slot swap replaces occupied receiving slots in one atomic result', () => {
+  const outfits = [
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[0], 0),
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[1], 1),
+  ] as const;
+  const maleShirt = getEquippedGarment(outfits[0], 'shirt');
+  const femalePants = getEquippedGarment(outfits[1], 'pants');
+  const result = swapGarments(outfits, 'shirt', 'pants');
+
+  assert.ok(result);
+  assert.equal(result.replaced[0]?.slot, 'pants');
+  assert.equal(result.replaced[1]?.slot, 'shirt');
+  assert.equal(getEquippedGarment(result.outfits[0], 'pants')?.id, femalePants?.id);
+  assert.equal(getEquippedGarment(result.outfits[1], 'shirt')?.id, maleShirt?.id);
+  assert.equal(result.outfits[0].equippedGarments.length, 2);
+  assert.equal(result.outfits[1].equippedGarments.length, 3);
+});
+
+test('swap rejects locked underwear and never mutates either source outfit', () => {
+  const outfits = [
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[0], 0),
+    createOutfitState(DEFAULT_GAME_SETTINGS.outfits[1], 1),
+  ] as const;
+  assert.equal(swapGarments(outfits, 'underwear', 'shirt'), null);
+  assert.deepEqual(getPresentGarmentSlots(outfits[0]), ['shirt', 'pants', 'underwear']);
+  assert.deepEqual(getPresentGarmentSlots(outfits[1]), ['shirt', 'pants', 'bra', 'underwear']);
 });
 
 test('invalid persisted settings fall back to safe defaults', () => {

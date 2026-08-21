@@ -170,7 +170,10 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
                   Đến lượt ai, người đó rút bài Sự Thật hoặc Thử Thách phù hợp với nhãn Nam, Nữ hoặc Cả hai. Bài bắt đầu từ 1★ và tăng dần xác suất xuất hiện bài nhiều sao hơn khi mức thân mật tăng.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
-                  Hoàn thành bài sẽ cộng điểm theo số sao. Cởi đồ do hiệu ứng của thẻ có thưởng thêm; bỏ qua và cởi đồ do luật phạt không cộng điểm. Có thể đổi thẻ, bỏ qua hoặc dừng mà không cần giải thích.
+                  Hoàn thành bài sẽ cộng điểm theo số sao. Cởi đồ do hiệu ứng của thẻ có thưởng thêm; bỏ qua và cởi đồ do luật phạt không cộng điểm. Bỏ qua được xử lý theo luật phạt đã cấu hình; cả hai luôn có thể dừng mà không cần giải thích.
+                </p>
+                <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
+                  Với thẻ có tác động trang phục, hãy chọn đúng món theo lời thẻ rồi xác nhận. Thẻ đổi đồ yêu cầu mỗi người chọn một món; bản xem trước có thể hủy mà không làm thay đổi nhân vật.
                 </p>
                 <div className="mt-2 flex items-start gap-2 text-[11px] leading-relaxed text-amber-200/80">
                   <Percent className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -202,12 +205,12 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
                 <LockOpen className="h-4.5 w-4.5" />
               </span>
               <div className="pt-0.5">
-                <h3 className="text-sm font-semibold text-white sm:text-base">5. Đạt 100% và bộ Tư thế</h3>
+                <h3 className="text-sm font-semibold text-white sm:text-base">5. Tim Luxury và bộ Tư thế</h3>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
-                  Khi đạt 100%, bộ bài thường dừng và hai người xác nhận đồng thuận lần nữa. Có thể kết thúc ngay hoặc cùng mở các nhóm Oral → Blowjob → Handjob → lá Have sex hiếm nhất.
+                  Khi tim hồng đạt 100%, bộ bài thường dừng và hai người xác nhận đồng thuận lần nữa. Nếu tiếp tục, tim hồng được giữ đầy bên dưới và tim Luxury bắt đầu từ 0%; bài Tư thế trải từ 1★ đến 10★ và khó dần theo tiến độ.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-blue-200/75">
-                  Lá Tư thế vừa lật được tính là đã khám phá dù bỏ qua; mọi hành động vẫn là đề xuất có thể từ chối. Mở lá Have sex chỉ kết thúc hành trình sau khi xem và xác nhận, không bắt buộc thực hiện.
+                  Lá Have Sex 10★ có thể xuất hiện từ 80% Luxury và bắt buộc được chọn ở 100% nếu có. Mọi lá vẫn là đề xuất có thể bỏ qua; xem rồi xác nhận lá 10★ sẽ kết thúc ván, không tạo nghĩa vụ phải thực hiện.
                 </p>
               </div>
             </li>

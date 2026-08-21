@@ -1,18 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { INITIAL_CARDS } from '../data/cards';
-import { CardItem, DifficultyStars } from '../types';
+import { CardAudience, CardItem, DifficultyStars, PositionDifficultyStars } from '../types';
 import { createOutfitState, DEFAULT_GAME_SETTINGS } from './wardrobe';
+import { compareCollectionCards } from './cardOrdering';
 import {
   DEFAULT_PROGRESSION_CONFIG,
+  DEFAULT_LUXURY_PROGRESSION_CONFIG,
   calculateCompletedCardIntimacy,
+  calculateCompletedPositionLuxury,
   deriveDifficultyStars,
+  derivePositionDifficultyStars,
   getCardDeck,
+  getStandardCardPerformerIndex,
   getJourneyDrawProbabilities,
   hydrateProgressionConfig,
+  hydrateLuxuryProgressionConfig,
   isStandardJourneyCardEligible,
   selectJourneyCard,
-  selectNextPositionCard,
+  selectLuxuryPositionCard,
 } from './progression';
 
 const outfits = [
@@ -33,20 +39,84 @@ const makeCard = (
   deck: 'standard',
   progression: { difficultyStars: stars, audience },
 });
-test('all 56 standard cards receive the curated star distribution and both audience', () => {
+
+const makePositionCard = (
+  id: string,
+  stars: PositionDifficultyStars,
+  luxuryGain?: number,
+): CardItem => ({
+  id,
+  type: 'dare',
+  level: 'passionate',
+  content: id,
+  deck: 'position',
+  position: {
+    family: stars === 10 ? 'have_sex' : 'oral',
+    recipient: 'both',
+    orderGroup: stars === 10 ? 4 : 1,
+    rarity: stars === 10 ? 'mythic' : 'luxury',
+    difficultyStars: stars,
+    luxuryGain,
+  },
+});
+test('all 92 standard cards receive the expanded star and audience distribution', () => {
   const standardCards = INITIAL_CARDS.filter((card) => getCardDeck(card) === 'standard');
-  assert.equal(standardCards.length, 56);
+  assert.equal(standardCards.length, 92);
   const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<DifficultyStars, number>;
+  const audiences: Record<CardAudience, number> = {
+    male: 0,
+    female: 0,
+    both: 0,
+    current: 0,
+    opponent: 0,
+  };
   for (const card of standardCards) {
     counts[deriveDifficultyStars(card)] += 1;
-    assert.equal(card.progression?.audience, 'both');
+    const audience = card.progression?.audience ?? 'both';
+    audiences[audience] += 1;
   }
-  assert.deepEqual(counts, { 1: 11, 2: 17, 3: 14, 4: 12, 5: 2 });
+  assert.deepEqual(counts, { 1: 16, 2: 28, 3: 23, 4: 19, 5: 6 });
+  assert.deepEqual(audiences, {
+    male: 6,
+    female: 6,
+    both: 80,
+    current: 0,
+    opponent: 0,
+  });
 });
 
-test('position deck contains nine ordered luxury cards and one reusable mythic final', () => {
+test('collection order groups decks and sorts standard and position cards deterministically', () => {
+  const standardDare = makeCard('g-d-10', 'dare', 1);
+  const standardTruthTwoStars = makeCard('g-t-2', 'truth', 2);
+  const standardTruthOneStarTen = makeCard('g-t-10', 'truth', 1);
+  const standardTruthOneStarTwo = makeCard('g-t-2a', 'truth', 1);
+  const positionFive = makePositionCard('pos-5', 5);
+  const positionTwo = makePositionCard('pos-2', 2);
+
+  const sorted = [positionFive, standardDare, standardTruthTwoStars, positionTwo, standardTruthOneStarTen, standardTruthOneStarTwo]
+    .sort(compareCollectionCards)
+    .map((card) => card.id);
+
+  assert.deepEqual(sorted, ['g-t-2a', 'g-t-10', 'g-t-2', 'g-d-10', 'pos-2', 'pos-5']);
+});
+
+test('relative audiences resolve the correct performer without changing gender audiences', () => {
+  const currentCard = makeCard('current', 'dare', 1);
+  currentCard.progression!.audience = 'current';
+  const opponentCard = makeCard('opponent', 'dare', 1);
+  opponentCard.progression!.audience = 'opponent';
+  const femaleCard = makeCard('female', 'dare', 1, 'female');
+
+  assert.equal(getStandardCardPerformerIndex(currentCard, 0), 0);
+  assert.equal(getStandardCardPerformerIndex(currentCard, 1), 1);
+  assert.equal(getStandardCardPerformerIndex(opponentCard, 0), 1);
+  assert.equal(getStandardCardPerformerIndex(opponentCard, 1), 0);
+  assert.equal(getStandardCardPerformerIndex(femaleCard, 0), 0);
+});
+
+test('position deck covers every star from one to ten and keeps one reusable mythic final', () => {
   const positions = INITIAL_CARDS.filter((card) => getCardDeck(card) === 'position');
-  assert.equal(positions.length, 10);
+  assert.equal(positions.length, 16);
   assert.deepEqual(
     positions.filter((card) => card.position?.family === 'oral').map((card) => card.position?.recipient).sort(),
     ['both', 'female', 'male'],
@@ -56,6 +126,23 @@ test('position deck contains nine ordered luxury cards and one reusable mythic f
   const final = positions.find((card) => card.position?.family === 'have_sex');
   assert.equal(final?.position?.orderGroup, 4);
   assert.equal(final?.position?.rarity, 'mythic');
+  assert.deepEqual(
+    positions.filter((card) => card.position?.family === 'oral').map(derivePositionDifficultyStars),
+    [3, 3, 3],
+  );
+  assert.deepEqual(
+    positions.filter((card) => card.position?.family === 'blowjob').map(derivePositionDifficultyStars),
+    [5, 5, 5],
+  );
+  assert.deepEqual(
+    positions.filter((card) => card.position?.family === 'handjob').map(derivePositionDifficultyStars),
+    [7, 7, 7],
+  );
+  assert.deepEqual(
+    [...new Set(positions.map(derivePositionDifficultyStars))].sort((first, second) => first - second),
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  );
+  assert.equal(final && derivePositionDifficultyStars(final), 10);
 });
 
 test('default journey probabilities match every configured intimacy boundary', () => {
@@ -146,23 +233,7 @@ test('completion gain clamps at 100 and penalty removals are not part of this re
   });
 });
 
-test('position selection respects oral, blowjob, handjob order then reuses final', () => {
-  const positionCards = INITIAL_CARDS.filter((card) => getCardDeck(card) === 'position');
-  const oralIds = positionCards.filter((card) => card.position?.orderGroup === 1).map((card) => card.id);
-  const blowjobIds = positionCards.filter((card) => card.position?.orderGroup === 2).map((card) => card.id);
-  const handjobIds = positionCards.filter((card) => card.position?.orderGroup === 3).map((card) => card.id);
-  assert.equal(selectNextPositionCard(positionCards, [], [], () => 0)?.position?.family, 'oral');
-  assert.equal(selectNextPositionCard(positionCards, oralIds, [], () => 0)?.position?.family, 'blowjob');
-  assert.equal(selectNextPositionCard(positionCards, [...oralIds, ...blowjobIds], [], () => 0)?.position?.family, 'handjob');
-  const allCommon = [...oralIds, ...blowjobIds, ...handjobIds];
-  assert.equal(selectNextPositionCard(positionCards, allCommon, [], () => 0)?.position?.family, 'have_sex');
-  assert.equal(
-    selectNextPositionCard(positionCards, [...allCommon, 'pos-have-sex'], [], () => 0)?.position?.family,
-    'have_sex',
-  );
-});
-
-test('config hydration rejects all-zero rows and malformed gains without losing valid rows', () => {
+test('config hydration preserves zero weights and clamps malformed or oversized values', () => {
   const hydrated = hydrateProgressionConfig({
     bands: [
       { typeWeights: { truth: 0, dare: 0 }, starWeights: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
@@ -171,10 +242,193 @@ test('config hydration rejects all-zero rows and malformed gains without losing 
     starGains: { 1: -1, 2: 7, 3: 8, 4: 9, 5: 200 },
     cardRemovalBonus: 11,
   });
-  assert.deepEqual(hydrated.bands[0], DEFAULT_PROGRESSION_CONFIG.bands[0]);
+  assert.deepEqual(hydrated.bands[0].typeWeights, { truth: 0, dare: 0 });
+  assert.deepEqual(hydrated.bands[0].starWeights, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
   assert.deepEqual(hydrated.bands[1].typeWeights, { truth: 20, dare: 80 });
   assert.equal(hydrated.starGains[1], 4);
   assert.equal(hydrated.starGains[2], 7);
   assert.equal(hydrated.starGains[5], 100);
   assert.equal(hydrated.cardRemovalBonus, 11);
+});
+
+test('Luxury probabilities follow every boundary and unlock 10 stars only from 80 percent', () => {
+  const cards = Array.from({ length: 10 }, (_, index) =>
+    makePositionCard(`position-${index + 1}`, (index + 1) as PositionDifficultyStars));
+  const expected = [
+    [0, { 1: .5, 2: .3, 3: .2 }],
+    [20, { 2: .2, 3: .4, 4: .25, 5: .15 }],
+    [40, { 3: .1, 4: .25, 5: .35, 6: .2, 7: .1 }],
+    [60, { 5: .1, 6: .25, 7: .35, 8: .2, 9: .1 }],
+    [80, { 5: .05, 6: .1, 7: .2, 8: .25, 9: .35, 10: .05 }],
+  ] as const;
+
+  for (const [percent, weights] of expected) {
+    const result = selectLuxuryPositionCard({
+      cards,
+      actorIndex: 0,
+      outfits,
+      usedCardIds: [],
+      luxuryPercent: percent,
+      config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+      random: () => 0,
+    });
+    for (const star of Array.from({ length: 10 }, (_, index) => (index + 1) as PositionDifficultyStars)) {
+      const expectedWeight = (weights as Partial<Record<PositionDifficultyStars, number>>)[star] ?? 0;
+      assert.ok(Math.abs(result.probabilities.stars[star] - expectedWeight) < 1e-10);
+    }
+  }
+
+  const beforeUnlock = selectLuxuryPositionCard({
+    cards,
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    luxuryPercent: 79,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => .04,
+  });
+  assert.notEqual(derivePositionDifficultyStars(beforeUnlock.card!), 10);
+  const afterUnlock = selectLuxuryPositionCard({
+    cards,
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    luxuryPercent: 80,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => .04,
+  });
+  assert.equal(derivePositionDifficultyStars(afterUnlock.card!), 10);
+});
+
+test('Luxury selection normalizes missing stars, avoids repeats and resets only after exhaustion', () => {
+  const cards = [makePositionCard('one-a', 1), makePositionCard('one-b', 1)];
+  const first = selectLuxuryPositionCard({
+    cards,
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    luxuryPercent: 0,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.equal(first.probabilities.stars[1], 1);
+  const second = selectLuxuryPositionCard({
+    cards,
+    actorIndex: 0,
+    outfits,
+    usedCardIds: first.nextUsedCardIds,
+    luxuryPercent: 0,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.notEqual(second.card?.id, first.card?.id);
+  const reset = selectLuxuryPositionCard({
+    cards,
+    actorIndex: 0,
+    outfits,
+    usedCardIds: second.nextUsedCardIds,
+    luxuryPercent: 0,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.equal(reset.didResetPool, true);
+  assert.equal(reset.nextUsedCardIds.length, 1);
+});
+
+test('Luxury completion uses 6–14 defaults, per-card override and clamps at 100', () => {
+  assert.deepEqual(
+    calculateCompletedPositionLuxury(0, makePositionCard('one', 1), DEFAULT_LUXURY_PROGRESSION_CONFIG),
+    { nextPercent: 6, baseApplied: 6, removalApplied: 0, totalApplied: 6 },
+  );
+  assert.deepEqual(
+    calculateCompletedPositionLuxury(90, makePositionCard('nine', 9), DEFAULT_LUXURY_PROGRESSION_CONFIG),
+    { nextPercent: 100, baseApplied: 10, removalApplied: 0, totalApplied: 10 },
+  );
+  assert.equal(
+    calculateCompletedPositionLuxury(20, makePositionCard('override', 5, 17), DEFAULT_LUXURY_PROGRESSION_CONFIG).totalApplied,
+    17,
+  );
+});
+
+test('100 percent forces the 10-star final and reports a missing final without crashing', () => {
+  const final = makePositionCard('final', 10);
+  const forced = selectLuxuryPositionCard({
+    cards: [makePositionCard('nine', 9), final],
+    actorIndex: 0,
+    outfits,
+    usedCardIds: ['final'],
+    luxuryPercent: 100,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.equal(forced.card?.id, 'final');
+  assert.equal(forced.probabilities.stars[10], 1);
+  const missing = selectLuxuryPositionCard({
+    cards: [makePositionCard('nine', 9)],
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    luxuryPercent: 100,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.equal(missing.card, null);
+  assert.equal(missing.missingFinalCard, true);
+});
+
+test('Luxury config hydration preserves absolute zero rows and clamps gains', () => {
+  const hydrated = hydrateLuxuryProgressionConfig({
+    bands: [
+      { starWeights: Object.fromEntries(Array.from({ length: 10 }, (_, index) => [index + 1, 0])) },
+      { starWeights: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9 } },
+    ],
+    starGains: { 1: -5, 2: 9, 10: 500 },
+  });
+  assert.deepEqual(hydrated.bands[0].starWeights, Object.fromEntries(
+    Array.from({ length: 10 }, (_, index) => [index + 1, 0]),
+  ));
+  assert.equal(hydrated.bands[1].starWeights[10], 9);
+  assert.equal(hydrated.starGains[1], 6);
+  assert.equal(hydrated.starGains[2], 9);
+  assert.equal(hydrated.starGains[10], 100);
+});
+
+test('zero weights and zero gains return coded errors instead of selecting undefined cards', () => {
+  const card = makeCard('only', 'truth', 1);
+  const zeroWeights = {
+    ...DEFAULT_PROGRESSION_CONFIG,
+    bands: DEFAULT_PROGRESSION_CONFIG.bands.map((band) => ({
+      ...band,
+      typeWeights: { truth: 0, dare: 0 },
+      starWeights: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<DifficultyStars, number>,
+    })),
+  };
+  const noWeight = selectJourneyCard({ cards: [card], actorIndex: 0, outfits, usedCardIds: [], levels: ['gentle'], intimacyPercent: 0, config: zeroWeights, random: () => 0 });
+  assert.equal(noWeight.card, null);
+  assert.equal(noWeight.errorCode, 'no_positive_weight');
+
+  const noGainConfig = {
+    ...DEFAULT_PROGRESSION_CONFIG,
+    starGains: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as Record<DifficultyStars, number>,
+  };
+  const noGain = selectJourneyCard({ cards: [card], actorIndex: 0, outfits, usedCardIds: [], levels: ['gentle'], intimacyPercent: 0, config: noGainConfig, random: () => 0 });
+  assert.equal(noGain.card, null);
+  assert.equal(noGain.errorCode, 'no_progress_gain');
+});
+
+test('the 10-star roll is exactly five percent at 80–99 and is independent from non-final exhaustion', () => {
+  const cards = [makePositionCard('five', 5), makePositionCard('final', 10)];
+  const base = { cards, actorIndex: 0 as const, outfits, usedCardIds: ['five'], luxuryPercent: 99, config: DEFAULT_LUXURY_PROGRESSION_CONFIG };
+  const hit = selectLuxuryPositionCard({ ...base, random: () => 0.049999 });
+  assert.equal(hit.card?.id, 'final');
+  assert.equal(hit.probabilities.stars[10], 0.05);
+  const miss = selectLuxuryPositionCard({ ...base, random: () => 0.05 });
+  assert.equal(miss.card?.id, 'five');
+  assert.equal(miss.didResetPool, true);
+});
+
+test('hydration clamps finite oversized weights before normalization', () => {
+  const hydrated = hydrateLuxuryProgressionConfig({ bands: [{ starWeights: { 1: 1e308, 10: 1e308 } }] });
+  assert.equal(hydrated.bands[0].starWeights[1], 100);
+  assert.equal(hydrated.bands[0].starWeights[10], 100);
 });

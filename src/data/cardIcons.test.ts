@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { createHash } from 'node:crypto';
 import { INITIAL_CARDS } from './cards';
 
 const iconSourcePath = fileURLToPath(new URL('../components/CardIcons.tsx', import.meta.url));
@@ -43,4 +44,31 @@ test('content-specific cards keep their curated icon assignments', () => {
     assert.ok(card, `Missing built-in card ${cardId}`);
     assert.equal(card.icon, expectedIcon, `${cardId} should use ${expectedIcon}`);
   }
+});
+
+const originalCardIds = new Set([
+  ...['g', 'i'].flatMap((level) => ['t', 'd'].flatMap((type) =>
+    Array.from({ length: 10 }, (_, index) => `${level}-${type}-${index + 1}`),
+  )),
+  ...['t', 'd'].flatMap((type) => Array.from({ length: 8 }, (_, index) => `p-${type}-${index + 1}`)),
+  ...['oral', 'blowjob', 'handjob'].flatMap((family) =>
+    ['male', 'female', 'both'].map((recipient) => `pos-${family}-${recipient}`),
+  ),
+  'pos-have-sex',
+]);
+
+test('the original 66 built-in card texts stay byte-for-byte unchanged', () => {
+  const snapshot = INITIAL_CARDS
+    .filter(({ id }) => originalCardIds.has(id))
+    .map(({ id, content }) => [id, content]);
+  assert.equal(snapshot.length, 66);
+  assert.equal(
+    createHash('sha256').update(JSON.stringify(snapshot)).digest('hex'),
+    '630dc272fdf0edd3571974a7cbde514186191c9135eb0f65f9401c22dd9deb1b',
+  );
+});
+
+test('the expanded catalog contains 108 unique built-in cards', () => {
+  assert.equal(INITIAL_CARDS.length, 108);
+  assert.equal(new Set(INITIAL_CARDS.map(({ id }) => id)).size, 108);
 });

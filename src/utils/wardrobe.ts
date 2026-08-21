@@ -1,5 +1,6 @@
 import {
   GameSettings,
+  EquippedGarment,
   GarmentConfig,
   GarmentSlot,
   OutfitConfig,
@@ -34,6 +35,8 @@ export const GARMENT_SLOT_ORDER: Record<PlayerPresentation, readonly GarmentSlot
   male: ['shirt', 'pants', 'underwear'],
   female: ['shirt', 'pants', 'bra', 'underwear'],
 };
+export const GARMENT_LAYER_ORDER: readonly GarmentSlot[] = ['underwear', 'bra', 'pants', 'shirt'];
+export const GARMENT_DISPLAY_ORDER: readonly GarmentSlot[] = ['shirt', 'pants', 'bra', 'underwear'];
 
 export const GARMENT_CATALOG: GarmentCatalog = {
   male: {
@@ -46,6 +49,11 @@ export const GARMENT_CATALOG: GarmentCatalog = {
       { id: 'jeans', label: 'Jeans' },
       { id: 'trousers', label: 'Quần tây' },
       { id: 'shorts', label: 'Quần short' },
+    ],
+    bra: [
+      { id: 'classic', label: 'Cổ điển' },
+      { id: 'bralette', label: 'Bralette' },
+      { id: 'sports_bra', label: 'Áo lót thể thao' },
     ],
     underwear: [
       { id: 'briefs', label: 'Briefs' },
@@ -126,6 +134,10 @@ export const DEFAULT_GAME_SETTINGS: GameSettings = {
   privacyDefault: true,
   enableTimer: true,
   timerDuration: 30,
+  truthTimerEnabled: false,
+  truthTimerDuration: 45,
+  dareTimerEnabled: true,
+  dareTimerDuration: 30,
   drawMode: 'random',
   outfits: [cloneOutfit(MALE_DEFAULT), cloneOutfit(FEMALE_DEFAULT)],
   penaltyClothingEnabled: true,
@@ -198,6 +210,13 @@ export const hydrateGameSettings = (value: unknown): GameSettings => {
       ))]
     : [];
   const savedOutfits = Array.isArray(value.outfits) ? value.outfits : [];
+  const legacyTimerEnabled = typeof value.enableTimer === 'boolean'
+    ? value.enableTimer
+    : DEFAULT_GAME_SETTINGS.enableTimer;
+  const legacyTimerDuration = positiveInteger(
+    value.timerDuration,
+    DEFAULT_GAME_SETTINGS.timerDuration,
+  );
 
   return {
     levels: levels.length > 0 ? levels : [...DEFAULT_GAME_SETTINGS.levels],
@@ -207,11 +226,21 @@ export const hydrateGameSettings = (value: unknown): GameSettings => {
       typeof value.privacyDefault === 'boolean'
         ? value.privacyDefault
         : DEFAULT_GAME_SETTINGS.privacyDefault,
-    enableTimer:
-      typeof value.enableTimer === 'boolean'
-        ? value.enableTimer
-        : DEFAULT_GAME_SETTINGS.enableTimer,
-    timerDuration: positiveInteger(value.timerDuration, DEFAULT_GAME_SETTINGS.timerDuration),
+    enableTimer: legacyTimerEnabled,
+    timerDuration: legacyTimerDuration,
+    truthTimerEnabled:
+      typeof value.truthTimerEnabled === 'boolean'
+        ? value.truthTimerEnabled
+        : DEFAULT_GAME_SETTINGS.truthTimerEnabled,
+    truthTimerDuration: positiveInteger(
+      value.truthTimerDuration,
+      DEFAULT_GAME_SETTINGS.truthTimerDuration,
+    ),
+    dareTimerEnabled:
+      typeof value.dareTimerEnabled === 'boolean'
+        ? value.dareTimerEnabled
+        : legacyTimerEnabled,
+    dareTimerDuration: positiveInteger(value.dareTimerDuration, legacyTimerDuration),
     drawMode: value.drawMode === 'choose' ? 'choose' : 'random',
     outfits: [
       hydrateOutfitConfig(savedOutfits[0], 'male'),
@@ -224,21 +253,59 @@ export const hydrateGameSettings = (value: unknown): GameSettings => {
   };
 };
 
-export const createOutfitState = (config: OutfitConfig): OutfitState => {
+const syncOutfitState = (state: Omit<OutfitState, 'remainingSlots'>): OutfitState => ({
+  ...state,
+  remainingSlots: GARMENT_DISPLAY_ORDER.filter((slot) =>
+    state.equippedGarments.some((garment) => garment.slot === slot),
+  ),
+});
+
+export const createOutfitState = (config: OutfitConfig, ownerIndex?: 0 | 1): OutfitState => {
   const initial = hydrateOutfitConfig(config, config.presentation);
-  return {
+  const equippedGarments = GARMENT_SLOT_ORDER[initial.presentation].flatMap((slot) => {
+    const garment = initial.garments[slot];
+    return garment ? [{
+      ...garment,
+      id: `initial-${ownerIndex ?? initial.presentation}-${slot}`,
+      slot,
+      originPresentation: initial.presentation,
+      originalOwnerIndex: ownerIndex,
+    } satisfies EquippedGarment] : [];
+  });
+  return syncOutfitState({
     initial,
-    remainingSlots: GARMENT_SLOT_ORDER[initial.presentation].filter(
-      (slot) => initial.garments[slot] !== undefined,
-    ),
-  };
+    equippedGarments,
+  });
 };
 
 export const getPresentGarmentSlots = (state: OutfitState): GarmentSlot[] => {
-  const remaining = new Set(state.remainingSlots);
-  return GARMENT_SLOT_ORDER[state.initial.presentation].filter(
-    (slot) => remaining.has(slot) && state.initial.garments[slot] !== undefined,
-  );
+  const present = new Set(state.equippedGarments.map((garment) => garment.slot));
+  return GARMENT_DISPLAY_ORDER.filter((slot) => present.has(slot));
+};
+
+export const getEquippedGarment = (
+  state: OutfitState,
+  slot: GarmentSlot,
+): EquippedGarment | undefined => state.equippedGarments.find((garment) => garment.slot === slot);
+
+export const getEquippedGarmentMap = (
+  state: OutfitState,
+): Partial<Record<GarmentSlot, EquippedGarment>> => Object.fromEntries(
+  state.equippedGarments.map((garment) => [garment.slot, garment]),
+) as Partial<Record<GarmentSlot, EquippedGarment>>;
+
+export const getDisplayGarment = (
+  garment: EquippedGarment,
+  presentation: PlayerPresentation,
+): GarmentConfig => {
+  const targetStyles = GARMENT_CATALOG[presentation][garment.slot] ?? [];
+  if (targetStyles.some((style) => style.id === garment.styleId)) return garment;
+  const sourceStyles = GARMENT_CATALOG[garment.originPresentation][garment.slot] ?? [];
+  const sourceIndex = Math.max(0, sourceStyles.findIndex((style) => style.id === garment.styleId));
+  return {
+    styleId: targetStyles[sourceIndex]?.id ?? targetStyles[0]?.id ?? garment.styleId,
+    color: garment.color,
+  };
 };
 
 export const getOutfitStage = (state: OutfitState): OutfitStage => {
@@ -267,8 +334,67 @@ export const isGarmentRemovable = (state: OutfitState, slot: GarmentSlot): boole
 /** Returns the same state when the slot is missing or covered by an outer layer. */
 export const removeGarment = (state: OutfitState, slot: GarmentSlot): OutfitState => {
   if (!isGarmentRemovable(state, slot)) return state;
+  return syncOutfitState({
+    initial: state.initial,
+    equippedGarments: state.equippedGarments.filter((garment) => garment.slot !== slot),
+  });
+};
+
+export interface DualGarmentRemovalResult {
+  outfits: [OutfitState, OutfitState];
+  removed: [EquippedGarment, EquippedGarment];
+}
+
+/** Validates both choices before changing either outfit. */
+export const removeGarmentsFromBoth = (
+  outfits: readonly [OutfitState, OutfitState],
+  firstSlot: GarmentSlot,
+  secondSlot: GarmentSlot,
+): DualGarmentRemovalResult | null => {
+  if (!isGarmentRemovable(outfits[0], firstSlot) || !isGarmentRemovable(outfits[1], secondSlot)) {
+    return null;
+  }
+  const first = getEquippedGarment(outfits[0], firstSlot);
+  const second = getEquippedGarment(outfits[1], secondSlot);
+  if (!first || !second) return null;
   return {
-    ...state,
-    remainingSlots: state.remainingSlots.filter((remainingSlot) => remainingSlot !== slot),
+    outfits: [removeGarment(outfits[0], firstSlot), removeGarment(outfits[1], secondSlot)],
+    removed: [first, second],
+  };
+};
+
+export interface GarmentSwapResult {
+  outfits: [OutfitState, OutfitState];
+  transferred: [EquippedGarment, EquippedGarment];
+  replaced: [EquippedGarment | null, EquippedGarment | null];
+}
+
+/** Atomically exchanges one removable garment from each player. */
+export const swapGarments = (
+  outfits: readonly [OutfitState, OutfitState],
+  firstSlot: GarmentSlot,
+  secondSlot: GarmentSlot,
+): GarmentSwapResult | null => {
+  if (!isGarmentRemovable(outfits[0], firstSlot) || !isGarmentRemovable(outfits[1], secondSlot)) {
+    return null;
+  }
+  const first = getEquippedGarment(outfits[0], firstSlot);
+  const second = getEquippedGarment(outfits[1], secondSlot);
+  if (!first || !second) return null;
+
+  const firstRemaining = outfits[0].equippedGarments.filter((garment) => garment.id !== first.id);
+  const secondRemaining = outfits[1].equippedGarments.filter((garment) => garment.id !== second.id);
+  const replacedFirst = firstRemaining.find((garment) => garment.slot === second.slot) ?? null;
+  const replacedSecond = secondRemaining.find((garment) => garment.slot === first.slot) ?? null;
+  const nextFirst = firstRemaining.filter((garment) => garment.slot !== second.slot);
+  const nextSecond = secondRemaining.filter((garment) => garment.slot !== first.slot);
+
+  return {
+    outfits: [
+      syncOutfitState({ initial: outfits[0].initial, equippedGarments: [...nextFirst, second] }),
+      syncOutfitState({ initial: outfits[1].initial, equippedGarments: [...nextSecond, first] }),
+    ],
+    transferred: [first, second],
+    replaced: [replacedFirst, replacedSecond],
   };
 };

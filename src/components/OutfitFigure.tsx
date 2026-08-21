@@ -6,7 +6,7 @@ import type {
   OutfitState,
   PlayerPresentation,
 } from '../types';
-import { GARMENT_LABELS } from '../utils/wardrobe';
+import { GARMENT_LABELS, getDisplayGarment, getEquippedGarmentMap } from '../utils/wardrobe';
 import './outfit.css';
 
 const LAYER_ORDER: GarmentSlot[] = ['underwear', 'bra', 'pants', 'shirt'];
@@ -15,7 +15,7 @@ const HIT_PATHS: Record<PlayerPresentation, Record<GarmentSlot, string>> = {
   male: {
     shirt: 'M88 102C72 106 61 118 58 137l5 27c4 8 8 19 9 34l2 40c19 11 53 11 72 0l2-40c1-15 5-26 9-34l5-27c-3-19-14-31-30-35Z',
     pants: 'M77 202c21-6 45-6 66 0l4 48-5 130c-8 7-21 7-30 1l-3-104-7 104c-9 6-22 5-30-2l7-129Z',
-    bra: '',
+    bra: 'M80 122c19-8 41-8 60 0l8 55c-22 12-54 12-76 0Z',
     underwear: 'M75 196c22-6 48-6 70 0l4 70c-11 8-27 9-39 3-12 6-28 5-39-3Z',
   },
   female: {
@@ -344,14 +344,20 @@ export const OutfitFigure: React.FC<OutfitFigureProps> = ({
 }) => {
   const generatedId = normalizeSvgId(useId());
   const skinId = `outfit-skin-${generatedId}`;
-  const visibleSlots = new Set(remainingSlots ?? state?.remainingSlots ?? Object.keys(outfit.garments) as GarmentSlot[]);
+  const runtimeGarments = state ? getEquippedGarmentMap(state) : null;
+  const visibleSlots = new Set(
+    remainingSlots ?? (runtimeGarments ? Object.keys(runtimeGarments) : Object.keys(outfit.garments)) as GarmentSlot[],
+  );
   const interactive = new Set(interactiveSlots);
   const presentation = outfit.presentation;
   const clipId = `oc-${generatedId}`;
   const visibleGarments: Partial<Record<GarmentSlot, GarmentConfig>> = {};
   for (const slot of LAYER_ORDER) {
-    if (visibleSlots.has(slot) && outfit.garments[slot]) {
-      visibleGarments[slot] = outfit.garments[slot];
+    const garment = runtimeGarments?.[slot] ?? outfit.garments[slot];
+    if (visibleSlots.has(slot) && garment) {
+      visibleGarments[slot] = 'originPresentation' in garment
+        ? getDisplayGarment(garment, presentation)
+        : garment;
     }
   }
 
@@ -391,8 +397,8 @@ export const OutfitFigure: React.FC<OutfitFigureProps> = ({
           <g className="outfit-figure__breath">
             {presentation === 'male' ? <MaleBase skinId={skinId} garments={visibleGarments} clipPrefix={clipId} /> : <FemaleBase skinId={skinId} garments={visibleGarments} clipPrefix={clipId} />}
             {LAYER_ORDER.map((slot) => {
-              const garment = outfit.garments[slot];
-              if (!garment || !visibleSlots.has(slot) || (slot === 'bra' && presentation === 'male')) return null;
+              const garment = visibleGarments[slot];
+              if (!garment || !visibleSlots.has(slot)) return null;
               const canInteract = interactive.has(slot) && Boolean(onSelectSlot);
               const isPreviewRemoved = previewRemovedSlot === slot;
               const shouldDim = (editingSlot === 'bra' && slot === 'shirt') || (editingSlot === 'underwear' && slot === 'pants');

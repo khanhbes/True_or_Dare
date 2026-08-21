@@ -426,10 +426,31 @@
     radial-gradient(circle at 50% 22%, rgba(115, 55, 141, 0.38), transparent 34%),
     radial-gradient(circle at 20% 80%, rgba(232, 164, 140, 0.12), transparent 35%),
     linear-gradient(150deg, #35124b 0%, #120717 44%, #050507 100%);
+  background-size: 145% 145%, 155% 155%, 180% 180%;
   box-shadow:
     0 28px 90px rgba(0, 0, 0, 0.62),
     0 0 42px rgba(244, 232, 255, 0.16),
     inset 0 0 0 1px rgba(232, 164, 140, 0.22);
+  animation: rare-card-color-drift 12s ease-in-out infinite;
+}
+
+.card-position-rare::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  z-index: 1;
+  border-radius: 13px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(244, 232, 255, 0.23), transparent 23%),
+    radial-gradient(circle at 82% 72%, rgba(232, 164, 140, 0.2), transparent 26%),
+    linear-gradient(118deg, transparent 20%, rgba(215, 177, 255, 0.1) 35%, rgba(255, 246, 223, 0.12) 46%, rgba(232, 164, 140, 0.09) 56%, transparent 70%);
+  background-size: 145% 145%, 150% 150%, 220% 100%;
+  box-shadow:
+    inset 0 0 0 1px rgba(244, 232, 255, 0.1),
+    inset 0 0 28px rgba(115, 55, 141, 0.1);
+  opacity: 0.72;
+  animation: rare-card-ambience 9s ease-in-out infinite;
 }
 
 .game-card.card-position-rare::after {
@@ -453,6 +474,40 @@
   filter: drop-shadow(0 0 18px rgba(232, 164, 140, 0.48));
 }
 
+.card-position-rare .mythic-icon-aura {
+  position: relative;
+  z-index: 1;
+  transition: filter 180ms ease;
+}
+
+.card-position-rare .mythic-icon-aura::before {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(244, 232, 255, 0.22), rgba(232, 164, 140, 0.08) 48%, transparent 72%);
+  filter: blur(7px);
+  opacity: 0.42;
+  transform: scale(0.98);
+}
+
+.card-position-rare .mythic-icon-aura svg {
+  color: #f4e8ff;
+  filter: drop-shadow(0 0 12px rgba(215, 177, 255, 0.34));
+}
+
+.card-position-rare .mythic-icon-aura .card-custom-icon {
+  filter: brightness(1.02) saturate(0.96);
+}
+
+@media (hover: hover) {
+  .game-card:hover .mythic-icon-aura {
+    filter: brightness(1.04);
+  }
+}
+
 @keyframes position-foil-drift {
   to { --card-rainbow-angle: 360deg; }
 }
@@ -461,6 +516,48 @@
   0% { --card-rainbow-angle: 0deg; opacity: 0.78; }
   50% { opacity: 1; }
   100% { --card-rainbow-angle: 360deg; opacity: 0.78; }
+}
+
+@keyframes rare-card-ambience {
+  0%, 100% {
+    background-position: 0% 0%, 100% 100%, 130% 0;
+    opacity: 0.62;
+  }
+  50% {
+    background-position: 22% 14%, 78% 82%, -120% 0;
+    opacity: 0.88;
+  }
+}
+
+@keyframes rare-card-color-drift {
+  0%, 100% {
+    background-position: 50% 0%, 0% 100%, 0% 50%;
+    box-shadow:
+      0 28px 90px rgba(0, 0, 0, 0.62),
+      0 0 36px rgba(215, 177, 255, 0.14),
+      inset 0 0 0 1px rgba(232, 164, 140, 0.2);
+  }
+  50% {
+    background-position: 42% 18%, 24% 76%, 100% 50%;
+    box-shadow:
+      0 28px 90px rgba(0, 0, 0, 0.62),
+      0 0 52px rgba(232, 164, 140, 0.22),
+      inset 0 0 0 1px rgba(244, 232, 255, 0.3);
+  }
+}
+
+.luxury-heart-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,.55) 45%, transparent 70%);
+  transform: translateX(-140%);
+  animation: luxury-heart-foil 3.8s ease-in-out infinite;
+}
+
+@keyframes luxury-heart-foil {
+  0%, 55% { transform: translateX(-140%); }
+  100% { transform: translateX(150%); }
 }
 
 @property --card-rainbow-angle {
@@ -500,7 +597,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .game-card::after, .avatar-menu { animation: none; }
+  .luxury-heart-fill::after {
+    animation: none !important;
+    opacity: .18;
+  }
+  .game-card::after,
+  .card-position-rare,
+  .card-position-rare::before,
+  .card-position-rare .mythic-icon-aura,
+  .card-position-rare .mythic-icon-aura::before,
+  .card-position-rare .mythic-icon-aura svg,
+  .card-position-rare .mythic-icon-aura .card-custom-icon,
+  .avatar-menu { animation: none; }
   .interactive-box:hover { transform: none; }
 }
 

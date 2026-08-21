@@ -25,10 +25,12 @@ import {
   CardItem,
   CardType,
   ClothingRemovalEvent,
+  GameEndReason,
   GarmentSlot,
   GameSettings,
   IntimacyEvent,
   JourneyPhase,
+  LuxuryProgressionConfig,
   OutfitState,
   Player,
   PlayerIndex,
@@ -39,28 +41,37 @@ import { soundEngine } from '../utils/audio';
 import { getCardIcon, autoAssignIcon } from './CardIcons';
 import { PenaltyPrompt } from './PenaltyPrompt';
 import { GarmentRemovalDialog } from './GarmentRemovalDialog';
+import { GarmentSwapDialog } from './GarmentSwapDialog';
+import { DualGarmentRemovalDialog } from './DualGarmentRemovalDialog';
 import { OutfitFigure } from './OutfitFigure';
 import {
-  getTargetIndex,
+  getRemovalTargetIndices,
 } from '../utils/cardSelection';
 import {
   GARMENT_LABELS,
   getOutfitStage,
+  getEquippedGarment,
   getPresentGarmentSlots,
   getRemovableGarments,
   removeGarment,
+  removeGarmentsFromBoth,
+  swapGarments,
 } from '../utils/wardrobe';
 import { resolveCardTimerSeconds } from '../utils/cardTimer';
 import {
   DIFFICULTY_STARS,
   calculateCompletedCardIntimacy,
+  calculateCompletedPositionLuxury,
   deriveDifficultyStars,
+  derivePositionDifficultyStars,
   getCardAudience,
   getCardDeck,
+  getStandardCardPerformerIndex,
   getJourneyDrawProbabilities,
   isStandardJourneyCardEligible,
   selectJourneyCard,
-  selectNextPositionCard,
+  POSITION_DIFFICULTY_STARS,
+  selectLuxuryPositionCard,
 } from '../utils/progression';
 
 interface GameTableProps {
@@ -76,7 +87,8 @@ interface GameTableProps {
   onOpenCollection: () => void;
   onOpenRules: () => void;
   onOpenSummary: () => void;
-  onFinishGame: () => void;
+  onFinishGame: (reason: GameEndReason) => void;
+  isSuspended?: boolean;
   onUpdatePlayers: (p1: Player, p2: Player) => void;
   onUpdateOutfits: (outfits: [OutfitState, OutfitState]) => void;
   onAddClothingRemovalEvent: (event: ClothingRemovalEvent) => void;
@@ -84,13 +96,18 @@ interface GameTableProps {
   onUnlockCard: (cardId: string) => void;
   onNextTurn: () => void;
   progressionConfig: ProgressionConfig;
+  luxuryProgressionConfig: LuxuryProgressionConfig;
   intimacyPercent: number;
+  luxuryIntimacyPercent: number;
   journeyPhase: JourneyPhase;
   sessionPositionCardIds: string[];
   onIntimacyPercentChange: (value: number) => void;
+  onLuxuryIntimacyPercentChange: (value: number) => void;
   onAddIntimacyEvents: (events: IntimacyEvent[]) => void;
   onJourneyPhaseChange: (phase: JourneyPhase) => void;
   onRevealPositionCard: (cardId: string) => void;
+  onSessionPositionCardIdsChange: (cardIds: string[]) => void;
+  onNavigationLockChange?: (locked: boolean) => void;
 }
 
 interface PlayerOutfitStatusProps {
@@ -106,14 +123,28 @@ const OUTFIT_STAGE_COPY = {
   empty: 'Hết đồ đã chọn',
 } as const;
 
-const AUDIENCE_LABELS = { male: 'Nam', female: 'Nữ', both: 'Cả hai' } as const;
+const AUDIENCE_LABELS = {
+  male: 'Nam',
+  female: 'Nữ',
+  both: 'Cả hai',
+  current: 'Người đang lượt',
+  opponent: 'Đối phương',
+} as const;
 const POSITION_RECIPIENT_LABELS = { male: 'Nam nhận', female: 'Nữ nhận', both: 'Cả hai' } as const;
 const POSITION_FAMILY_LABELS = {
   oral: 'Oral sex',
-  blowjob: 'Blowjob',
-  handjob: 'Handjob',
+  blowjob: 'Blow',
+  handjob: 'Hand',
   have_sex: 'Have sex',
+  other: 'Tư thế khác',
 } as const;
+
+const getPositionFamilyLabel = (card: CardItem) =>
+  card.position?.family === 'other'
+    ? card.position.customLabel?.trim() || POSITION_FAMILY_LABELS.other
+    : card.position
+      ? POSITION_FAMILY_LABELS[card.position.family]
+      : '';
 
 const PlayerOutfitStatus: React.FC<PlayerOutfitStatusProps> = ({
   player,
@@ -165,6 +196,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   onOpenRules,
   onOpenSummary,
   onFinishGame,
+  isSuspended = false,
   onUpdatePlayers,
   onUpdateOutfits,
   onAddClothingRemovalEvent,
@@ -172,13 +204,18 @@ export const GameTable: React.FC<GameTableProps> = ({
   onUnlockCard,
   onNextTurn,
   progressionConfig,
+  luxuryProgressionConfig,
   intimacyPercent,
+  luxuryIntimacyPercent,
   journeyPhase,
   sessionPositionCardIds,
   onIntimacyPercentChange,
+  onLuxuryIntimacyPercentChange,
   onAddIntimacyEvents,
   onJourneyPhaseChange,
   onRevealPositionCard,
+  onSessionPositionCardIdsChange,
+  onNavigationLockChange,
 }) => {
   const [isMusicOn, setIsMusicOn] = useState(soundEngine.isMusicOn());
   const [isMuted, setIsMuted] = useState(soundEngine.getMuted());
@@ -193,6 +230,8 @@ export const GameTable: React.FC<GameTableProps> = ({
     source: 'card' | 'penalty';
     targetIndex: PlayerIndex;
   } | null>(null);
+  const [showSwapDialog, setShowSwapDialog] = useState(false);
+  const [showDualRemovalDialog, setShowDualRemovalDialog] = useState(false);
 
   // Card draw state machine
   const [drawState, setDrawState] = useState<
@@ -207,8 +246,14 @@ export const GameTable: React.FC<GameTableProps> = ({
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const didPlayTimerAlarmRef = useRef(false);
   const completionCommittedRef = useRef(false);
+  const drawTimeoutsRef = useRef<number[]>([]);
+  const wasTimerRunningBeforeSuspendRef = useRef(false);
 
   const currentPlayer = currentPlayerIndex === 0 ? player1 : player2;
+  const performingPlayerIndex = activeCard
+    ? getStandardCardPerformerIndex(activeCard, currentPlayerIndex)
+    : currentPlayerIndex;
+  const performingPlayer = performingPlayerIndex === 0 ? player1 : player2;
   const availableDrawTypes = (['truth', 'dare'] as const).filter((type) =>
     availableCards.some(
       (card) => card.type === type && isStandardJourneyCardEligible(card, currentPlayerIndex, outfitStates),
@@ -223,13 +268,40 @@ export const GameTable: React.FC<GameTableProps> = ({
     intimacyPercent,
     config: progressionConfig,
   });
+  const luxuryDrawProbabilities = selectLuxuryPositionCard({
+    cards: availableCards,
+    actorIndex: currentPlayerIndex,
+    outfits: outfitStates,
+    usedCardIds: sessionPositionCardIds,
+    luxuryPercent: luxuryIntimacyPercent,
+    config: luxuryProgressionConfig,
+    random: () => 0,
+  }).probabilities;
   const chance = (value: number) => `${Math.round(value * 100)}%`;
+  const navigationLocked = drawState === 'shuffling' || drawState === 'drawing';
+
+  useEffect(() => {
+    onNavigationLockChange?.(navigationLocked);
+  }, [navigationLocked, onNavigationLockChange]);
+
+  useEffect(() => {
+    if (isSuspended) {
+      if (isTimerRunning) wasTimerRunningBeforeSuspendRef.current = true;
+      setIsTimerRunning(false);
+      soundEngine.stopTimerAlarm();
+      return;
+    }
+    if (wasTimerRunningBeforeSuspendRef.current && timerSeconds !== null && timerSeconds > 0) {
+      wasTimerRunningBeforeSuspendRef.current = false;
+      setIsTimerRunning(true);
+    }
+  }, [isSuspended, isTimerRunning, timerSeconds]);
 
   // Countdown uses one disposable timeout per second. The alarm is handled by
   // the guarded transition effect below, outside the state updater, so React
   // Strict Mode cannot accidentally schedule it twice.
   useEffect(() => {
-    if (!isTimerRunning || timerSeconds === null || timerSeconds <= 0) return;
+    if (isSuspended || !isTimerRunning || timerSeconds === null || timerSeconds <= 0) return;
 
     const currentSeconds = timerSeconds;
     const timeout = window.setTimeout(() => {
@@ -242,23 +314,33 @@ export const GameTable: React.FC<GameTableProps> = ({
     }, 1000);
 
     return () => window.clearTimeout(timeout);
-  }, [isTimerRunning, timerSeconds]);
+  }, [isSuspended, isTimerRunning, timerSeconds]);
 
   useEffect(() => {
-    if (timerSeconds !== 0 || didPlayTimerAlarmRef.current) return;
+    if (isSuspended || timerSeconds !== 0 || didPlayTimerAlarmRef.current) return;
 
     didPlayTimerAlarmRef.current = true;
     setIsTimerRunning(false);
     soundEngine.playTimerAlarm(3000);
     setLiveMessage('Hết giờ. Chuông đang báo trong khoảng 3 giây.');
-  }, [timerSeconds]);
+  }, [isSuspended, timerSeconds]);
 
   useEffect(
     () => () => {
+      drawTimeoutsRef.current.forEach(window.clearTimeout);
+      drawTimeoutsRef.current = [];
       soundEngine.stopTimerAlarm();
     },
     [],
   );
+
+  const scheduleDrawStep = (callback: () => void, delay: number) => {
+    const timeout = window.setTimeout(() => {
+      drawTimeoutsRef.current = drawTimeoutsRef.current.filter((id) => id !== timeout);
+      callback();
+    }, delay);
+    drawTimeoutsRef.current.push(timeout);
+  };
 
   useEffect(() => {
     if (!unlockNotice) return;
@@ -284,8 +366,9 @@ export const GameTable: React.FC<GameTableProps> = ({
   };
 
   const handleTimerControl = () => {
+    if (isSuspended) return;
     if (timerSeconds === 0) {
-      const resetSeconds = resolveCardTimerSeconds(activeCard, settings.enableTimer);
+      const resetSeconds = resolveCardTimerSeconds(activeCard, settings);
       if (resetSeconds === null) return;
 
       soundEngine.stopTimerAlarm();
@@ -327,8 +410,11 @@ export const GameTable: React.FC<GameTableProps> = ({
     });
 
     if (!selection.card) {
-      setDrawError(
-        preferredType
+      setDrawError(selection.errorCode === 'no_progress_gain'
+        ? 'Cấu hình điểm Tim hồng đang bằng 0. Hãy mở Developer và đặt ít nhất một mức điểm lớn hơn 0.'
+        : selection.errorCode === 'no_positive_weight'
+          ? 'Không có trọng số dương cho loại/số sao hợp lệ ở mốc này. Hãy kiểm tra cấu hình Developer.'
+          : preferredType
           ? `Không còn thẻ ${preferredType === 'truth' ? 'Sự Thật' : 'Thử Thách'} phù hợp.`
           : 'Không còn thẻ phù hợp với trạng thái trang phục hiện tại.',
       );
@@ -343,21 +429,21 @@ export const GameTable: React.FC<GameTableProps> = ({
     setDrawState('shuffling');
     soundEngine.playShuffle();
 
-    setTimeout(() => {
+    scheduleDrawStep(() => {
       setActiveCard(randomCard);
       setDrawState('drawing');
       setIsRevealed(!settings.privacyDefault);
       setCardFlipped(false);
 
       // Trigger 3D flip animation
-      setTimeout(() => {
+      scheduleDrawStep(() => {
         setCardFlipped(true);
         soundEngine.playCardFlip();
         setDrawState('drawn');
 
-        // The global option is a master switch; individual cards opt in with
-        // their own valid duration. Cards without one do not receive a fallback.
-        const cardTimerSeconds = resolveCardTimerSeconds(randomCard, settings.enableTimer);
+        // A card may override, disable or inherit the configured duration for
+        // its Truth/Action type.
+        const cardTimerSeconds = resolveCardTimerSeconds(randomCard, settings);
         if (cardTimerSeconds !== null) {
           soundEngine.stopTimerAlarm();
           didPlayTimerAlarmRef.current = false;
@@ -410,6 +496,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         cardId: activeCard.id,
         amount: appliedBase,
         source: 'completed_card',
+        track: 'standard',
         round: currentRound,
         timestamp: now,
       });
@@ -419,6 +506,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         cardId: activeCard.id,
         amount: appliedRemoval,
         source: 'card_clothing_removal',
+        track: 'standard',
         round: currentRound,
         timestamp: now,
       });
@@ -428,7 +516,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     setIntimacyGainNotice(
       `+${appliedTotal}% thân mật${appliedRemoval > 0 ? ` · gồm +${appliedRemoval}% bỏ đồ` : ''}`,
     );
-    if (currentPlayerIndex === 0) {
+    if (performingPlayerIndex === 0) {
       onUpdatePlayers(
         { ...player1, completedCount: player1.completedCount + 1 },
         player2
@@ -453,9 +541,44 @@ export const GameTable: React.FC<GameTableProps> = ({
     advanceNextTurn();
   };
 
+  const finalizeCompletedPosition = () => {
+    if (!activeCard || completionCommittedRef.current) return;
+    completionCommittedRef.current = true;
+    fireCompletionFeedback();
+    if (!unlockedCardIds.includes(activeCard.id)) {
+      onUnlockCard(activeCard.id);
+      setUnlockNotice('Đã mở khóa lá Tư thế mới trong Bộ sưu tập');
+    }
+    const gain = calculateCompletedPositionLuxury(
+      luxuryIntimacyPercent,
+      activeCard,
+      luxuryProgressionConfig,
+    );
+    onLuxuryIntimacyPercentChange(gain.nextPercent);
+    if (gain.totalApplied > 0) {
+      onAddIntimacyEvents([{
+        cardId: activeCard.id,
+        amount: gain.totalApplied,
+        source: 'completed_card',
+        track: 'luxury',
+        round: currentRound,
+        timestamp: Date.now(),
+      }]);
+    }
+    setIntimacyGainNotice(`+${gain.totalApplied}% Luxury · ${derivePositionDifficultyStars(activeCard)}★`);
+    revealPositionCard([activeCard.id], gain.nextPercent);
+  };
+
+  const finalizeCardCompletion = (includeCardRemovalBonus = false) => {
+    if (activeCard && getCardDeck(activeCard) === 'position') finalizeCompletedPosition();
+    else finalizeCompletedTurn(includeCardRemovalBonus);
+  };
+
   const finalizeSkippedTurn = () => {
+    if (completionCommittedRef.current) return;
+    completionCommittedRef.current = true;
     setShowPenaltyPrompt(false);
-    if (currentPlayerIndex === 0) {
+    if (performingPlayerIndex === 0) {
       onUpdatePlayers(
         { ...player1, skippedCount: player1.skippedCount + 1 },
         player2,
@@ -471,20 +594,36 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   // Action: Complete Challenge
   const handleComplete = () => {
+    if (!activeCard || completionCommittedRef.current) return;
     soundEngine.stopTimerAlarm();
     setIsTimerRunning(false);
-    if (activeCard?.clothingEffect) {
-      const targetIndex = getTargetIndex(activeCard.clothingEffect, currentPlayerIndex);
-      if (getRemovableGarments(outfitStates[targetIndex]).length > 0) {
+    if (activeCard.position?.family === 'have_sex') {
+      completionCommittedRef.current = true;
+      onFinishGame('have_sex');
+      return;
+    }
+    if (activeCard?.clothingEffect?.kind === 'swap_garments') {
+      setShowSwapDialog(true);
+      return;
+    }
+    if (activeCard.clothingEffect?.kind === 'remove_garment') {
+      const targetIndices = getRemovalTargetIndices(activeCard, currentPlayerIndex);
+      if (targetIndices.length === 2) {
+        setShowDualRemovalDialog(true);
+        return;
+      }
+      const targetIndex = targetIndices[0];
+      if (targetIndex !== undefined && getRemovableGarments(outfitStates[targetIndex]).length > 0) {
         setRemovalRequest({ source: 'card', targetIndex });
         return;
       }
     }
-    finalizeCompletedTurn();
+    finalizeCardCompletion();
   };
 
   // Action: Skip Challenge
   const handleSkip = () => {
+    if (!activeCard || completionCommittedRef.current) return;
     soundEngine.playTick();
     soundEngine.stopTimerAlarm();
     setIsTimerRunning(false);
@@ -493,19 +632,21 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   const handlePenaltyGarmentChoice = () => {
     setShowPenaltyPrompt(false);
-    setRemovalRequest({ source: 'penalty', targetIndex: currentPlayerIndex });
+    setRemovalRequest({ source: 'penalty', targetIndex: performingPlayerIndex });
   };
 
   const handleCancelRemoval = () => {
     const wasPenalty = removalRequest?.source === 'penalty';
     setRemovalRequest(null);
+    setShowSwapDialog(false);
+    setShowDualRemovalDialog(false);
     if (wasPenalty) setShowPenaltyPrompt(true);
   };
 
   const handleConfirmRemoval = (slot: GarmentSlot) => {
     if (!removalRequest) return;
     const targetState = outfitStates[removalRequest.targetIndex];
-    const garment = targetState.initial.garments[slot];
+    const garment = getEquippedGarment(targetState, slot);
     const nextTargetState = removeGarment(targetState, slot);
     if (!garment || nextTargetState === targetState) return;
 
@@ -520,7 +661,9 @@ export const GameTable: React.FC<GameTableProps> = ({
       actorPlayerIndex: currentPlayerIndex,
       targetPlayerIndex: removalRequest.targetIndex,
       garmentSlot: slot,
-      garment: { ...garment },
+      garment: { styleId: garment.styleId, color: garment.color },
+      garmentId: garment.id,
+      action: 'removed',
       source: removalRequest.source,
       cardId: removalRequest.source === 'card' ? activeCard?.id : undefined,
       round: currentRound,
@@ -529,16 +672,90 @@ export const GameTable: React.FC<GameTableProps> = ({
 
     const source = removalRequest.source;
     setRemovalRequest(null);
-    if (source === 'card') finalizeCompletedTurn(true);
+    if (source === 'card') finalizeCardCompletion(true);
     else finalizeSkippedTurn();
   };
 
   const handleContinueWithoutRemoval = () => {
-    if (!removalRequest) return;
-    const source = removalRequest.source;
+    const source = removalRequest?.source ?? (showDualRemovalDialog ? 'card' : null);
+    if (!source) return;
     setRemovalRequest(null);
-    if (source === 'card') finalizeCompletedTurn();
+    setShowDualRemovalDialog(false);
+    if (source === 'card') finalizeCardCompletion();
     else finalizeSkippedTurn();
+  };
+
+  const handleConfirmDualRemoval = (firstSlot: GarmentSlot, secondSlot: GarmentSlot) => {
+    if (!activeCard || completionCommittedRef.current || !showDualRemovalDialog) return;
+    const result = removeGarmentsFromBoth(outfitStates, firstSlot, secondSlot);
+    if (!result) {
+      setLiveMessage('Trang phục đã thay đổi. Hãy chọn lại hai món có thể bỏ.');
+      return;
+    }
+    const now = Date.now();
+    onUpdateOutfits(result.outfits);
+    result.removed.forEach((garment, targetPlayerIndex) => {
+      onAddClothingRemovalEvent({
+        actorPlayerIndex: currentPlayerIndex,
+        targetPlayerIndex: targetPlayerIndex as PlayerIndex,
+        garmentSlot: garment.slot,
+        garment: { styleId: garment.styleId, color: garment.color },
+        garmentId: garment.id,
+        action: 'removed',
+        source: 'card',
+        cardId: activeCard.id,
+        round: currentRound,
+        timestamp: now,
+      });
+    });
+    setShowDualRemovalDialog(false);
+    setLiveMessage(`${player1.name} và ${player2.name} mỗi người đã bỏ một món. Trang phục được cập nhật cùng lúc.`);
+    finalizeCardCompletion(true);
+  };
+
+  const handleConfirmSwap = (firstSlot: GarmentSlot, secondSlot: GarmentSlot) => {
+    if (!activeCard) return;
+    const result = swapGarments(outfitStates, firstSlot, secondSlot);
+    if (!result) {
+      setLiveMessage('Không thể đổi hai món đã chọn. Trang phục được giữ nguyên.');
+      return;
+    }
+    onUpdateOutfits(result.outfits);
+    const now = Date.now();
+    result.transferred.forEach((garment, fromIndex) => {
+      const targetPlayerIndex = fromIndex as PlayerIndex;
+      onAddClothingRemovalEvent({
+        actorPlayerIndex: currentPlayerIndex,
+        targetPlayerIndex,
+        toPlayerIndex: (targetPlayerIndex === 0 ? 1 : 0),
+        garmentSlot: garment.slot,
+        garment: { styleId: garment.styleId, color: garment.color },
+        garmentId: garment.id,
+        action: 'transferred',
+        source: 'card',
+        cardId: activeCard.id,
+        round: currentRound,
+        timestamp: now,
+      });
+    });
+    result.replaced.forEach((garment, targetIndex) => {
+      if (!garment) return;
+      onAddClothingRemovalEvent({
+        actorPlayerIndex: currentPlayerIndex,
+        targetPlayerIndex: targetIndex as PlayerIndex,
+        garmentSlot: garment.slot,
+        garment: { styleId: garment.styleId, color: garment.color },
+        garmentId: garment.id,
+        action: 'replaced',
+        source: 'card',
+        cardId: activeCard.id,
+        round: currentRound,
+        timestamp: now,
+      });
+    });
+    setShowSwapDialog(false);
+    setLiveMessage(`${player1.name} và ${player2.name} đã đổi ${GARMENT_LABELS[firstSlot].toLocaleLowerCase('vi')} với ${GARMENT_LABELS[secondSlot].toLocaleLowerCase('vi')}.`);
+    finalizeCardCompletion(true);
   };
 
   const advanceNextTurn = () => {
@@ -554,34 +771,50 @@ export const GameTable: React.FC<GameTableProps> = ({
     setDrawError(null);
     setRemovalRequest(null);
     setShowPenaltyPrompt(false);
-    completionCommittedRef.current = false;
-
+    setShowSwapDialog(false);
+    setShowDualRemovalDialog(false);
     onNextTurn();
   };
 
-  const revealPositionCard = (additionalExcludedIds: readonly string[] = []) => {
-    const nextCard = selectNextPositionCard(
-      availableCards,
-      unlockedCardIds,
-      [...sessionPositionCardIds, ...additionalExcludedIds],
-    );
+  const revealPositionCard = (
+    additionalExcludedIds: readonly string[] = [],
+    luxuryOverride = luxuryIntimacyPercent,
+  ) => {
+    const selection = selectLuxuryPositionCard({
+      cards: availableCards,
+      actorIndex: currentPlayerIndex,
+      outfits: outfitStates,
+      usedCardIds: [...sessionPositionCardIds, ...additionalExcludedIds],
+      luxuryPercent: luxuryOverride,
+      config: luxuryProgressionConfig,
+    });
+    const nextCard = selection.card;
     if (!nextCard) {
-      setDrawError('Bộ Tư thế chưa có lá kết thúc phù hợp. Ván sẽ được tổng kết an toàn.');
-      onFinishGame();
+      setActiveCard(null);
+      setDrawState('idle');
+      setDrawError(selection.missingFinalCard
+        ? 'Tim Luxury đã đầy nhưng chưa có lá Have Sex 10★. Bạn có thể mở Developer hoặc kết thúc ván.'
+        : selection.errorCode === 'no_progress_gain'
+          ? 'Cấu hình điểm Luxury 1–9★ đang bằng 0. Hãy mở Developer hoặc kết thúc ván.'
+          : selection.errorCode === 'no_positive_weight'
+            ? 'Không có trọng số dương cho bậc sao Tư thế hợp lệ ở mốc này. Hãy kiểm tra Developer.'
+            : 'Không còn lá Tư thế phù hợp với trang phục hiện tại.');
       return;
     }
     soundEngine.stopTimerAlarm();
     completionCommittedRef.current = false;
-    setTimerSeconds(null);
+    setTimerSeconds(resolveCardTimerSeconds(nextCard, settings));
     setIsTimerRunning(false);
     setActiveCard(nextCard);
     setIsRevealed(true);
     setCardFlipped(false);
     setDrawState('drawing');
+    setDrawError(null);
+    onSessionPositionCardIdsChange(selection.nextUsedCardIds);
     onRevealPositionCard(nextCard.id);
     onJourneyPhaseChange(nextCard.position?.family === 'have_sex' ? 'final' : 'position');
     soundEngine.playShuffle();
-    window.setTimeout(() => {
+    scheduleDrawStep(() => {
       setCardFlipped(true);
       setDrawState('drawn');
       soundEngine.playCardFlip();
@@ -591,9 +824,13 @@ export const GameTable: React.FC<GameTableProps> = ({
   const handleEnterPositionJourney = () => revealPositionCard();
 
   const handlePositionAdvance = (completed: boolean) => {
-    if (!activeCard) return;
-    if (completed) fireCompletionFeedback();
-    else soundEngine.playTick();
+    if (!activeCard || completionCommittedRef.current) return;
+    if (completed) {
+      handleComplete();
+      return;
+    }
+    completionCommittedRef.current = true;
+    soundEngine.playTick();
     revealPositionCard([activeCard.id]);
   };
 
@@ -610,7 +847,24 @@ export const GameTable: React.FC<GameTableProps> = ({
   const activeDeck = activeCard ? getCardDeck(activeCard) : 'standard';
   const isPositionCard = activeDeck === 'position';
   const isFinalPositionCard = activeCard?.position?.family === 'have_sex';
-  const canApplyPenaltyGarment = getRemovableGarments(outfitStates[currentPlayerIndex]).length > 0;
+  const isMythicPositionCard = isPositionCard && activeCard?.position?.rarity === 'mythic';
+  const activeIconScale = Math.min(1.8, Math.max(0.5, activeCard?.appearance?.iconScale ?? 1));
+  const activeTextScale = Math.min(1.5, Math.max(0.75, activeCard?.appearance?.textScale ?? 1));
+  const activeIconTextGap = Math.min(48, Math.max(0, activeCard?.appearance?.iconTextGap ?? 8));
+  const activeIconScaleStyle = { transform: `scale(${activeIconScale})` };
+  const activeIconSpacingStyle = {
+    marginTop: `${Math.max(0, activeIconScale - 1) * 24}px`,
+    marginBottom: `${activeIconTextGap + Math.max(0, activeIconScale - 1) * 16}px`,
+  };
+  const removalTargetIndices = activeCard ? getRemovalTargetIndices(activeCard, currentPlayerIndex) : [];
+  const completionActionLabel = activeCard?.clothingEffect?.kind === 'swap_garments'
+    ? 'Chọn 2 món để đổi'
+    : activeCard?.clothingEffect?.kind === 'remove_garment'
+      ? removalTargetIndices.length === 2
+        ? 'Chọn 2 món để cùng bỏ'
+        : `Chọn 1 món của ${removalTargetIndices[0] === 0 ? player1.name : player2.name}`
+      : 'Đã hoàn thành';
+  const canApplyPenaltyGarment = getRemovableGarments(outfitStates[performingPlayerIndex]).length > 0;
 
   return (
     <div className="relative z-10 max-w-7xl mx-auto px-4 py-4 min-h-[92vh] flex flex-col justify-between">
@@ -634,7 +888,7 @@ export const GameTable: React.FC<GameTableProps> = ({
             </div>
             <div className="font-serif-romantic text-base font-bold text-white flex items-center gap-1.5">
               <span>{currentPlayer.name}</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+              <span className={`w-2 h-2 rounded-full bg-emerald-400 inline-block ${shouldReduceMotion ? '' : 'animate-ping'}`} />
             </div>
           </div>
         </div>
@@ -674,6 +928,7 @@ export const GameTable: React.FC<GameTableProps> = ({
           <button
             type="button"
             onClick={onOpenRules}
+            disabled={navigationLocked}
             aria-label="Cách chơi và luật phạt"
             title="Cách chơi & luật phạt"
             className="flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-900/80 border border-neutral-700/60 text-rose-300 hover:border-rose-400/50 hover:text-rose-100 transition-all"
@@ -683,6 +938,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
           <button
             onClick={onOpenCollection}
+            disabled={navigationLocked}
             aria-label="Mở bộ sưu tập thẻ"
             className="flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl bg-neutral-900/80 px-3 border border-neutral-700/60 text-amber-300 hover:text-amber-100 transition-all text-xs"
           >
@@ -692,6 +948,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
           <button
             onClick={onOpenSummary}
+            disabled={navigationLocked}
             aria-label="Mở tổng kết và thống kê"
             className="flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl bg-rose-950/60 px-3 border border-rose-500/30 text-rose-300 hover:text-rose-100 transition-all text-xs"
           >
@@ -701,34 +958,51 @@ export const GameTable: React.FC<GameTableProps> = ({
         </div>
       </div>
 
-      <section
-        aria-label={`Mức thân mật ${intimacyPercent} phần trăm`}
-        className="mt-3 px-1"
-      >
+      <section className="mt-3 px-1" aria-label="Tiến trình thân mật hai giai đoạn">
         <div className="mb-1.5 flex items-end justify-between gap-3">
-          <div>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rose-200/75">
-              Hành trình thân mật
+          <div className="flex items-center gap-2">
+            <span className="relative grid h-8 w-8 place-items-center" aria-hidden="true">
+              <Heart className="absolute h-7 w-7 fill-rose-500/80 text-rose-300" />
+              {journeyPhase !== 'standard' && (
+                <Heart className="absolute h-5 w-5 fill-[#d7b1ff]/35 text-[#f0d7ff] drop-shadow-[0_0_7px_rgba(232,164,140,.55)]" />
+              )}
             </span>
-            <p className="mt-0.5 text-[10px] text-neutral-500">
-              {journeyPhase === 'standard' ? 'Hoàn thành để tăng độ thân mật' : 'Đã mở khóa bộ Tư thế'}
-            </p>
+            <div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-rose-200/75">Hành trình thân mật</span>
+              <p className="mt-0.5 text-[10px] text-neutral-500">
+                {journeyPhase === 'standard' ? 'Hoàn thành để mở Tim Luxury' : 'Tim hồng đã đầy · đang tích lũy Luxury'}
+              </p>
+            </div>
           </div>
-          <strong className="font-serif-romantic text-xl text-amber-200">{intimacyPercent}%</strong>
+          <strong className={`font-serif-romantic text-xl ${journeyPhase === 'standard' ? 'text-rose-200' : 'text-[#f1d6ff]'}`}>
+            {journeyPhase === 'standard' ? intimacyPercent : luxuryIntimacyPercent}%
+          </strong>
         </div>
-        <div
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={intimacyPercent}
-          className="relative h-2.5 overflow-hidden rounded-full border border-white/10 bg-black/35"
-        >
+        <div className="relative h-3 overflow-hidden rounded-full border border-white/10 bg-black/35">
           <motion.div
             initial={false}
             animate={{ width: `${intimacyPercent}%` }}
             transition={{ duration: shouldReduceMotion ? 0.08 : 0.7, ease: 'easeOut' }}
+            role="progressbar"
+            aria-label={`Tim hồng ${intimacyPercent} phần trăm`}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={intimacyPercent}
             className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#fb7185,#f9a8d4,#e2c275)] shadow-[0_0_18px_rgba(251,113,133,.35)]"
           />
+          {journeyPhase !== 'standard' && (
+            <motion.div
+              initial={false}
+              animate={{ width: `${luxuryIntimacyPercent}%` }}
+              transition={{ duration: shouldReduceMotion ? 0.08 : 0.8, ease: 'easeOut' }}
+              role="progressbar"
+              aria-label={`Tim Luxury ${luxuryIntimacyPercent} phần trăm`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={luxuryIntimacyPercent}
+              className="luxury-heart-fill absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#e8a48c,#d7b1ff,#f4e8ff,#cda95c)] shadow-[0_0_20px_rgba(215,177,255,.5)]"
+            />
+          )}
         </div>
       </section>
 
@@ -741,12 +1015,20 @@ export const GameTable: React.FC<GameTableProps> = ({
           <span>Tỉ lệ lượt này</span>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:justify-end">
-          <span>Sự thật <strong className="text-blue-200">{chance(drawProbabilities.types.truth)}</strong></span>
-          <span>Thử thách <strong className="text-rose-200">{chance(drawProbabilities.types.dare)}</strong></span>
-          <span aria-hidden="true" className="hidden text-white/15 sm:inline">|</span>
-          {DIFFICULTY_STARS.map((star) => (
-            <span key={star} className={drawProbabilities.stars[star] <= 0 ? 'opacity-35' : ''}>
-              {star}★ <strong className="text-amber-200">{chance(drawProbabilities.stars[star])}</strong>
+          {journeyPhase === 'standard' ? (
+            <>
+              <span>Sự thật <strong className="text-blue-200">{chance(drawProbabilities.types.truth)}</strong></span>
+              <span>Thử thách <strong className="text-rose-200">{chance(drawProbabilities.types.dare)}</strong></span>
+              <span aria-hidden="true" className="hidden text-white/15 sm:inline">|</span>
+              {DIFFICULTY_STARS.map((star) => (
+                <span key={star} className={drawProbabilities.stars[star] <= 0 ? 'opacity-35' : ''}>
+                  {star}★ <strong className="text-amber-200">{chance(drawProbabilities.stars[star])}</strong>
+                </span>
+              ))}
+            </>
+          ) : POSITION_DIFFICULTY_STARS.map((star) => (
+            <span key={star} className={luxuryDrawProbabilities.stars[star] <= 0 ? 'opacity-25' : ''}>
+              {star}★ <strong className="text-[#ead2ff]">{chance(luxuryDrawProbabilities.stars[star])}</strong>
             </span>
           ))}
         </div>
@@ -808,7 +1090,7 @@ export const GameTable: React.FC<GameTableProps> = ({
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
               <button
                 type="button"
-                onClick={onFinishGame}
+                onClick={() => onFinishGame('pink_complete')}
                 className="min-h-12 rounded-full border border-white/15 bg-black/20 px-4 text-xs font-semibold text-slate-300 transition-colors hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
               >
                 Kết thúc tại đây
@@ -823,6 +1105,18 @@ export const GameTable: React.FC<GameTableProps> = ({
             </div>
             <p className="mt-4 text-[10px] font-medium text-[#f7e7b0]/65">Nghe “Dừng” là dừng ngay.</p>
           </motion.section>
+        )}
+
+        {(journeyPhase === 'position' || journeyPhase === 'final') && !activeCard && drawState === 'idle' && (
+          <section className="w-full max-w-md rounded-[1.5rem] border border-[#d7b1ff]/25 bg-[linear-gradient(160deg,rgba(10,12,25,.96),rgba(35,20,46,.9))] p-6 text-center" aria-labelledby="position-empty-title">
+            <Heart className="mx-auto h-10 w-10 text-[#e8a48c]" aria-hidden="true" />
+            <h2 id="position-empty-title" className="mt-3 font-serif-romantic text-2xl font-bold text-[#f1d6ff]">Chưa có lá phù hợp</h2>
+            <p className="mt-2 text-xs leading-relaxed text-neutral-400">{drawError || 'Bạn có thể bổ sung thẻ Tư thế trong Developer hoặc kết thúc ván an toàn.'}</p>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <button type="button" onClick={onOpenCollection} className="min-h-12 rounded-full border border-[#d7b1ff]/25 px-4 text-xs font-semibold text-[#ead2ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d7b1ff]">Mở Developer</button>
+              <button type="button" onClick={() => onFinishGame('no_cards')} className="min-h-12 rounded-full bg-[linear-gradient(135deg,#f4e8ff,#e8a48c)] px-4 text-xs font-bold text-[#120717] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f4e8ff]">Kết thúc ván</button>
+            </div>
+          </section>
         )}
 
         {/* MODE A: IDLE / DRAW DECK VIEW */}
@@ -840,7 +1134,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
               {/* Top Card Back with Metallic Gold Filigree Pattern */}
               <motion.div
-                whileHover={{ y: -8, scale: 1.02 }}
+                whileHover={shouldReduceMotion ? undefined : { y: -8, scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 className="relative w-full h-full rounded-2xl p-4 bg-gradient-to-br from-[#2a0e14] via-[#1a080d] to-[#0d0407] border-4 border-[#D4AF37] gold-glow flex flex-col items-center justify-between overflow-hidden"
               >
@@ -936,16 +1230,16 @@ export const GameTable: React.FC<GameTableProps> = ({
           <div className="flex flex-col items-center py-12">
             <motion.div
               animate={{
-                rotateY: [0, 180, 360],
-                rotateZ: [-5, 5, -5],
-                scale: [1, 1.1, 1],
+                rotateY: shouldReduceMotion ? 0 : [0, 180, 360],
+                rotateZ: shouldReduceMotion ? 0 : [-5, 5, -5],
+                scale: shouldReduceMotion ? 1 : [1, 1.1, 1],
               }}
-              transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: shouldReduceMotion ? 0.08 : 0.8, repeat: shouldReduceMotion ? 0 : Infinity, ease: 'easeInOut' }}
               className="w-48 h-72 rounded-2xl bg-gradient-to-br from-amber-600 to-rose-900 border-2 border-amber-300 shadow-2xl flex items-center justify-center"
             >
-              <Sparkles className="w-12 h-12 text-amber-200 animate-spin" />
+              <Sparkles className={`w-12 h-12 text-amber-200 ${shouldReduceMotion ? '' : 'animate-spin'}`} />
             </motion.div>
-            <p className="mt-6 text-sm text-amber-300 font-serif-romantic italic animate-pulse">
+            <p className={`mt-6 text-sm text-amber-300 font-serif-romantic italic ${shouldReduceMotion ? '' : 'animate-pulse'}`}>
               Đang xáo trộn các lá bài bí mật...
             </p>
           </div>
@@ -968,12 +1262,12 @@ export const GameTable: React.FC<GameTableProps> = ({
               >
                 {/* CARD BACK SIDE */}
                 <div className="backface-hidden absolute inset-0 rotate-y-180 rounded-2xl p-6 bg-gradient-to-br from-[#2a0e14] via-[#1a080d] to-[#0d0407] border-2 border-[#D4AF37] shadow-2xl flex flex-col items-center justify-center">
-                  <Flame className="w-16 h-16 text-amber-400 animate-pulse" />
+                  <Flame className={`w-16 h-16 text-amber-400 ${shouldReduceMotion ? '' : 'animate-pulse'}`} />
                 </div>
 
                 {/* CARD FRONT SIDE - New Design */}
                 <div className={`backface-hidden absolute inset-0 game-card ${
-                  isFinalPositionCard
+                  isMythicPositionCard
                     ? 'card-position-rare'
                     : isPositionCard
                       ? 'card-position'
@@ -982,12 +1276,12 @@ export const GameTable: React.FC<GameTableProps> = ({
                   style={{ borderRadius: '16px' }}
                 >
                   {/* Corner decorations for intimate/passionate */}
-                  {!isFinalPositionCard && activeCard.level !== 'gentle' && (
+                  {!isMythicPositionCard && activeCard.level !== 'gentle' && (
                     <>
-                      <span className="card-corner-deco top-2 left-2.5">♠ ♥</span>
-                      <span className="card-corner-deco top-2 right-2.5">♦ ♣</span>
-                      <span className="card-corner-deco bottom-2 left-2.5">♥ ♠</span>
-                      <span className="card-corner-deco bottom-2 right-2.5">♣ ♦</span>
+                      <span style={{ fontSize: `${10 * activeTextScale}px` }} className="card-corner-deco top-2 left-2.5">♠ ♥</span>
+                      <span style={{ fontSize: `${10 * activeTextScale}px` }} className="card-corner-deco top-2 right-2.5">♦ ♣</span>
+                      <span style={{ fontSize: `${10 * activeTextScale}px` }} className="card-corner-deco bottom-2 left-2.5">♥ ♠</span>
+                      <span style={{ fontSize: `${10 * activeTextScale}px` }} className="card-corner-deco bottom-2 right-2.5">♣ ♦</span>
                     </>
                   )}
 
@@ -997,17 +1291,25 @@ export const GameTable: React.FC<GameTableProps> = ({
                       <div className="flex flex-wrap items-center gap-1.5">
                         {isPositionCard && activeCard.position ? (
                           <>
-                            <span className="rounded-full border border-[#e2c275]/45 bg-[#e2c275]/10 px-3 py-1 text-xs font-bold text-[#f7e7b0]">
-                              ✦ {POSITION_FAMILY_LABELS[activeCard.position.family].toUpperCase()}
+                            <span style={{ fontSize: `${12 * activeTextScale}px` }} className="rounded-full border border-[#e2c275]/45 bg-[#e2c275]/10 px-3 py-1 font-bold text-[#f7e7b0]">
+                              ✦ {getPositionFamilyLabel(activeCard).toUpperCase()}
                             </span>
-                            <span className="rounded-full border border-white/15 bg-black/20 px-2.5 py-1 text-[10px] text-slate-200">
+                            <span style={{ fontSize: `${10 * activeTextScale}px` }} className="rounded-full border border-white/15 bg-black/20 px-2.5 py-1 text-slate-200">
                               {POSITION_RECIPIENT_LABELS[activeCard.position.recipient]}
+                            </span>
+                            <span style={{ fontSize: `${10 * activeTextScale}px` }} className={`rounded-full border px-2.5 py-1 font-bold ${
+                              isMythicPositionCard
+                                ? 'border-[#e8a48c]/55 bg-[#d7b1ff]/10 text-[#f4e8ff]'
+                                : 'border-[#e2c275]/35 bg-[#e2c275]/10 text-[#f7e7b0]'
+                            }`}>
+                              {derivePositionDifficultyStars(activeCard)}★
                             </span>
                           </>
                         ) : (
                           <>
                             <span
-                              className={`text-xs px-3 py-1 rounded-full border font-semibold ${
+                              style={{ fontSize: `${12 * activeTextScale}px` }}
+                              className={`px-3 py-1 rounded-full border font-semibold ${
                                 activeCard.type === 'truth'
                                   ? 'bg-blue-950/80 text-blue-300 border-blue-500/40'
                                   : 'bg-rose-950/80 text-rose-300 border-rose-500/40'
@@ -1015,13 +1317,13 @@ export const GameTable: React.FC<GameTableProps> = ({
                             >
                               {activeCard.type === 'truth' ? '🔍 SỰ THẬT' : '⚡ THỬ THÁCH'}
                             </span>
-                            <span className={`text-xs px-2.5 py-1 rounded-full border ${LEVEL_INFO[activeCard.level].badgeBg}`}>
+                            <span style={{ fontSize: `${12 * activeTextScale}px` }} className={`px-2.5 py-1 rounded-full border ${LEVEL_INFO[activeCard.level].badgeBg}`}>
                               {LEVEL_INFO[activeCard.level].icon} {LEVEL_INFO[activeCard.level].name}
                             </span>
-                            <span className="rounded-full border border-amber-300/25 bg-amber-300/[0.07] px-2 py-1 text-[10px] font-semibold text-amber-200">
-                              {deriveDifficultyStars(activeCard)}★
+                            <span style={{ fontSize: `${10 * activeTextScale}px` }} className="rounded-full border border-amber-300/25 bg-amber-300/[0.07] px-2 py-1 font-semibold text-amber-200">
+                              {isPositionCard ? derivePositionDifficultyStars(activeCard) : deriveDifficultyStars(activeCard)}★
                             </span>
-                            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] text-neutral-300">
+                            <span style={{ fontSize: `${10 * activeTextScale}px` }} className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-neutral-300">
                               {AUDIENCE_LABELS[getCardAudience(activeCard)]}
                             </span>
                           </>
@@ -1046,22 +1348,22 @@ export const GameTable: React.FC<GameTableProps> = ({
 
                     {/* Targeted Player Prompt */}
                     <div className="my-2 text-center">
-                      <span className="text-xs text-amber-200/80 uppercase tracking-widest font-medium">
+                      <span style={{ fontSize: `${12 * activeTextScale}px` }} className="text-amber-200/80 uppercase tracking-widest font-medium">
                         {isPositionCard ? 'Thẻ chung:' : 'Lượt thực hiện:'}
                       </span>
-                      <span className="ml-2 font-serif-romantic font-bold text-amber-300 text-base">
+                      <span style={{ fontSize: `${16 * activeTextScale}px` }} className="ml-2 font-serif-romantic font-bold text-amber-300">
                         {isPositionCard && activeCard.position
                           ? POSITION_RECIPIENT_LABELS[activeCard.position.recipient]
-                          : `${currentPlayer.name} ${currentPlayer.avatar}`}
+                          : `${performingPlayer.name} ${performingPlayer.avatar}`}
                       </span>
                     </div>
 
                     {/* Card Content with Icon */}
-                    <div className="my-auto py-4 flex flex-col items-center justify-center text-center">
+                    <div className="my-auto min-h-0 overflow-y-auto overscroll-contain py-4 flex flex-col items-center justify-center text-center">
                       {!isRevealed ? (
                         <div className="flex flex-col items-center py-6 px-4">
                           <EyeOff className="w-10 h-10 text-amber-400 mb-3 opacity-80" />
-                          <p className="text-xs text-neutral-400 mb-4 max-w-xs">
+                          <p style={{ fontSize: `${12 * activeTextScale}px` }} className="text-neutral-400 mb-4 max-w-xs">
                             Nội dung lá bài đã được bảo mật. Bấm vào nút bên dưới khi bạn đã sẵn sàng!
                           </p>
                           <button
@@ -1069,7 +1371,8 @@ export const GameTable: React.FC<GameTableProps> = ({
                               soundEngine.playTick();
                               setIsRevealed(true);
                             }}
-                            className="px-5 py-2.5 rounded-full bg-amber-500/20 border border-amber-400 text-amber-200 text-xs font-semibold hover:bg-amber-500/30 transition-all flex items-center gap-2 cursor-pointer"
+                            className="px-5 py-2.5 rounded-full bg-amber-500/20 border border-amber-400 text-amber-200 font-semibold hover:bg-amber-500/30 transition-all flex items-center gap-2 cursor-pointer"
+                            style={{ fontSize: `${12 * activeTextScale}px` }}
                           >
                             <Eye className="w-4 h-4" />
                             <span>Xem Nội Dung</span>
@@ -1079,32 +1382,36 @@ export const GameTable: React.FC<GameTableProps> = ({
                         <motion.div
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="space-y-4 flex flex-col items-center"
+                          className="flex flex-col items-center"
                         >
                           {/* Card Icon (custom image or SVG) */}
                           {activeCard.customImage ? (
-                            <div className="card-icon-wrapper-lg card-custom-icon-wrapper">
-                              <img
-                                src={activeCard.customImage}
-                                alt="icon"
-                                className="card-custom-icon w-full h-full object-contain"
-                              />
+                            <div style={activeIconSpacingStyle} className={`card-icon-wrapper-lg card-custom-icon-wrapper ${isMythicPositionCard ? 'mythic-icon-aura' : ''}`}>
+                              <div className="h-full w-full transition-transform duration-200 motion-reduce:transition-none" style={activeIconScaleStyle}>
+                                <img
+                                  src={activeCard.customImage}
+                                  alt="icon"
+                                  className="card-custom-icon w-full h-full object-contain"
+                                />
+                              </div>
                             </div>
                           ) : (() => {
                             const iconName = activeCard.icon || autoAssignIcon(activeCard.content);
                             const IconComp = getCardIcon(iconName);
                             return IconComp ? (
-                              <div className="card-icon-wrapper-lg card-icon-color">
-                                <IconComp className="w-full h-full" />
+                              <div style={activeIconSpacingStyle} className={`card-icon-wrapper-lg card-icon-color ${isMythicPositionCard ? 'mythic-icon-aura' : ''}`}>
+                                <div className="h-full w-full transition-transform duration-200 motion-reduce:transition-none" style={activeIconScaleStyle}>
+                                  <IconComp className="w-full h-full" />
+                                </div>
                               </div>
                             ) : null;
                           })()}
 
-                          <p className="text-sm sm:text-base text-white font-medium leading-relaxed max-w-sm">
+                          <p style={{ fontSize: `${16 * activeTextScale}px` }} className="text-white font-medium leading-relaxed max-w-sm">
                             {activeCard.content}
                           </p>
                           {activeCard.hint && (
-                            <p className="text-xs text-rose-300/80 italic font-light">
+                            <p style={{ fontSize: `${12 * activeTextScale}px` }} className="mt-4 text-rose-300/80 italic font-light">
                               💡 Gợi ý: {activeCard.hint}
                             </p>
                           )}
@@ -1116,13 +1423,14 @@ export const GameTable: React.FC<GameTableProps> = ({
                     {timerSeconds !== null && isRevealed && (
                         <div className="pt-2 border-t border-white/10 flex items-center justify-between">
                           <div
-                            className={`flex items-center gap-2 text-xs ${timerSeconds === 0 ? 'text-rose-300' : 'text-amber-300'}`}
+                            style={{ fontSize: `${12 * activeTextScale}px` }}
+                            className={`flex items-center gap-2 ${timerSeconds === 0 ? 'text-rose-300' : 'text-amber-300'}`}
                           >
                             <TimerIcon
                               className={`w-4 h-4 ${timerSeconds === 0 ? 'text-rose-400' : `text-amber-400 ${isTimerRunning && !shouldReduceMotion ? 'animate-pulse' : ''}`}`}
                             />
                             <span>{timerSeconds === 0 ? 'Hết giờ:' : 'Thời gian:'}</span>
-                            <span className={`font-bold text-base ${timerSeconds === 0 ? 'text-rose-200' : 'text-white'}`}>
+                            <span style={{ fontSize: `${16 * activeTextScale}px` }} className={`font-bold ${timerSeconds === 0 ? 'text-rose-200' : 'text-white'}`}>
                               {timerSeconds === 0 ? 'Reng reng!' : timerSeconds !== null ? `${timerSeconds}s` : '--'}
                             </span>
                           </div>
@@ -1131,7 +1439,8 @@ export const GameTable: React.FC<GameTableProps> = ({
                             type="button"
                             onClick={handleTimerControl}
                             aria-label={timerSeconds === 0 ? 'Đếm lại thời gian thử thách' : isTimerRunning ? 'Tạm dừng đếm giờ' : 'Bắt đầu đếm giờ'}
-                            className="flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/60 px-3 py-1 text-xs text-neutral-200 hover:text-white"
+                            style={{ fontSize: `${12 * activeTextScale}px` }}
+                            className="flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/60 px-3 py-1 text-neutral-200 hover:text-white"
                           >
                             {timerSeconds === 0 && <RotateCcw className="h-3 w-3" aria-hidden="true" />}
                             {timerSeconds === 0 ? 'Đếm lại' : isTimerRunning ? 'Tạm dừng' : 'Bắt đầu đếm'}
@@ -1153,7 +1462,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                 {isFinalPositionCard ? (
                   <button
                     type="button"
-                    onClick={onFinishGame}
+                    onClick={handleComplete}
                     className="min-h-12 w-full rounded-full bg-[linear-gradient(135deg,#f4e8ff,#e8a48c)] px-5 text-sm font-bold text-[#120717] shadow-[0_0_28px_rgba(232,164,140,.3)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f4e8ff] motion-reduce:transform-none"
                   >
                     Đã xem · Kết thúc ván
@@ -1172,7 +1481,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                       onClick={() => handlePositionAdvance(true)}
                       className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#f7e7b0,#cda95c)] px-4 text-xs font-bold text-[#08101f] shadow-[0_0_20px_rgba(226,194,117,.22)] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f7e7b0] motion-reduce:transform-none"
                     >
-                      <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Đã hoàn thành
+                      <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> {completionActionLabel}
                     </button>
                   </>
                 ) : (
@@ -1190,7 +1499,7 @@ export const GameTable: React.FC<GameTableProps> = ({
                       className="flex-1 py-3 px-4 rounded-full bg-gold-gradient text-neutral-950 font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_25px_rgba(255,107,157,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <CheckCircle2 className="w-4 h-4 fill-neutral-950 text-gold-gradient" />
-                      <span>Hoàn Thành</span>
+                      <span>{completionActionLabel}</span>
                     </button>
                   </>
                 )}
@@ -1222,8 +1531,8 @@ export const GameTable: React.FC<GameTableProps> = ({
       <AnimatePresence>
         {showPenaltyPrompt && activeCard && (
           <PenaltyPrompt
-            playerName={currentPlayer.name}
-            playerAvatar={currentPlayer.avatar}
+            playerName={performingPlayer.name}
+            playerAvatar={performingPlayer.avatar}
             cardType={activeCard.type}
             penaltyEnabled={settings.penaltyClothingEnabled}
             canRemoveGarment={canApplyPenaltyGarment}
@@ -1241,6 +1550,23 @@ export const GameTable: React.FC<GameTableProps> = ({
           source={removalRequest.source}
           onConfirm={handleConfirmRemoval}
           onCancel={handleCancelRemoval}
+          onContinueWithoutRemoval={handleContinueWithoutRemoval}
+        />
+      )}
+      {showSwapDialog && (
+        <GarmentSwapDialog
+          playerNames={[player1.name, player2.name]}
+          outfitStates={outfitStates}
+          onConfirm={handleConfirmSwap}
+          onCancel={() => setShowSwapDialog(false)}
+        />
+      )}
+      {showDualRemovalDialog && (
+        <DualGarmentRemovalDialog
+          playerNames={[player1.name, player2.name]}
+          outfitStates={outfitStates}
+          onConfirm={handleConfirmDualRemoval}
+          onCancel={() => setShowDualRemovalDialog(false)}
           onContinueWithoutRemoval={handleContinueWithoutRemoval}
         />
       )}

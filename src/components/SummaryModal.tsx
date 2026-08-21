@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Trophy, Heart, RotateCcw, X, CheckCircle2, Layers3 } from 'lucide-react';
-import { ClothingRemovalEvent, IntimacyEvent, JourneyPhase, OutfitState, Player } from '../types';
+import { ClothingRemovalEvent, GameEndReason, IntimacyEvent, JourneyPhase, OutfitState, Player } from '../types';
+import { getPresentGarmentSlots } from '../utils/wardrobe';
 
 interface SummaryModalProps {
   player1: Player;
@@ -11,11 +12,15 @@ interface SummaryModalProps {
   outfitStates?: [OutfitState, OutfitState];
   removalEvents?: ClothingRemovalEvent[];
   intimacyPercent?: number;
+  luxuryIntimacyPercent?: number;
   intimacyEvents?: IntimacyEvent[];
   positionCardsRevealed?: number;
   journeyPhase?: JourneyPhase;
   onRestart: () => void;
   onClose: () => void;
+  onHome?: () => void;
+  terminal?: boolean;
+  endReason?: GameEndReason | null;
 }
 
 const getInitialGarmentCount = (outfitState: OutfitState) =>
@@ -26,7 +31,7 @@ const getRemovalCount = (
   targetPlayerIndex: 0 | 1,
   source: ClothingRemovalEvent['source']
 ) => events?.filter(
-  (event) => event.targetPlayerIndex === targetPlayerIndex && event.source === source
+  (event) => event.targetPlayerIndex === targetPlayerIndex && event.source === source && event.action !== 'transferred'
 ).length ?? 0;
 
 const FOCUSABLE_SELECTOR = [
@@ -46,11 +51,15 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   outfitStates,
   removalEvents,
   intimacyPercent,
+  luxuryIntimacyPercent = 0,
   intimacyEvents,
   positionCardsRevealed = 0,
   journeyPhase,
   onRestart,
   onClose,
+  onHome,
+  terminal = false,
+  endReason,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -59,11 +68,16 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   const legacyIntimacyScore = Math.min(100, Math.round((totalCompleted / Math.max(1, totalRounds)) * 100));
   const intimacyScore = intimacyPercent ?? legacyIntimacyScore;
   const cardGain = intimacyEvents
-    ?.filter((event) => event.source === 'completed_card')
+    ?.filter((event) => event.source === 'completed_card' && event.track !== 'luxury')
     .reduce((total, event) => total + event.amount, 0) ?? 0;
   const clothingGain = intimacyEvents
     ?.filter((event) => event.source === 'card_clothing_removal')
     .reduce((total, event) => total + event.amount, 0) ?? 0;
+  const luxuryGain = intimacyEvents
+    ?.filter((event) => event.source === 'completed_card' && event.track === 'luxury')
+    .reduce((total, event) => total + event.amount, 0) ?? 0;
+  const swapCount = Math.floor((removalEvents?.filter((event) => event.action === 'transferred').length ?? 0) / 2);
+  const replacedCount = removalEvents?.filter((event) => event.action === 'replaced').length ?? 0;
 
   let intimacyBadge = 'Gắn Kết Nhẹ Nhàng 🌸';
   if (intimacyScore > 75) intimacyBadge = 'Cặp Đôi Bùng Nổ Nồng Nhiệt 💋';
@@ -74,10 +88,13 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+    const focusFrame = window.requestAnimationFrame(() => {
+      if (terminal) panelRef.current?.querySelector<HTMLElement>('button:not([disabled])')?.focus();
+      else closeButtonRef.current?.focus();
+    });
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !terminal) {
         event.preventDefault();
         onClose();
         return;
@@ -115,14 +132,14 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
       document.body.style.overflow = previousOverflow;
       if (previouslyFocused?.isConnected) previouslyFocused.focus();
     };
-  }, [onClose]);
+  }, [onClose, terminal]);
 
   const renderOutfitSummary = (playerIndex: 0 | 1) => {
     const outfitState = outfitStates?.[playerIndex];
     if (!outfitState) return null;
 
     const initialCount = getInitialGarmentCount(outfitState);
-    const remainingCount = outfitState.remainingSlots.length;
+    const remainingCount = getPresentGarmentSlots(outfitState).length;
     const removedCount = Math.max(0, initialCount - remainingCount);
     const cardRemovalCount = getRemovalCount(removalEvents, playerIndex, 'card');
     const penaltyRemovalCount = getRemovalCount(removalEvents, playerIndex, 'penalty');
@@ -170,7 +187,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
       aria-labelledby="summary-title"
       aria-describedby="summary-description"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (!terminal && event.target === event.currentTarget) onClose();
       }}
     >
       <motion.div
@@ -182,15 +199,17 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
         transition={{ duration: shouldReduceMotion ? 0.08 : 0.24, ease: 'easeOut' }}
         className="relative w-full max-w-lg max-h-[calc(100svh-2rem)] overflow-y-auto overscroll-contain glass-wine rounded-3xl p-6 sm:p-8 border border-amber-400/60 shadow-2xl text-center text-white"
       >
-        <button
-          ref={closeButtonRef}
-          type="button"
-          onClick={onClose}
-          aria-label="Đóng thống kê"
-          className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {!terminal && (
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng thống kê"
+            className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
         <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-rose-500/30 to-amber-500/30 border border-amber-400/60 mx-auto flex items-center justify-center mb-4">
           <Trophy className="w-8 h-8 text-amber-300 drop-shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
@@ -200,7 +219,11 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
           Tổng Kết Cuộc Chơi
         </h3>
         <p id="summary-description" className="text-xs text-rose-200/90 italic mb-6">
-          "Mỗi khoảnh khắc chia sẻ là một nhịp đập yêu thương"
+          {terminal
+            ? endReason === 'have_sex'
+              ? 'Lá hiếm đã được mở. Không có yêu cầu phải thực hiện.'
+              : 'Ván chơi đã kết thúc và không thể tiếp tục từ màn hình này.'
+            : '“Mỗi khoảnh khắc chia sẻ là một nhịp đập yêu thương”'}
         </p>
 
         {/* Intimacy Score Badge */}
@@ -208,14 +231,21 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
           <div className="text-xs text-neutral-400 uppercase tracking-wider">
             Chỉ số thấu hiểu & kết nối
           </div>
-          <div className="text-3xl font-bold font-serif-romantic text-amber-300">
-            {intimacyScore}%
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-rose-500/[0.06] p-2">
+              <div className="text-[9px] uppercase tracking-wider text-rose-200/65">Tim hồng</div>
+              <div className="text-2xl font-bold font-serif-romantic text-rose-200">{intimacyScore}%</div>
+            </div>
+            <div className="rounded-xl bg-violet-400/[0.07] p-2">
+              <div className="text-[9px] uppercase tracking-wider text-violet-200/65">Tim Luxury</div>
+              <div className="text-2xl font-bold font-serif-romantic text-violet-200">{luxuryIntimacyPercent}%</div>
+            </div>
           </div>
           <div className="inline-block px-3 py-1 rounded-full bg-rose-950/80 border border-rose-500/40 text-xs text-rose-300 font-medium">
             {intimacyBadge}
           </div>
           {intimacyEvents && (
-            <div className="grid grid-cols-3 gap-1.5 pt-2 text-center">
+            <div className="grid grid-cols-2 gap-1.5 pt-2 text-center sm:grid-cols-4">
               <div className="rounded-lg bg-white/[0.04] px-1 py-1.5">
                 <div className="text-[9px] text-neutral-500">Hoàn thành</div>
                 <div className="text-xs font-bold text-white">+{cardGain}%</div>
@@ -228,7 +258,14 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
                 <div className="text-[9px] text-neutral-500">Tư thế đã mở</div>
                 <div className="text-xs font-bold text-amber-300">{positionCardsRevealed}</div>
               </div>
+              <div className="rounded-lg bg-violet-500/[0.07] px-1 py-1.5">
+                <div className="text-[9px] text-neutral-500">Luxury</div>
+                <div className="text-xs font-bold text-violet-200">+{luxuryGain}%</div>
+              </div>
             </div>
+          )}
+          {removalEvents && (
+            <p className="pt-1 text-[10px] text-neutral-400">Đổi đồ: <strong className="text-neutral-200">{swapCount}</strong> · Món bị thay: <strong className="text-neutral-200">{replacedCount}</strong></p>
           )}
           {journeyPhase === 'final' && (
             <p className="pt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-200">
@@ -266,13 +303,23 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="min-h-11 flex-1 py-3 rounded-full bg-neutral-900 border border-neutral-700 text-xs font-semibold hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-          >
-            Chơi Tiếp Lượt Sau
-          </button>
+          {terminal ? (
+            <button
+              type="button"
+              onClick={onHome}
+              className="min-h-11 flex-1 py-3 rounded-full bg-neutral-900 border border-neutral-700 text-xs font-semibold hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+            >
+              Về trang đầu
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-11 flex-1 py-3 rounded-full bg-neutral-900 border border-neutral-700 text-xs font-semibold hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+            >
+              Chơi Tiếp Lượt Sau
+            </button>
+          )}
           <button
             type="button"
             onClick={onRestart}

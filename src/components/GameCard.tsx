@@ -3,7 +3,7 @@ import { CardItem, CardLevel } from '../types';
 import { getCardIcon, autoAssignIcon } from './CardIcons';
 import { LEVEL_INFO } from '../data/cards';
 import { Heart } from 'lucide-react';
-import { deriveDifficultyStars, getCardAudience, getCardDeck } from '../utils/progression';
+import { deriveDifficultyStars, derivePositionDifficultyStars, getCardAudience, getCardDeck } from '../utils/progression';
 
 interface GameCardProps {
   card: CardItem;
@@ -31,12 +31,20 @@ export const GameCard: React.FC<GameCardProps> = ({
   const IconComponent = getCardIcon(iconName);
   const deck = getCardDeck(card);
   const isPosition = deck === 'position';
-  const isRarePosition = card.position?.family === 'have_sex';
+  const isRarePosition = isPosition && card.position?.rarity === 'mythic';
   const audienceLabel = card.position
     ? ({ male: 'Nam nhận', female: 'Nữ nhận', both: 'Cả hai' } as const)[card.position.recipient]
-    : ({ male: 'Nam', female: 'Nữ', both: 'Cả hai' } as const)[getCardAudience(card)];
+    : ({
+        male: 'Nam',
+        female: 'Nữ',
+        both: 'Cả hai',
+        current: 'Người đang lượt',
+        opponent: 'Đối phương',
+      } as const)[getCardAudience(card)];
   const familyLabel = card.position
-    ? ({ oral: 'ORAL SEX', blowjob: 'BLOWJOB', handjob: 'HANDJOB', have_sex: 'HAVE SEX' } as const)[card.position.family]
+    ? card.position.family === 'other'
+      ? (card.position.customLabel?.trim() || 'TƯ THẾ KHÁC').toUpperCase()
+      : ({ oral: 'ORAL SEX', blowjob: 'BLOW', handjob: 'HAND', have_sex: 'HAVE SEX' } as const)[card.position.family]
     : null;
 
   // Card level class
@@ -52,6 +60,9 @@ export const GameCard: React.FC<GameCardProps> = ({
       content: 'text-[11px] leading-snug',
       badge: 'text-[8px] px-1.5 py-0.5',
       minHeight: 'min-h-[180px]',
+      contentPixels: 11,
+      badgePixels: 8,
+      timerPixels: 10,
     },
     md: {
       container: 'p-4',
@@ -60,6 +71,9 @@ export const GameCard: React.FC<GameCardProps> = ({
       content: 'text-xs leading-relaxed',
       badge: 'text-[9px] px-2 py-0.5',
       minHeight: 'min-h-[260px]',
+      contentPixels: 12,
+      badgePixels: 9,
+      timerPixels: 10,
     },
     lg: {
       container: 'p-6 sm:p-8',
@@ -68,10 +82,21 @@ export const GameCard: React.FC<GameCardProps> = ({
       content: 'text-sm sm:text-base leading-relaxed',
       badge: 'text-xs px-3 py-1',
       minHeight: 'min-h-[380px]',
+      contentPixels: 16,
+      badgePixels: 12,
+      timerPixels: 12,
     },
   };
 
   const s = sizeStyles[size];
+  const iconScale = Math.min(1.8, Math.max(0.5, card.appearance?.iconScale ?? 1));
+  const textScale = Math.min(1.5, Math.max(0.75, card.appearance?.textScale ?? 1));
+  const iconTextGap = Math.min(48, Math.max(0, card.appearance?.iconTextGap ?? 8));
+  const iconScaleStyle = { transform: `scale(${iconScale})` };
+  const iconWrapperSpacingStyle = {
+    marginTop: `${Math.max(0, iconScale - 1) * 28}px`,
+    marginBottom: `${iconTextGap + Math.max(0, iconScale - 1) * 16}px`,
+  };
 
   return (
     <div
@@ -103,12 +128,13 @@ export const GameCard: React.FC<GameCardProps> = ({
         <div className="flex items-center justify-between mb-3">
           <div className="flex flex-wrap items-center gap-1.5">
             {isPosition ? (
-              <span className={`${s.badge} rounded-full border border-[#e2c275]/45 bg-[#e2c275]/10 font-bold text-[#f7e7b0]`}>
+              <span style={{ fontSize: `${s.badgePixels * textScale}px` }} className={`${s.badge} rounded-full border border-[#e2c275]/45 bg-[#e2c275]/10 font-bold text-[#f7e7b0]`}>
                 ✦ {familyLabel}
               </span>
             ) : (
               <>
             <span
+              style={{ fontSize: `${s.badgePixels * textScale}px` }}
               className={`${s.badge} rounded-full font-semibold border ${
                 card.type === 'truth'
                   ? 'bg-blue-950/80 text-blue-300 border-blue-500/40'
@@ -117,7 +143,7 @@ export const GameCard: React.FC<GameCardProps> = ({
             >
               {card.type === 'truth' ? 'SỰ THẬT' : 'THỬ THÁCH'}
             </span>
-            <span className={`${s.badge} rounded-full border ${levelInfo.badgeBg}`}>
+            <span style={{ fontSize: `${s.badgePixels * textScale}px` }} className={`${s.badge} rounded-full border ${levelInfo.badgeBg}`}>
               {levelInfo.icon} {levelInfo.name}
             </span>
               </>
@@ -149,29 +175,33 @@ export const GameCard: React.FC<GameCardProps> = ({
         {/* Center: Icon (custom image or SVG) */}
         <div className="flex-1 flex flex-col items-center justify-center">
           {card.customImage ? (
-            <div className={`${s.iconWrapper} card-custom-icon-wrapper mb-3`}>
-              <img
-                src={card.customImage}
-                alt=""
-                className="card-custom-icon w-full h-full object-contain"
-              />
+            <div style={iconWrapperSpacingStyle} className={`${s.iconWrapper} card-custom-icon-wrapper ${isRarePosition ? 'mythic-icon-aura' : ''}`}>
+              <div className="h-full w-full transition-transform duration-200 motion-reduce:transition-none" style={iconScaleStyle}>
+                <img
+                  src={card.customImage}
+                  alt=""
+                  className="card-custom-icon w-full h-full object-contain"
+                />
+              </div>
             </div>
           ) : IconComponent ? (
-            <div className={`${s.iconWrapper} card-icon-color mb-3`}>
-              <IconComponent className="w-full h-full" />
+            <div style={iconWrapperSpacingStyle} className={`${s.iconWrapper} card-icon-color ${isRarePosition ? 'mythic-icon-aura' : ''}`}>
+              <div className="h-full w-full transition-transform duration-200 motion-reduce:transition-none" style={iconScaleStyle}>
+                <IconComponent className="w-full h-full" />
+              </div>
             </div>
           ) : null}
 
           {/* Content text */}
           {showContent && (
-            <p className={`${s.content} text-white/90 text-center font-medium max-w-[90%] mx-auto`}>
+            <p style={{ fontSize: `${s.contentPixels * textScale}px` }} className={`${s.content} text-white/90 text-center font-medium max-w-[90%] mx-auto`}>
               {card.content}
             </p>
           )}
 
           {/* Hint */}
           {showContent && card.hint && (
-            <p className={`${s.badge} text-rose-300/70 italic mt-2 text-center`}>
+            <p style={{ fontSize: `${s.badgePixels * textScale}px` }} className={`${s.badge} text-rose-300/70 italic mt-2 text-center`}>
               💡 {card.hint}
             </p>
           )}
@@ -179,16 +209,16 @@ export const GameCard: React.FC<GameCardProps> = ({
 
         {/* Bottom: Optional timer */}
         <div className="mt-auto pt-2">
-          <div className="mb-1.5 flex items-center justify-center gap-1.5 text-[9px] text-neutral-400">
+          <div style={{ fontSize: `${9 * textScale}px` }} className="mb-1.5 flex items-center justify-center gap-1.5 text-neutral-400">
             <span className="rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-2 py-0.5 text-amber-200">
-              {deriveDifficultyStars(card)}★
+              {isPosition ? derivePositionDifficultyStars(card) : deriveDifficultyStars(card)}★
             </span>
             <span className="rounded-full border border-white/10 bg-white/[0.035] px-2 py-0.5">
               {audienceLabel}
             </span>
           </div>
           {card.timerSeconds && showContent && (
-            <div className="text-[10px] text-amber-300/60 text-center">
+            <div style={{ fontSize: `${s.timerPixels * textScale}px` }} className="text-amber-300/60 text-center">
               ⏱ {card.timerSeconds}s
             </div>
           )}

@@ -5,10 +5,12 @@ import {
   areBothPlayersLowOnClothing,
   getCardDrawProbabilities,
   getEligibleCardDrawProbabilities,
+  getRemovalTargetIndices,
   getTargetIndex,
   isCardEligibleForOutfits,
   isClothingEffect,
   mergeEditedSystemCard,
+  normalizeCardClothingEffect,
   selectEligibleCard,
 } from './cardSelection';
 import { createOutfitState, DEFAULT_GAME_SETTINGS, removeGarment } from './wardrobe';
@@ -78,6 +80,29 @@ test('self and opponent effects resolve both player indexes correctly', () => {
   assert.equal(isCardEligibleForOutfits(opponentCard, 1, [maleEmpty, femaleDressed]), false);
 });
 
+test('position removal targets are explicit and Have Sex never applies clothing effects', () => {
+  const makePosition = (target: 'male' | 'female' | 'both', family: 'oral' | 'have_sex' = 'oral'): CardItem => ({
+    id: `${family}-${target}`,
+    type: 'dare', level: 'passionate', content: 'position', deck: 'position',
+    position: { family, recipient: 'both', orderGroup: family === 'have_sex' ? 4 : 1, rarity: family === 'have_sex' ? 'mythic' : 'luxury' },
+    clothingEffect: { kind: 'remove_garment', target },
+  });
+  assert.deepEqual(getRemovalTargetIndices(makePosition('male'), 1), [0]);
+  assert.deepEqual(getRemovalTargetIndices(makePosition('female'), 0), [1]);
+  assert.deepEqual(getRemovalTargetIndices(makePosition('both'), 1), [0, 1]);
+  assert.deepEqual(getRemovalTargetIndices(makePosition('both', 'have_sex'), 0), []);
+  assert.equal(isCardEligibleForOutfits(makePosition('both'), 0, [emptyOutfit(0), dressedOutfits()[1]]), false);
+  assert.equal(isCardEligibleForOutfits(makePosition('both', 'have_sex'), 0, dressedOutfits()), false);
+  assert.equal(mergeEditedSystemCard(makePosition('both', 'have_sex')).clothingEffect, undefined);
+  const legacy = {
+    ...makePosition('male'),
+    clothingEffect: { kind: 'remove_garment', target: 'self' },
+  } as CardItem;
+  assert.deepEqual(normalizeCardClothingEffect(legacy).clothingEffect, {
+    kind: 'remove_garment', target: 'both',
+  });
+});
+
 test('invalid clothing effects are rejected without affecting cards with null or no effect', () => {
   const invalidEffects = [
     undefined,
@@ -118,6 +143,22 @@ test('a clothing-effect card becomes ineligible when its target is empty', () =>
     target = removeGarment(target, slot);
   }
   assert.equal(isCardEligibleForOutfits(cards[3], 0, [outfits[0], target]), false);
+});
+
+test('swap effects require one removable garment from both players', () => {
+  const swapCard: CardItem = {
+    id: 'swap',
+    type: 'dare',
+    level: 'intimate',
+    content: 'Đổi một món đồ cho nhau.',
+    clothingEffect: { kind: 'swap_garments' },
+  };
+  const outfits = dressedOutfits();
+
+  assert.equal(isClothingEffect(swapCard.clothingEffect), true);
+  assert.equal(isCardEligibleForOutfits(swapCard, 0, outfits), true);
+  assert.equal(isCardEligibleForOutfits(swapCard, 1, [outfits[0], emptyOutfit(1)]), false);
+  assert.equal(isCardEligibleForOutfits(swapCard, 0, [emptyOutfit(0), outfits[1]]), false);
 });
 
 test('base probabilities are 50/50 by type and 70/20/10 by level', () => {
@@ -319,6 +360,7 @@ test('system metadata survives legacy edits while explicit overrides stay explic
     ...cards[3],
     icon: 'blindfold_kiss',
     timerSeconds: 45,
+    appearance: { iconScale: 1.25, textScale: 1.1 },
     deck: 'position',
     progression: { difficultyStars: 4, audience: 'both', intimacyGain: 11 },
     position: {
@@ -331,6 +373,7 @@ test('system metadata survives legacy edits while explicit overrides stay explic
   const legacyEdit = { ...system, content: 'Edited', icon: 'kiss_surprise' };
   delete legacyEdit.clothingEffect;
   delete legacyEdit.timerSeconds;
+  delete legacyEdit.appearance;
   delete legacyEdit.deck;
   delete legacyEdit.progression;
   delete legacyEdit.position;
@@ -342,6 +385,10 @@ test('system metadata survives legacy edits while explicit overrides stay explic
   const disabled = mergeEditedSystemCard(system, { ...legacyEdit, clothingEffect: null });
   const timerOverride = mergeEditedSystemCard(system, { ...legacyEdit, timerSeconds: 90 });
   const timerDisabled = mergeEditedSystemCard(system, { ...legacyEdit, timerSeconds: null });
+  const appearanceOverride = mergeEditedSystemCard(system, {
+    ...legacyEdit,
+    appearance: { iconScale: 0.8, textScale: 1.4 },
+  });
   const customIllustration = mergeEditedSystemCard(system, {
     ...legacyEdit,
     icon: 'heart',
@@ -356,12 +403,14 @@ test('system metadata survives legacy edits while explicit overrides stay explic
 
   assert.equal(inherited.content, 'Edited');
   assert.equal(inherited.icon, 'blindfold_kiss');
-  assert.deepEqual(inherited.clothingEffect, system.clothingEffect);
-  assert.deepEqual(explicitUndefined.clothingEffect, system.clothingEffect);
+  assert.deepEqual(inherited.clothingEffect, { kind: 'remove_garment', target: 'both' });
+  assert.deepEqual(explicitUndefined.clothingEffect, { kind: 'remove_garment', target: 'both' });
   assert.equal(disabled.clothingEffect, null);
   assert.equal(inherited.timerSeconds, 45);
   assert.equal(timerOverride.timerSeconds, 90);
   assert.equal(timerDisabled.timerSeconds, null);
+  assert.deepEqual(inherited.appearance, system.appearance);
+  assert.deepEqual(appearanceOverride.appearance, { iconScale: 0.8, textScale: 1.4 });
   assert.equal(inherited.deck, 'position');
   assert.deepEqual(inherited.progression, system.progression);
   assert.deepEqual(inherited.position, system.position);

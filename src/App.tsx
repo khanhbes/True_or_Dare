@@ -1,26 +1,58 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { ParticleBackground } from './components/ParticleBackground';
 import { IntroScreen } from './components/IntroScreen';
 import { SetupScreen } from './components/SetupScreen';
 import { GameTable } from './components/GameTable';
-import { CardCollection } from './components/CardCollection';
 import { SummaryModal } from './components/SummaryModal';
 import { RulesModal } from './components/RulesModal';
 import {
   CardItem,
   ClothingRemovalEvent,
+  GameEndReason,
   GameSettings,
   IntimacyEvent,
   JourneyPhase,
+  LuxuryProgressionConfig,
   OutfitState,
   Player,
   ProgressionConfig,
 } from './types';
 import { INITIAL_CARDS } from './data/cards';
-import { mergeEditedSystemCard } from './utils/cardSelection';
+import { mergeEditedSystemCard, normalizeCardClothingEffect } from './utils/cardSelection';
 import { createOutfitState, hydrateGameSettings } from './utils/wardrobe';
-import { getCardDeck, hydrateProgressionConfig } from './utils/progression';
+import { getCardDeck, hydrateLuxuryProgressionConfig, hydrateProgressionConfig } from './utils/progression';
+import { browserCardImageStore, hydrateCardImages, prepareCardsForStorage } from './utils/cardImageStore';
+import { DEFAULT_PLAYER_1, DEFAULT_PLAYER_2, loadStoredPlayer } from './utils/playerStorage';
+import { PlayerLoginScreen } from './components/PlayerLoginScreen';
+import {
+  fetchAdminPlayerStats,
+  getPlayerSession,
+  heartbeatPlayer,
+  loginPlayer,
+  type AdminPlayerStats,
+  type PlayerSession,
+} from './utils/playerSession';
+import { parseStoredCards, type CatalogPayload } from './utils/cardSchema';
+import {
+  catalogCache,
+  createCloudBackup,
+  deleteCloudCard,
+  exportLocalCatalogZip,
+  fetchCloudCatalog,
+  fetchCloudCatalogIfChanged,
+  hydrateCloudCatalogImages,
+  importCloudBackup,
+  readCatalogZip,
+  saveCloudCard,
+  saveCloudConfig,
+  type CatalogSyncStatus,
+} from './utils/cloudCatalog';
+
+const CardCollection = lazy(async () => {
+  const module = await import('./components/CardCollection');
+  return { default: module.CardCollection };
+});
 
 const STORAGE_KEYS = {
   CUSTOM_CARDS: 'tod_couples_custom_cards',
@@ -29,102 +61,18 @@ const STORAGE_KEYS = {
   SETTINGS: 'tod_couples_settings',
   PLAYER1: 'tod_couples_player1',
   PLAYER2: 'tod_couples_player2',
-  APP_MODE: 'tod_couples_app_mode',
   UNLOCKED_CARDS: 'tod_couples_unlocked_cards',
   DELETED_SYSTEM_CARDS: 'tod_couples_deleted_system_cards',
   PROGRESSION_CONFIG: 'tod_couples_progression_config',
+  LUXURY_PROGRESSION_CONFIG: 'tod_couples_luxury_progression_config',
 };
 
 type AppMode = 'player' | 'developer';
 
 const loadStoredAppMode = (): AppMode => {
-  try {
-    return localStorage.getItem(STORAGE_KEYS.APP_MODE) === 'developer' ? 'developer' : 'player';
-  } catch {
-    return 'player';
-  }
-};
-
-const CARD_LEVELS = new Set(['gentle', 'intimate', 'passionate']);
-const CARD_TYPES = new Set(['truth', 'dare']);
-const CARD_DECKS = new Set(['standard', 'position']);
-const CARD_AUDIENCES = new Set(['male', 'female', 'both']);
-const POSITION_FAMILIES = new Set(['oral', 'blowjob', 'handjob', 'have_sex']);
-const POSITION_RECIPIENTS = new Set(['male', 'female', 'both']);
-const OUTFIT_STAGES = new Set(['dressed', 'underwear_only', 'empty']);
-const MAX_CARD_TIMER_SECONDS = 3600;
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isOptionalString = (value: unknown): boolean =>
-  value === undefined || typeof value === 'string';
-
-const isStoredCard = (value: unknown): value is CardItem => {
-  if (!isRecord(value)) return false;
-
-  const effect = value.clothingEffect;
-  const hasValidEffect =
-    effect === undefined ||
-    effect === null ||
-    (isRecord(effect) &&
-      effect.kind === 'remove_garment' &&
-      (effect.target === 'self' || effect.target === 'opponent'));
-  const hasValidTimer =
-    value.timerSeconds === undefined ||
-    value.timerSeconds === null ||
-    (typeof value.timerSeconds === 'number' &&
-      Number.isFinite(value.timerSeconds));
-  const progression = value.progression;
-  const validStages = (stages: unknown) =>
-    stages === undefined ||
-    (Array.isArray(stages) && stages.every((stage) => typeof stage === 'string' && OUTFIT_STAGES.has(stage)));
-  const hasValidProgression =
-    progression === undefined ||
-    progression === null ||
-    (isRecord(progression) &&
-      typeof progression.difficultyStars === 'number' &&
-      Number.isInteger(progression.difficultyStars) &&
-      progression.difficultyStars >= 1 &&
-      progression.difficultyStars <= 5 &&
-      typeof progression.audience === 'string' &&
-      CARD_AUDIENCES.has(progression.audience) &&
-      (progression.intimacyGain === undefined ||
-        (typeof progression.intimacyGain === 'number' &&
-          Number.isFinite(progression.intimacyGain) &&
-          progression.intimacyGain >= 0 &&
-          progression.intimacyGain <= 100)) &&
-      validStages(progression.actorStages) &&
-      validStages(progression.partnerStages));
-  const position = value.position;
-  const hasValidPosition =
-    position === undefined ||
-    position === null ||
-    (isRecord(position) &&
-      typeof position.family === 'string' && POSITION_FAMILIES.has(position.family) &&
-      typeof position.recipient === 'string' && POSITION_RECIPIENTS.has(position.recipient) &&
-      typeof position.orderGroup === 'number' && [1, 2, 3, 4].includes(position.orderGroup) &&
-      (position.rarity === 'luxury' || position.rarity === 'mythic'));
-
-  return (
-    typeof value.id === 'string' &&
-    value.id.trim().length > 0 &&
-    typeof value.type === 'string' &&
-    CARD_TYPES.has(value.type) &&
-    typeof value.level === 'string' &&
-    CARD_LEVELS.has(value.level) &&
-    typeof value.content === 'string' &&
-    isOptionalString(value.hint) &&
-    hasValidTimer &&
-    (value.deck === undefined || (typeof value.deck === 'string' && CARD_DECKS.has(value.deck))) &&
-    hasValidProgression &&
-    hasValidPosition &&
-    (value.isCustom === undefined || typeof value.isCustom === 'boolean') &&
-    isOptionalString(value.icon) &&
-    isOptionalString(value.customImage) &&
-    (value.illustrationOverride === undefined || typeof value.illustrationOverride === 'boolean') &&
-    hasValidEffect
-  );
+  return typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
+    ? 'developer'
+    : 'player';
 };
 
 const loadStoredArray = <T,>(
@@ -142,29 +90,12 @@ const loadStoredArray = <T,>(
 };
 
 const loadStoredCards = (key: string): CardItem[] => {
-  const seenIds = new Set<string>();
-  return loadStoredArray(key, isStoredCard).map((card) => {
-    const normalizedCard = { ...card };
-    if (typeof normalizedCard.timerSeconds === 'number') {
-      if (normalizedCard.timerSeconds <= 0) {
-        // Older editor versions could store zero. Preserve its intended
-        // "disabled" meaning with the explicit sentinel used by system edits.
-        normalizedCard.timerSeconds = null;
-      } else if (
-        !Number.isInteger(normalizedCard.timerSeconds) ||
-        normalizedCard.timerSeconds > MAX_CARD_TIMER_SECONDS
-      ) {
-        // Keep the card instead of dropping user content because one legacy
-        // timer field was malformed. An absent value simply means no timer.
-        delete normalizedCard.timerSeconds;
-      }
-    }
-    return normalizedCard;
-  }).filter((card) => {
-    if (seenIds.has(card.id)) return false;
-    seenIds.add(card.id);
-    return true;
-  });
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? parseStoredCards(JSON.parse(saved)).map(normalizeCardClothingEffect) : [];
+  } catch {
+    return [];
+  }
 };
 
 const loadStoredStringArray = (key: string): string[] => Array.from(new Set(
@@ -179,7 +110,23 @@ export default function App() {
   const [collectionReturnScreen, setCollectionReturnScreen] = useState<'intro' | 'game'>('intro');
   const [showSummary, setShowSummary] = useState(false);
   const [showRules, setShowRules] = useState(false);
-  const [appMode, setAppMode] = useState<AppMode>(loadStoredAppMode);
+  const [gameEndReason, setGameEndReason] = useState<GameEndReason | null>(null);
+  const [gameNavigationLocked, setGameNavigationLocked] = useState(false);
+  const [appMode] = useState<AppMode>(loadStoredAppMode);
+  const [playerSession, setPlayerSession] = useState<PlayerSession | null>(
+    appMode === 'developer' ? { loggedIn: true } : null,
+  );
+  const [playerSessionError, setPlayerSessionError] = useState<string | null>(null);
+  const [adminPlayerStats, setAdminPlayerStats] = useState<AdminPlayerStats | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
+  const [cloudCatalog, setCloudCatalog] = useState<CatalogPayload | null>(null);
+  const [catalogSync, setCatalogSync] = useState<CatalogSyncStatus>({
+    mode: 'loading',
+    datasetRevision: 0,
+    message: 'Đang kiểm tra catalog cloud…',
+  });
+  const datasetRevisionRef = useRef(0);
+  const mutationQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   // Every view is a full-page destination. Reset the document scroll before
   // paint so entering the game from the bottom of Setup never clips its header.
@@ -208,27 +155,8 @@ export default function App() {
   );
 
   // Players
-  const [player1, setPlayer1] = useState<Player>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PLAYER1);
-      return saved
-        ? JSON.parse(saved)
-        : { name: 'Anh', avatar: '👨‍💼', color: '#FF6B9D', completedCount: 0, skippedCount: 0 };
-    } catch {
-      return { name: 'Anh', avatar: '👨‍💼', color: '#FF6B9D', completedCount: 0, skippedCount: 0 };
-    }
-  });
-
-  const [player2, setPlayer2] = useState<Player>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PLAYER2);
-      return saved
-        ? JSON.parse(saved)
-        : { name: 'Em', avatar: '👩‍💼', color: '#D4AF37', completedCount: 0, skippedCount: 0 };
-    } catch {
-      return { name: 'Em', avatar: '👩‍💼', color: '#D4AF37', completedCount: 0, skippedCount: 0 };
-    }
-  });
+  const [player1, setPlayer1] = useState<Player>(() => loadStoredPlayer(STORAGE_KEYS.PLAYER1, DEFAULT_PLAYER_1));
+  const [player2, setPlayer2] = useState<Player>(() => loadStoredPlayer(STORAGE_KEYS.PLAYER2, DEFAULT_PLAYER_2));
 
   // Settings
   const [settings, setSettings] = useState<GameSettings>(() => {
@@ -247,19 +175,188 @@ export default function App() {
       return hydrateProgressionConfig(null);
     }
   });
+  const [luxuryProgressionConfig, setLuxuryProgressionConfig] = useState<LuxuryProgressionConfig>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.LUXURY_PROGRESSION_CONFIG);
+      return hydrateLuxuryProgressionConfig(saved ? JSON.parse(saved) : null);
+    } catch {
+      return hydrateLuxuryProgressionConfig(null);
+    }
+  });
 
   // Current turn state
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<0 | 1>(0);
   const [currentRound, setCurrentRound] = useState<number>(1);
   const [outfitStates, setOutfitStates] = useState<[OutfitState, OutfitState]>(() => [
-    createOutfitState(settings.outfits[0]),
-    createOutfitState(settings.outfits[1]),
+    createOutfitState(settings.outfits[0], 0),
+    createOutfitState(settings.outfits[1], 1),
   ]);
   const [clothingRemovalEvents, setClothingRemovalEvents] = useState<ClothingRemovalEvent[]>([]);
   const [intimacyPercent, setIntimacyPercent] = useState(0);
+  const [luxuryIntimacyPercent, setLuxuryIntimacyPercent] = useState(0);
   const [intimacyEvents, setIntimacyEvents] = useState<IntimacyEvent[]>([]);
   const [journeyPhase, setJourneyPhase] = useState<JourneyPhase>('standard');
   const [sessionPositionCardIds, setSessionPositionCardIds] = useState<string[]>([]);
+  const [sessionPositionRevealCount, setSessionPositionRevealCount] = useState(0);
+
+  useEffect(() => {
+    if (appMode === 'developer') return;
+    let active = true;
+    void getPlayerSession().then((session) => {
+      if (active) setPlayerSession(session);
+    }).catch((error) => {
+      if (!active) return;
+      setPlayerSession({ loggedIn: false });
+      setPlayerSessionError(error instanceof Error ? error.message : 'Không thể kiểm tra phiên người chơi.');
+    });
+    return () => { active = false; };
+  }, [appMode]);
+
+  useEffect(() => {
+    if (appMode === 'developer' || !playerSession?.loggedIn) return;
+    const sendHeartbeat = () => {
+      if (document.visibilityState === 'visible') void heartbeatPlayer().catch(() => undefined);
+    };
+    sendHeartbeat();
+    const interval = window.setInterval(sendHeartbeat, 60_000);
+    document.addEventListener('visibilitychange', sendHeartbeat);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', sendHeartbeat);
+    };
+  }, [appMode, playerSession?.loggedIn]);
+
+  useEffect(() => {
+    if (appMode !== 'developer') return;
+    let active = true;
+    const refresh = () => {
+      void fetchAdminPlayerStats().then((stats) => {
+        if (active) setAdminPlayerStats(stats);
+      }).catch(() => undefined);
+    };
+    refresh();
+    const interval = window.setInterval(refresh, 30_000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [appMode]);
+
+  useEffect(() => {
+    let active = true;
+    const applyCatalog = async (payload: CatalogPayload, mode: 'cloud' | 'offline') => {
+      if (!active) return;
+      setCustomCards(payload.customCards);
+      setEditedCards(payload.editedCards);
+      setDeletedSystemCardIds(payload.deletedSystemCardIds);
+      setProgressionConfig(hydrateProgressionConfig(payload.progressionConfig));
+      setLuxuryProgressionConfig(hydrateLuxuryProgressionConfig(payload.luxuryProgressionConfig));
+      setCloudCatalog(payload);
+      datasetRevisionRef.current = payload.datasetRevision;
+      setCatalogSync({
+        mode,
+        datasetRevision: payload.datasetRevision,
+        updatedAt: payload.updatedAt,
+        lastBackupAt: payload.lastBackupAt,
+        message: mode === 'cloud'
+          ? 'Đã đồng bộ với Cloudflare'
+          : 'Đang dùng dữ liệu offline gần nhất',
+      });
+      try {
+        const hydrated = await hydrateCloudCatalogImages(payload);
+        if (!active) return;
+        setCustomCards(hydrated.customCards);
+        setEditedCards(hydrated.editedCards);
+      } catch (error) {
+        if (!active) return;
+        setCatalogSync((current) => ({
+          ...current,
+          message: error instanceof Error
+            ? `Catalog đã tải; một số ảnh đang thiếu: ${error.message}`
+            : 'Catalog đã tải; một số ảnh chưa thể đồng bộ.',
+        }));
+      }
+    };
+
+    const bootstrapCatalog = async () => {
+      let cached: CatalogPayload | null = null;
+      try {
+        cached = await catalogCache.get();
+      } catch {
+        // A broken browser cache must never prevent the cloud copy from loading.
+      }
+      try {
+        const remote = await fetchCloudCatalog();
+        await catalogCache.put(remote);
+        await applyCatalog(remote, 'cloud');
+      } catch (error) {
+        if (!active) return;
+        if (cached) {
+          try {
+            await applyCatalog(cached, 'offline');
+            return;
+          } catch {
+            // Fall through to the legacy local copy below.
+          }
+        }
+        setCatalogSync({
+          mode: 'local',
+          datasetRevision: 0,
+          message: error instanceof Error
+            ? `${error.message}. Đang dùng dữ liệu cục bộ trên thiết bị.`
+            : 'Đang dùng dữ liệu cục bộ trên thiết bị.',
+        });
+      }
+    };
+    void bootstrapCatalog();
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (catalogSync.mode === 'draft') return;
+    let active = true;
+    let running = false;
+    const refreshCatalog = async () => {
+      if (!active || running || document.visibilityState === 'hidden') return;
+      running = true;
+      try {
+        const remote = await fetchCloudCatalogIfChanged(datasetRevisionRef.current);
+        if (!active || !remote || remote.datasetRevision <= datasetRevisionRef.current) return;
+        await catalogCache.put(remote);
+        if (!active) return;
+        setCustomCards(remote.customCards);
+        setEditedCards(remote.editedCards);
+        setDeletedSystemCardIds(remote.deletedSystemCardIds);
+        setProgressionConfig(hydrateProgressionConfig(remote.progressionConfig));
+        setLuxuryProgressionConfig(hydrateLuxuryProgressionConfig(remote.luxuryProgressionConfig));
+        setCloudCatalog(remote);
+        datasetRevisionRef.current = remote.datasetRevision;
+        setCatalogSync({
+          mode: 'cloud',
+          datasetRevision: remote.datasetRevision,
+          updatedAt: remote.updatedAt,
+          lastBackupAt: remote.lastBackupAt,
+          message: 'Đã nhận bản cập nhật thẻ mới',
+        });
+        const hydrated = await hydrateCloudCatalogImages(remote);
+        if (!active) return;
+        setCustomCards(hydrated.customCards);
+        setEditedCards(hydrated.editedCards);
+      } catch {
+        // A transient poll failure must not replace or clear the last valid catalog.
+      } finally {
+        running = false;
+      }
+    };
+    const onVisibility = () => { if (document.visibilityState === 'visible') void refreshCatalog(); };
+    const interval = window.setInterval(() => void refreshCatalog(), 10_000);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [catalogSync.mode]);
 
   // Combine built-in cards + custom cards
   const editedCardMap = new Map<string, CardItem>(
@@ -277,18 +374,60 @@ export default function App() {
     (card) => getCardDeck(card) === 'position' || settings.levels.includes(card.level),
   );
 
-  // Save changes to localStorage
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_CARDS, JSON.stringify(customCards));
-    } catch {}
-  }, [customCards]);
+    let active = true;
+    const hydrateImages = async () => {
+      const [customResult, editedResult] = await Promise.all([
+        hydrateCardImages(customCards),
+        hydrateCardImages(editedCards),
+      ]);
+      if (!active) return;
+      const applyImages = (current: CardItem[], hydrated: CardItem[]) => {
+        const byId = new Map(hydrated.map((card) => [card.id, card.customImage] as const));
+        return current.map((card) => byId.get(card.id) ? { ...card, customImage: byId.get(card.id) } : card);
+      };
+      setCustomCards((current) => applyImages(current, customResult.cards));
+      setEditedCards((current) => applyImages(current, editedResult.cards));
+      const errors = [...customResult.errors, ...editedResult.errors];
+      if (errors.length) setStorageError(errors[0]);
+    };
+    void hydrateImages();
+    return () => { active = false; };
+    // Only hydrate the metadata loaded during initial render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save changes to localStorage. Image bytes are committed to IndexedDB first;
+  // failed migrations retain the legacy base64 value so data is never lost.
+  useEffect(() => {
+    if (catalogSync.mode !== 'local' && catalogSync.mode !== 'draft') return;
+    let active = true;
+    void prepareCardsForStorage(customCards).then((result) => {
+      if (!active) return;
+      try {
+        localStorage.setItem(STORAGE_KEYS.CUSTOM_CARDS, JSON.stringify(result.cards));
+        if (result.errors.length) setStorageError(result.errors[0]);
+      } catch {
+        setStorageError('Không đủ dung lượng để lưu bài riêng. Ảnh và nội dung hiện vẫn được giữ trong phiên này.');
+      }
+    });
+    return () => { active = false; };
+  }, [customCards, catalogSync.mode]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.EDITED_CARDS, JSON.stringify(editedCards));
-    } catch {}
-  }, [editedCards]);
+    if (catalogSync.mode !== 'local' && catalogSync.mode !== 'draft') return;
+    let active = true;
+    void prepareCardsForStorage(editedCards).then((result) => {
+      if (!active) return;
+      try {
+        localStorage.setItem(STORAGE_KEYS.EDITED_CARDS, JSON.stringify(result.cards));
+        if (result.errors.length) setStorageError(result.errors[0]);
+      } catch {
+        setStorageError('Không đủ dung lượng để lưu chỉnh sửa thẻ. Dữ liệu hiện vẫn được giữ trong phiên này.');
+      }
+    });
+    return () => { active = false; };
+  }, [editedCards, catalogSync.mode]);
 
   useEffect(() => {
     try {
@@ -298,21 +437,16 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.APP_MODE, appMode);
-    } catch {}
-  }, [appMode]);
-
-  useEffect(() => {
-    try {
       localStorage.setItem(STORAGE_KEYS.UNLOCKED_CARDS, JSON.stringify(unlockedCardIds));
     } catch {}
   }, [unlockedCardIds]);
 
   useEffect(() => {
+    if (catalogSync.mode !== 'local' && catalogSync.mode !== 'draft') return;
     try {
       localStorage.setItem(STORAGE_KEYS.DELETED_SYSTEM_CARDS, JSON.stringify(deletedSystemCardIds));
     } catch {}
-  }, [deletedSystemCardIds]);
+  }, [deletedSystemCardIds, catalogSync.mode]);
 
   useEffect(() => {
     try {
@@ -328,10 +462,18 @@ export default function App() {
   }, [settings]);
 
   useEffect(() => {
+    if (catalogSync.mode !== 'local' && catalogSync.mode !== 'draft') return;
     try {
       localStorage.setItem(STORAGE_KEYS.PROGRESSION_CONFIG, JSON.stringify(progressionConfig));
     } catch {}
-  }, [progressionConfig]);
+  }, [progressionConfig, catalogSync.mode]);
+
+  useEffect(() => {
+    if (catalogSync.mode !== 'local' && catalogSync.mode !== 'draft') return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.LUXURY_PROGRESSION_CONFIG, JSON.stringify(luxuryProgressionConfig));
+    } catch {}
+  }, [luxuryProgressionConfig, catalogSync.mode]);
 
   // Favorite toggle
   const handleToggleFavorite = (cardId: string) => {
@@ -340,9 +482,52 @@ export default function App() {
     );
   };
 
+  const queueCloudMutation = (
+    label: string,
+    mutation: (expectedRevision: number) => Promise<{ datasetRevision: number }>,
+  ) => {
+    if (catalogSync.mode !== 'cloud') {
+      setCatalogSync((current) => ({
+        ...current,
+        mode: 'draft',
+        message: `${label} đang được giữ dưới dạng bản nháp trên thiết bị. Hãy kết nối lại rồi thử lưu.`,
+      }));
+      return;
+    }
+    setCatalogSync((current) => ({ ...current, message: `${label}…` }));
+    mutationQueueRef.current = mutationQueueRef.current.then(async () => {
+      const result = await mutation(datasetRevisionRef.current);
+      datasetRevisionRef.current = result.datasetRevision;
+      const remote = await fetchCloudCatalog();
+      await catalogCache.put(remote);
+      setCloudCatalog(remote);
+      datasetRevisionRef.current = remote.datasetRevision;
+      setCatalogSync({
+        mode: 'cloud',
+        datasetRevision: remote.datasetRevision,
+        updatedAt: remote.updatedAt,
+        lastBackupAt: remote.lastBackupAt,
+        message: 'Đã lưu và đồng bộ với Cloudflare',
+      });
+    }).catch((error) => {
+      setCatalogSync((current) => ({
+        ...current,
+        mode: 'draft',
+        message: error instanceof Error
+          ? `${error.message} Bản chỉnh sửa vẫn còn trên thiết bị.`
+          : 'Không thể đồng bộ. Bản chỉnh sửa vẫn còn trên thiết bị.',
+      }));
+    });
+  };
+
   // Add custom card
   const handleAddCustomCard = (newCard: CardItem) => {
     setCustomCards((prev) => [newCard, ...prev]);
+    queueCloudMutation('Đang thêm thẻ', async (expectedRevision) => {
+      const result = await saveCloudCard(newCard, 'custom', expectedRevision);
+      setCustomCards((current) => current.map((card) => card.id === result.card.id ? result.card : card));
+      return result;
+    });
   };
 
   const handleUnlockCard = (cardId: string) => {
@@ -360,9 +545,17 @@ export default function App() {
     }
     setFavorites((current) => current.filter((id) => id !== cardId));
     setUnlockedCardIds((current) => current.filter((id) => id !== cardId));
+    if (card.customImageId) {
+      void browserCardImageStore.delete(card.customImageId).catch(() => {
+        setStorageError('Đã xóa lá bài nhưng chưa thể dọn ảnh cũ khỏi bộ nhớ trình duyệt.');
+      });
+    }
+    queueCloudMutation('Đang xóa thẻ', (expectedRevision) =>
+      deleteCloudCard(cardId, card.isCustom ? 'custom' : 'system', expectedRevision));
   };
 
   const openCollection = (returnScreen: 'intro' | 'game') => {
+    if (returnScreen === 'game' && gameNavigationLocked) return;
     setCollectionReturnScreen(returnScreen);
     setScreen('collection');
   };
@@ -383,71 +576,154 @@ export default function App() {
       positionTouched: boolean;
     },
   ) => {
+    if (updatedCard.deck === 'position' && updatedCard.position?.family === 'have_sex') {
+      updatedCard = { ...updatedCard };
+      delete updatedCard.clothingEffect;
+    }
     if (updatedCard.isCustom) {
       setCustomCards((prev) => prev.map((card) => card.id === updatedCard.id ? updatedCard : card));
+      queueCloudMutation('Đang lưu thẻ', async (expectedRevision) => {
+        const result = await saveCloudCard(updatedCard, 'custom', expectedRevision);
+        setCustomCards((current) => current.map((card) => card.id === result.card.id ? result.card : card));
+        return result;
+      });
       return;
     }
-    setEditedCards((prev) => {
-      const previousRawEdit = prev.find((card) => card.id === updatedCard.id);
-      const nextRawEdit = { ...updatedCard };
+    const previousRawEdit = editedCards.find((card) => card.id === updatedCard.id);
+    const nextRawEdit = { ...updatedCard };
 
-      if (illustrationTouched) {
-        nextRawEdit.illustrationOverride = true;
-      } else if (previousRawEdit?.illustrationOverride) {
-        nextRawEdit.illustrationOverride = true;
-        nextRawEdit.icon = previousRawEdit.icon;
-        nextRawEdit.customImage = previousRawEdit.customImage;
+    if (illustrationTouched) {
+      nextRawEdit.illustrationOverride = true;
+    } else if (previousRawEdit?.illustrationOverride) {
+      nextRawEdit.illustrationOverride = true;
+      nextRawEdit.icon = previousRawEdit.icon;
+      nextRawEdit.customImage = previousRawEdit.customImage;
+    } else {
+      // Keep inherited system artwork absent so later curated updates still flow through.
+      delete nextRawEdit.icon;
+      delete nextRawEdit.customImage;
+      delete nextRawEdit.customImageId;
+      delete nextRawEdit.illustrationOverride;
+    }
+
+    if (!clothingEffectTouched) {
+      if (previousRawEdit?.clothingEffect !== undefined) {
+        nextRawEdit.clothingEffect = previousRawEdit.clothingEffect;
       } else {
-        // Legacy edits copied the old built-in illustration into localStorage.
-        // Leave it absent so the latest curated system icon can flow through.
-        delete nextRawEdit.icon;
-        delete nextRawEdit.customImage;
-        delete nextRawEdit.illustrationOverride;
+        delete nextRawEdit.clothingEffect;
       }
+    }
 
-      if (!clothingEffectTouched) {
-        if (previousRawEdit?.clothingEffect !== undefined) {
-          nextRawEdit.clothingEffect = previousRawEdit.clothingEffect;
-        } else {
-          // The effect shown in the editor came from the built-in card. Keep the
-          // persisted field absent so future system metadata can still flow through.
-          delete nextRawEdit.clothingEffect;
-        }
+    if (!timerTouched) {
+      if (previousRawEdit && Object.prototype.hasOwnProperty.call(previousRawEdit, 'timerSeconds')) {
+        nextRawEdit.timerSeconds = previousRawEdit.timerSeconds;
+      } else {
+        delete nextRawEdit.timerSeconds;
       }
+    }
 
-      if (!timerTouched) {
-        if (
-          previousRawEdit &&
-          Object.prototype.hasOwnProperty.call(previousRawEdit, 'timerSeconds')
-        ) {
-          nextRawEdit.timerSeconds = previousRawEdit.timerSeconds;
-        } else {
-          // The effective value shown in the editor came from the built-in
-          // card. Keep it absent in storage so future curated values flow in.
-          delete nextRawEdit.timerSeconds;
-        }
+    if (!progressionTouched) {
+      if (previousRawEdit && Object.prototype.hasOwnProperty.call(previousRawEdit, 'progression')) {
+        nextRawEdit.progression = previousRawEdit.progression;
+      } else {
+        delete nextRawEdit.progression;
       }
+    }
 
-      if (!progressionTouched) {
-        if (previousRawEdit && Object.prototype.hasOwnProperty.call(previousRawEdit, 'progression')) {
-          nextRawEdit.progression = previousRawEdit.progression;
-        } else {
-          delete nextRawEdit.progression;
-        }
+    if (!positionTouched) {
+      if (previousRawEdit && Object.prototype.hasOwnProperty.call(previousRawEdit, 'position')) {
+        nextRawEdit.position = previousRawEdit.position;
+        nextRawEdit.deck = previousRawEdit.deck;
+      } else {
+        delete nextRawEdit.position;
+        delete nextRawEdit.deck;
       }
+    }
 
-      if (!positionTouched) {
-        if (previousRawEdit && Object.prototype.hasOwnProperty.call(previousRawEdit, 'position')) {
-          nextRawEdit.position = previousRawEdit.position;
-          nextRawEdit.deck = previousRawEdit.deck;
-        } else {
-          delete nextRawEdit.position;
-          delete nextRawEdit.deck;
-        }
-      }
-
-      return [nextRawEdit, ...prev.filter((card) => card.id !== updatedCard.id)];
+    setEditedCards((prev) => [nextRawEdit, ...prev.filter((card) => card.id !== updatedCard.id)]);
+    queueCloudMutation('Đang lưu chỉnh sửa thẻ', async (expectedRevision) => {
+      const result = await saveCloudCard(nextRawEdit, 'system_override', expectedRevision);
+      setEditedCards((current) => current.map((card) => card.id === result.card.id ? result.card : card));
+      return result;
     });
+  };
+
+  const handleProgressionConfigChange = (config: ProgressionConfig) => {
+    setProgressionConfig(config);
+    queueCloudMutation('Đang lưu cấu hình Tim hồng', (expectedRevision) =>
+      saveCloudConfig('progression', config, expectedRevision));
+  };
+
+  const handleLuxuryProgressionConfigChange = (config: LuxuryProgressionConfig) => {
+    setLuxuryProgressionConfig(config);
+    queueCloudMutation('Đang lưu cấu hình Tim Luxury', (expectedRevision) =>
+      saveCloudConfig('luxury_progression', config, expectedRevision));
+  };
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
+  };
+
+  const handleExportCatalog = async (): Promise<string> => {
+    const backup = await exportLocalCatalogZip({
+      schemaVersion: cloudCatalog?.schemaVersion,
+      datasetRevision: datasetRevisionRef.current,
+      customCards,
+      editedCards,
+      deletedSystemCardIds,
+      progressionConfig,
+      luxuryProgressionConfig,
+      cloudAssets: cloudCatalog?.assets,
+    });
+    downloadBlob(backup, `true-or-dare-r${datasetRevisionRef.current}.todbackup.zip`);
+    return `Đã xuất ${INITIAL_CARDS.length - deletedSystemCardIds.length + customCards.length} thẻ từ trạng thái hiện tại trên thiết bị.`;
+  };
+
+  const handleCreateCloudBackup = async (): Promise<string> => {
+    if (catalogSync.mode !== 'cloud') throw new Error('Cần kết nối cloud để tạo snapshot R2.');
+    const result = await createCloudBackup();
+    setCatalogSync((current) => ({
+      ...current,
+      lastBackupAt: new Date().toISOString(),
+      message: `Đã tạo snapshot ${result.id}`,
+    }));
+    return 'Đã tạo snapshot thủ công trên R2.';
+  };
+
+  const handleImportCatalog = async (file: File): Promise<string> => {
+    // A brand-new D1 catalog intentionally returns 503 until its first seed.
+    // Do not gate the bootstrap import on an already-connected catalog; the
+    // protected admin endpoint remains the source of truth for authorization.
+    const bundle = await readCatalogZip(file);
+    const dryRun = await importCloudBackup(bundle, { dryRun: true, replace: true });
+    const total = INITIAL_CARDS.length - dryRun.counts.deletedSystemCards + dryRun.counts.customCards;
+    if (!window.confirm(
+      `Dry-run hợp lệ: ${total} thẻ, ${dryRun.counts.assets} ảnh. Tiếp tục thay catalog hiện tại? Cloud sẽ tự tạo backup trước khi thay.`,
+    )) return 'Đã kiểm tra backup; chưa thay đổi dữ liệu cloud.';
+    await importCloudBackup(bundle, { dryRun: false, replace: true });
+    const remote = await fetchCloudCatalog();
+    await catalogCache.put(remote);
+    const hydrated = await hydrateCloudCatalogImages(remote);
+    setCustomCards(hydrated.customCards);
+    setEditedCards(hydrated.editedCards);
+    setDeletedSystemCardIds(hydrated.deletedSystemCardIds);
+    setProgressionConfig(hydrateProgressionConfig(hydrated.progressionConfig));
+    setLuxuryProgressionConfig(hydrateLuxuryProgressionConfig(hydrated.luxuryProgressionConfig));
+    setCloudCatalog(remote);
+    datasetRevisionRef.current = remote.datasetRevision;
+    setCatalogSync({
+      mode: 'cloud',
+      datasetRevision: remote.datasetRevision,
+      updatedAt: remote.updatedAt,
+      lastBackupAt: remote.lastBackupAt,
+      message: 'Đã phục hồi backup và đồng bộ catalog mới',
+    });
+    return `Đã phục hồi ${INITIAL_CARDS.length - remote.counts.deletedSystemCards + remote.counts.customCards} thẻ.`;
   };
 
   // Start game handler
@@ -458,14 +734,18 @@ export default function App() {
     setCurrentPlayerIndex(0);
     setCurrentRound(1);
     setOutfitStates([
-      createOutfitState(newSettings.outfits[0]),
-      createOutfitState(newSettings.outfits[1]),
+      createOutfitState(newSettings.outfits[0], 0),
+      createOutfitState(newSettings.outfits[1], 1),
     ]);
     setClothingRemovalEvents([]);
     setIntimacyPercent(0);
+    setLuxuryIntimacyPercent(0);
     setIntimacyEvents([]);
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
+    setSessionPositionRevealCount(0);
+    setGameEndReason(null);
+    setShowSummary(false);
     setScreen('game');
   };
 
@@ -482,17 +762,54 @@ export default function App() {
     setCurrentPlayerIndex(0);
     setCurrentRound(1);
     setOutfitStates([
-      createOutfitState(settings.outfits[0]),
-      createOutfitState(settings.outfits[1]),
+      createOutfitState(settings.outfits[0], 0),
+      createOutfitState(settings.outfits[1], 1),
     ]);
     setClothingRemovalEvents([]);
     setIntimacyPercent(0);
+    setLuxuryIntimacyPercent(0);
     setIntimacyEvents([]);
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
+    setSessionPositionRevealCount(0);
     setShowSummary(false);
+    setGameEndReason(null);
     setScreen('setup');
   };
+
+  const handleFinishGame = (reason: GameEndReason) => {
+    setGameEndReason(reason);
+    setShowSummary(true);
+  };
+
+  const handleReturnHome = () => {
+    setShowSummary(false);
+    setGameEndReason(null);
+    setScreen('intro');
+  };
+
+  const keepGameMounted = screen === 'game' || (screen === 'collection' && collectionReturnScreen === 'game');
+
+  if (appMode === 'player' && playerSession === null) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[#12090f] text-sm text-rose-200" role="status">
+        Đang kiểm tra phiên người chơi…
+      </div>
+    );
+  }
+
+  if (appMode === 'player' && !playerSession?.loggedIn) {
+    return (
+      <PlayerLoginScreen
+        initialError={playerSessionError}
+        onLogin={async (displayName) => {
+          const session = await loginPlayer(displayName);
+          setPlayerSession(session);
+          setPlayerSessionError(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="relative min-h-screen overflow-x-hidden">
@@ -504,7 +821,10 @@ export default function App() {
         {screen === 'intro' && (
           <IntroScreen
             mode={appMode}
-            onModeChange={setAppMode}
+            onModeChange={(mode) => {
+              if (mode === appMode) return;
+              window.location.assign(mode === 'developer' ? '/admin' : '/');
+            }}
             onStart={() => appMode === 'developer' ? openCollection('intro') : setScreen('setup')}
             onOpenCollection={() => openCollection('intro')}
             onOpenRules={() => setShowRules(true)}
@@ -522,8 +842,9 @@ export default function App() {
           />
         )}
 
-        {screen === 'game' && (
-          <GameTable
+        {keepGameMounted && (
+          <div hidden={screen !== 'game'} aria-hidden={screen !== 'game' || undefined}>
+            <GameTable
             player1={player1}
             player2={player2}
             currentPlayerIndex={currentPlayerIndex}
@@ -535,8 +856,13 @@ export default function App() {
             onToggleFavorite={handleToggleFavorite}
             onOpenCollection={() => openCollection('game')}
             onOpenRules={() => setShowRules(true)}
-            onOpenSummary={() => setShowSummary(true)}
-            onFinishGame={() => setShowSummary(true)}
+            onOpenSummary={() => {
+              setGameEndReason(null);
+              setShowSummary(true);
+            }}
+            onFinishGame={handleFinishGame}
+            isSuspended={screen !== 'game' || showRules || showSummary}
+            onNavigationLockChange={setGameNavigationLocked}
             onUpdatePlayers={(p1, p2) => {
               setPlayer1(p1);
               setPlayer2(p2);
@@ -549,21 +875,27 @@ export default function App() {
             onUnlockCard={handleUnlockCard}
             onNextTurn={handleNextTurn}
             progressionConfig={progressionConfig}
+            luxuryProgressionConfig={luxuryProgressionConfig}
             intimacyPercent={intimacyPercent}
+            luxuryIntimacyPercent={luxuryIntimacyPercent}
             journeyPhase={journeyPhase}
             sessionPositionCardIds={sessionPositionCardIds}
             onIntimacyPercentChange={setIntimacyPercent}
+            onLuxuryIntimacyPercentChange={setLuxuryIntimacyPercent}
             onAddIntimacyEvents={(events) => setIntimacyEvents((current) => [...current, ...events])}
             onJourneyPhaseChange={setJourneyPhase}
             onRevealPositionCard={(cardId) => {
-              setSessionPositionCardIds((current) => current.includes(cardId) ? current : [...current, cardId]);
               handleUnlockCard(cardId);
+              setSessionPositionRevealCount((count) => count + 1);
             }}
+            onSessionPositionCardIdsChange={setSessionPositionCardIds}
           />
+          </div>
         )}
 
         {screen === 'collection' && (
-          <CardCollection
+          <Suspense fallback={<div className="grid min-h-screen place-items-center text-sm text-rose-200">Đang mở Bộ sưu tập…</div>}>
+            <CardCollection
             cards={allCards}
             mode={appMode}
             unlockedCardIds={unlockedCardIds}
@@ -574,9 +906,17 @@ export default function App() {
             onUpdateCard={handleUpdateCard}
             onDeleteCard={handleDeleteCard}
             progressionConfig={progressionConfig}
-            onProgressionConfigChange={setProgressionConfig}
+            onProgressionConfigChange={handleProgressionConfigChange}
+            luxuryProgressionConfig={luxuryProgressionConfig}
+            onLuxuryProgressionConfigChange={handleLuxuryProgressionConfigChange}
+            catalogSync={catalogSync}
+            playerStats={adminPlayerStats}
+            onExportCatalog={handleExportCatalog}
+            onImportCatalog={handleImportCatalog}
+            onCreateCloudBackup={handleCreateCloudBackup}
             onBack={() => setScreen(collectionReturnScreen)}
           />
+          </Suspense>
         )}
       </main>
 
@@ -590,17 +930,30 @@ export default function App() {
           outfitStates={outfitStates}
           removalEvents={clothingRemovalEvents}
           intimacyPercent={intimacyPercent}
+          luxuryIntimacyPercent={luxuryIntimacyPercent}
           intimacyEvents={intimacyEvents}
-          positionCardsRevealed={sessionPositionCardIds.length}
+          positionCardsRevealed={sessionPositionRevealCount}
           journeyPhase={journeyPhase}
           onRestart={handleRestartSession}
-          onClose={() => setShowSummary(false)}
+          onClose={() => {
+            if (!gameEndReason) setShowSummary(false);
+          }}
+          onHome={handleReturnHome}
+          terminal={gameEndReason !== null}
+          endReason={gameEndReason}
         />
       )}
 
       <AnimatePresence>
         {showRules && <RulesModal onClose={() => setShowRules(false)} />}
       </AnimatePresence>
+
+      {storageError && (
+        <div role="alert" className="fixed bottom-4 left-1/2 z-[90] flex w-[min(92vw,34rem)] -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border border-rose-300/35 bg-[#1a0b11]/95 px-4 py-3 text-xs text-rose-100 shadow-2xl">
+          <span>{storageError}</span>
+          <button type="button" onClick={() => setStorageError(null)} className="min-h-10 shrink-0 rounded-full border border-white/15 px-3 font-semibold">Đóng</button>
+        </div>
+      )}
     </div>
   );
 }
