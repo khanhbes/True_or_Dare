@@ -210,7 +210,7 @@ export const GameCard: React.FC<GameCardProps> = ({
         {/* Bottom: Optional timer */}
         <div className="mt-auto pt-2">
           <div style={{ fontSize: `${9 * textScale}px` }} className="mb-1.5 flex items-center justify-center gap-1.5 text-neutral-400">
-            <span className="rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-2 py-0.5 text-amber-200">
+            <span style={{ fontSize: `${11 * textScale}px` }} className="rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-2 py-0.5 font-semibold text-amber-200">
               {isPosition ? derivePositionDifficultyStars(card) : deriveDifficultyStars(card)}★
             </span>
             <span className="rounded-full border border-white/10 bg-white/[0.035] px-2 py-0.5">

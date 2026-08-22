@@ -12,6 +12,7 @@ import {
   PositionDifficultyStars,
   ProgressionBand,
   ProgressionConfig,
+  TurnAudience,
 } from '../types';
 import { isCardEligibleForOutfits } from './cardSelection';
 import { getOutfitStage } from './wardrobe';
@@ -72,6 +73,7 @@ export const DEFAULT_LUXURY_PROGRESSION_CONFIG: Readonly<LuxuryProgressionConfig
     { minPercent: 80, maxPercent: 99, starWeights: positionWeights({ 5: 5, 6: 10, 7: 20, 8: 25, 9: 35, 10: 5 }) },
   ],
   starGains: { 1: 6, 2: 7, 3: 8, 4: 9, 5: 10, 6: 11, 7: 12, 8: 13, 9: 14, 10: 0 },
+  finalCardChance: 5,
 };
 
 const cloneBand = (band: ProgressionBand): ProgressionBand => ({
@@ -144,6 +146,7 @@ export const cloneLuxuryProgressionConfig = (
     starWeights: { ...band.starWeights },
   })),
   starGains: { ...config.starGains },
+  finalCardChance: config.finalCardChance,
 });
 
 export const hydrateLuxuryProgressionConfig = (value: unknown): LuxuryProgressionConfig => {
@@ -165,7 +168,11 @@ export const hydrateLuxuryProgressionConfig = (value: unknown): LuxuryProgressio
     star,
     boundedPercentage(savedGains[String(star)], fallback.starGains[star]),
   ])) as Record<PositionDifficultyStars, number>;
-  return { bands, starGains };
+  return {
+    bands,
+    starGains,
+    finalCardChance: boundedPercentage(value.finalCardChance, fallback.finalCardChance),
+  };
 };
 
 export const getCardDeck = (card: CardItem): 'standard' | 'position' =>
@@ -212,8 +219,20 @@ export const calculateCompletedPositionLuxury = (
   return { nextPercent, baseApplied: totalApplied, removalApplied: 0, totalApplied };
 };
 
-export const getCardAudience = (card: CardItem): CardAudience =>
-  card.progression?.audience ?? 'both';
+const migrateLegacyAudience = (audience: CardAudience | undefined): TurnAudience => {
+  if (audience === 'male' || audience === 'female') return audience;
+  return 'both';
+};
+
+export const getCardTurnAudience = (card: CardItem): TurnAudience => {
+  if (getCardDeck(card) === 'position') {
+    return card.position?.turnAudience ?? migrateLegacyAudience(card.position?.recipient);
+  }
+  return card.progression?.turnAudience ?? migrateLegacyAudience(card.progression?.audience);
+};
+
+/** @deprecated Use getCardTurnAudience. */
+export const getCardAudience = (card: CardItem): CardAudience => getCardTurnAudience(card);
 
 export const getCardIntimacyGain = (
   card: CardItem,
@@ -271,16 +290,14 @@ export const isLuxuryProgressionConfigPlayable = (
   (star) => star < 10 && config.starGains[star] > 0,
 );
 
-const audienceMatches = (audience: CardAudience, actorIndex: PlayerIndex): boolean =>
-  audience === 'both' || audience === 'current' || audience === 'opponent' ||
+const audienceMatches = (audience: TurnAudience, actorIndex: PlayerIndex): boolean =>
+  audience === 'both' ||
   (audience === 'male' ? actorIndex === 0 : actorIndex === 1);
 
 export const getStandardCardPerformerIndex = (
   card: CardItem,
   currentPlayerIndex: PlayerIndex,
-): PlayerIndex => getCardDeck(card) === 'standard' && getCardAudience(card) === 'opponent'
-  ? (currentPlayerIndex === 0 ? 1 : 0)
-  : currentPlayerIndex;
+): PlayerIndex => currentPlayerIndex;
 
 const stagesMatch = (
   allowedStages: readonly OutfitStage[] | undefined,
@@ -293,7 +310,7 @@ export const isStandardJourneyCardEligible = (
   outfits: readonly [OutfitState, OutfitState],
 ): boolean => {
   if (getCardDeck(card) !== 'standard') return false;
-  if (!audienceMatches(getCardAudience(card), actorIndex)) return false;
+  if (!audienceMatches(getCardTurnAudience(card), actorIndex)) return false;
   const partnerIndex: PlayerIndex = actorIndex === 0 ? 1 : 0;
   if (!stagesMatch(card.progression?.actorStages, outfits[actorIndex])) return false;
   if (!stagesMatch(card.progression?.partnerStages, outfits[partnerIndex])) return false;
@@ -454,18 +471,34 @@ export const getJourneyDrawProbabilities = (
   );
 };
 
-export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCardSelectionResult => {
-  const random = options.random ?? Math.random;
-  const { eligible, pool, candidates, didResetPool } = getJourneyPool(options);
-  const availableTypes = STANDARD_CARD_TYPES.filter((type) =>
-    eligible.some((card) => card.type === type),
-  );
+export const getJourneyAvailableTypes = (
+  options: SelectJourneyCardOptions,
+): CardType[] => {
+  const { candidates } = getJourneyPool(options);
   const probabilities = probabilitiesForCandidates(
     candidates,
     options.intimacyPercent,
     options.config,
     options.preferredType ?? null,
     options.difficultyBoost ?? false,
+  );
+  return STANDARD_CARD_TYPES.filter((type) =>
+    probabilities.types[type] > 0 && candidates.some((card) => card.type === type),
+  );
+};
+
+export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCardSelectionResult => {
+  const random = options.random ?? Math.random;
+  const { pool, candidates, didResetPool } = getJourneyPool(options);
+  const probabilities = probabilitiesForCandidates(
+    candidates,
+    options.intimacyPercent,
+    options.config,
+    options.preferredType ?? null,
+    options.difficultyBoost ?? false,
+  );
+  const availableTypes = STANDARD_CARD_TYPES.filter((type) =>
+    probabilities.types[type] > 0 && candidates.some((card) => card.type === type),
   );
   if (candidates.length === 0) {
     return {
@@ -535,6 +568,8 @@ export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCar
 
 export interface LuxuryDrawProbabilities {
   stars: Record<PositionDifficultyStars, number>;
+  /** Absolute probability of drawing a Have Sex card on this draw. */
+  finalCardChance: number;
 }
 
 export interface SelectLuxuryPositionCardOptions {
@@ -556,6 +591,9 @@ export interface LuxuryPositionSelectionResult {
   errorCode?: 'no_cards' | 'no_positive_weight' | 'missing_final' | 'no_progress_gain';
 }
 
+const positionRecipientMatches = (card: CardItem, actorIndex: PlayerIndex): boolean =>
+  audienceMatches(getCardTurnAudience(card), actorIndex);
+
 export const getLuxuryProgressionBand = (
   percent: number,
   config: LuxuryProgressionConfig,
@@ -568,51 +606,73 @@ export const getLuxuryProgressionBand = (
 
 const luxuryProbabilitiesForCandidates = (
   nonFinalCandidates: readonly CardItem[],
-  hasFinal: boolean,
+  finalCandidates: readonly CardItem[],
   percent: number,
   config: LuxuryProgressionConfig,
 ): LuxuryDrawProbabilities => {
   const raw = positionWeights({});
   if (percent >= 100) {
-    if (hasFinal) raw[10] = 1;
-    return { stars: normalize(POSITION_DIFFICULTY_STARS, raw) };
+    return {
+      stars: raw,
+      finalCardChance: finalCandidates.length > 0 ? 1 : 0,
+    };
   }
   const band = getLuxuryProgressionBand(percent, config);
   const nonFinalStars = POSITION_DIFFICULTY_STARS.filter((star) =>
-    star < 10 && nonFinalCandidates.some((card) => derivePositionDifficultyStars(card) === star),
+    nonFinalCandidates.some((card) => derivePositionDifficultyStars(card) === star),
   );
-  const configured = normalize(POSITION_DIFFICULTY_STARS, band.starWeights);
-  const finalProbability = percent >= 80 && hasFinal ? configured[10] : 0;
   const nonFinalRaw = positionWeights({});
   for (const star of nonFinalStars) nonFinalRaw[star] = band.starWeights[star];
-  const normalizedNonFinal = normalize(POSITION_DIFFICULTY_STARS, nonFinalRaw);
-  for (const star of nonFinalStars) {
-    raw[star] = normalizedNonFinal[star] * (1 - finalProbability);
-  }
-  raw[10] = finalProbability;
-  return { stars: raw };
+  const stars = normalize(POSITION_DIFFICULTY_STARS, nonFinalRaw);
+  const finalHasPositiveWeight = finalCandidates.some(
+    (card) => band.starWeights[derivePositionDifficultyStars(card)] > 0,
+  );
+  const finalCardChance = percent >= 80 && finalHasPositiveWeight
+    ? config.finalCardChance / 100
+    : 0;
+  return { stars, finalCardChance };
+};
+
+const choosePositionCardByStarWeight = (
+  cards: readonly CardItem[],
+  band: LuxuryProgressionBand,
+  random: () => number,
+): CardItem | null => {
+  const availableStars = POSITION_DIFFICULTY_STARS.filter((star) =>
+    band.starWeights[star] > 0 && cards.some((card) => derivePositionDifficultyStars(card) === star),
+  );
+  const weights = normalize(POSITION_DIFFICULTY_STARS, band.starWeights);
+  const selectedStar = chooseWeighted(availableStars, weights, random);
+  if (!selectedStar) return null;
+  const pool = cards.filter((card) => derivePositionDifficultyStars(card) === selectedStar);
+  return pool[Math.floor(safeRandom(random) * pool.length)] ?? null;
 };
 
 export const selectLuxuryPositionCard = (
   options: SelectLuxuryPositionCardOptions,
 ): LuxuryPositionSelectionResult => {
   const random = options.random ?? Math.random;
+  const outfitsReady = options.outfits.every((outfit) => getOutfitStage(outfit) === 'empty');
   const positionCards = options.cards.filter((card) =>
+    outfitsReady &&
     getCardDeck(card) === 'position' &&
     card.position &&
+    positionRecipientMatches(card, options.actorIndex) &&
     isCardEligibleForOutfits(card, options.actorIndex, options.outfits),
   );
   const finals = positionCards.filter((card) => card.position?.family === 'have_sex');
   const nonFinalEligible = positionCards.filter((card) => card.position?.family !== 'have_sex');
+  const finalBand = getLuxuryProgressionBand(99, options.config);
   if (options.luxuryPercent >= 100) {
-    const probabilities = luxuryProbabilitiesForCandidates([], finals.length > 0, 100, options.config);
+    const probabilities = luxuryProbabilitiesForCandidates([], finals, 100, options.config);
+    const finalCard = choosePositionCardByStarWeight(finals, finalBand, random);
     return {
-      card: finals.length > 0 ? finals[Math.floor(safeRandom(random) * finals.length)] : null,
+      card: finalCard,
       nextUsedCardIds: [...new Set(options.usedCardIds)],
       didResetPool: false,
       probabilities,
       missingFinalCard: finals.length === 0,
-      errorCode: finals.length === 0 ? 'missing_final' : undefined,
+      errorCode: finals.length === 0 ? 'missing_final' : finalCard ? undefined : 'no_positive_weight',
     };
   }
   const used = new Set(options.usedCardIds);
@@ -621,7 +681,7 @@ export const selectLuxuryPositionCard = (
   if (didResetPool) candidates = [...nonFinalEligible];
   const probabilities = luxuryProbabilitiesForCandidates(
     candidates,
-    finals.length > 0,
+    finals,
     options.luxuryPercent,
     options.config,
   );
@@ -635,9 +695,20 @@ export const selectLuxuryPositionCard = (
       errorCode: 'no_progress_gain',
     };
   }
-  if (options.luxuryPercent >= 80 && finals.length > 0 && safeRandom(random) < probabilities.stars[10]) {
+  if (options.luxuryPercent >= 80 && finals.length > 0 && safeRandom(random) < probabilities.finalCardChance) {
+    const finalCard = choosePositionCardByStarWeight(finals, getLuxuryProgressionBand(options.luxuryPercent, options.config), random);
+    if (!finalCard) {
+      return {
+        card: null,
+        nextUsedCardIds: [...new Set(options.usedCardIds)],
+        didResetPool: false,
+        probabilities,
+        missingFinalCard: false,
+        errorCode: 'no_positive_weight',
+      };
+    }
     return {
-      card: finals[Math.floor(safeRandom(random) * finals.length)],
+      card: finalCard,
       nextUsedCardIds: [...new Set(options.usedCardIds)],
       didResetPool: false,
       probabilities,
@@ -645,7 +716,7 @@ export const selectLuxuryPositionCard = (
     };
   }
   const availableStars = POSITION_DIFFICULTY_STARS.filter(
-    (star) => star < 10 && probabilities.stars[star] > 0,
+    (star) => probabilities.stars[star] > 0,
   );
   if (candidates.length === 0) {
     return {

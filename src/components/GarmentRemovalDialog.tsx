@@ -8,7 +8,7 @@ export interface GarmentRemovalDialogProps {
   open?: boolean;
   targetName: string;
   outfitState: OutfitState;
-  source: 'card' | 'penalty';
+  source: 'card' | 'penalty' | 'preparation';
   onConfirm: (slot: GarmentSlot) => void;
   onCancel: () => void;
   onContinueWithoutRemoval?: () => void;
@@ -93,7 +93,7 @@ export const GarmentRemovalDialog: React.FC<GarmentRemovalDialogProps> = ({
 
   if (!open) return null;
   const hasEligibleGarment = eligibleSlots.length > 0;
-  const sourceLabel = source === 'card' ? 'Thẻ bài' : 'Luật phạt';
+  const sourceLabel = source === 'card' ? 'Thẻ bài' : source === 'penalty' ? 'Luật phạt' : 'Chuẩn bị Tư thế';
 
   return (
     <div className="garment-dialog" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onCancel()}>

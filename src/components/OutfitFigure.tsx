@@ -295,6 +295,24 @@ const FemaleBra = ({ garment }: { garment: GarmentConfig }) => {
   );
 };
 
+/** Geometry fitted to the male torso when a bra is transferred during a swap. */
+const MaleReceivedBra = ({ garment }: { garment: GarmentConfig }) => (
+  <>
+    <path
+      d="M76 139c18-7 50-7 68 0l2 28c-19 8-53 8-72 0Z"
+      fill={garment.color}
+    />
+    <path
+      d="m82 140 8-25m48 25-8-25M77 162c20 7 48 7 68 0M110 138v31"
+      fill="none"
+      stroke="#fff"
+      strokeLinecap="round"
+      strokeOpacity=".46"
+      strokeWidth="2.2"
+    />
+  </>
+);
+
 const FemaleUnderwear = ({ garment }: { garment: GarmentConfig }) => {
   if (garment.styleId === 'high_waist') {
     return (
@@ -323,7 +341,9 @@ const FemaleUnderwear = ({ garment }: { garment: GarmentConfig }) => {
 const GarmentArtwork = ({ presentation, slot, garment }: { presentation: PlayerPresentation; slot: GarmentSlot; garment: GarmentConfig }) => {
   if (slot === 'shirt') return presentation === 'male' ? <MaleShirt garment={garment} /> : <FemaleShirt garment={garment} />;
   if (slot === 'pants') return presentation === 'male' ? <MalePants garment={garment} /> : <FemalePants garment={garment} />;
-  if (slot === 'bra') return <FemaleBra garment={garment} />;
+  if (slot === 'bra') return presentation === 'male'
+    ? <MaleReceivedBra garment={garment} />
+    : <FemaleBra garment={garment} />;
   return presentation === 'male' ? <MaleUnderwear garment={garment} /> : <FemaleUnderwear garment={garment} />;
 };
 

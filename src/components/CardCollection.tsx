@@ -26,7 +26,7 @@ import {
   DatabaseBackup,
 } from 'lucide-react';
 import {
-  CardAudience,
+  TurnAudience,
   CardDeck,
   CardItem,
   CardLevel,
@@ -36,7 +36,6 @@ import {
   OutfitStage,
   PositionFamily,
   PositionRarity,
-  PositionRecipient,
   ProgressionConfig,
   LuxuryProgressionConfig,
   PositionDifficultyStars,
@@ -45,7 +44,7 @@ import { soundEngine } from '../utils/audio';
 import { GameCard } from './GameCard';
 import { CARD_ICON_NAMES, autoAssignIcon, getCardIcon } from './CardIcons';
 import { ProgressionConfigModal } from './ProgressionConfigModal';
-import { deriveDifficultyStars, derivePositionDifficultyStars, getCardAudience, getCardDeck, POSITION_DIFFICULTY_STARS } from '../utils/progression';
+import { deriveDifficultyStars, derivePositionDifficultyStars, getCardDeck, getCardTurnAudience, POSITION_DIFFICULTY_STARS } from '../utils/progression';
 import { compareCollectionCards } from '../utils/cardOrdering';
 import type { CatalogSyncStatus } from '../utils/cloudCatalog';
 import type { AdminPlayerStats } from '../utils/playerSession';
@@ -56,8 +55,8 @@ export interface CardCollectionProps {
   cards: CardItem[];
   favorites: string[];
   onToggleFavorite: (cardId: string) => void;
-  onAddCustomCard: (newCard: CardItem) => void;
-  onUpdateCard: (
+  onAddCustomCard?: (newCard: CardItem) => void;
+  onUpdateCard?: (
     card: CardItem,
     metadata: {
       clothingEffectTouched: boolean;
@@ -76,9 +75,9 @@ export interface CardCollectionProps {
   /** Keeps the back action accurate when the collection is opened mid-game. */
   backDestination?: 'home' | 'game';
   progressionConfig: ProgressionConfig;
-  onProgressionConfigChange: (config: ProgressionConfig) => void;
+  onProgressionConfigChange?: (config: ProgressionConfig) => void;
   luxuryProgressionConfig: LuxuryProgressionConfig;
-  onLuxuryProgressionConfigChange: (config: LuxuryProgressionConfig) => void;
+  onLuxuryProgressionConfigChange?: (config: LuxuryProgressionConfig) => void;
   catalogSync?: CatalogSyncStatus;
   playerStats?: AdminPlayerStats | null;
   onExportCatalog?: () => Promise<string>;
@@ -93,7 +92,7 @@ type StageSelection = 'any' | OutfitStage;
 type CardTimerMode = 'inherit' | 'disabled' | 'custom';
 
 const CARD_TIMER_PRESETS = [10, 15, 30, 45, 60] as const;
-const DEFAULT_CARD_TIMER_SECONDS = 30;
+const DEFAULT_CARD_TIMER_SECONDS = 60;
 const MAX_CARD_TIMER_SECONDS = 3600;
 
 interface LockedCollectionCardProps {
@@ -354,7 +353,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [showProgressionConfig, setShowProgressionConfig] = useState(false);
   const [deckFilter, setDeckFilter] = useState<'all' | CardDeck>('all');
   const [starFilter, setStarFilter] = useState<'all' | PositionDifficultyStars>('all');
-  const [audienceFilter, setAudienceFilter] = useState<'all' | CardAudience>('all');
+  const [audienceFilter, setAudienceFilter] = useState<'all' | TurnAudience>('all');
   const [backupBusy, setBackupBusy] = useState(false);
   const [backupMessage, setBackupMessage] = useState('');
   const backupInputRef = useRef<HTMLInputElement>(null);
@@ -375,14 +374,14 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [timerTouched, setTimerTouched] = useState(false);
   const [customDeck, setCustomDeck] = useState<CardDeck>('standard');
   const [customStars, setCustomStars] = useState<PositionDifficultyStars>(1);
-  const [customAudience, setCustomAudience] = useState<CardAudience>('both');
+  const [customAudience, setCustomAudience] = useState<TurnAudience>('both');
   const [customGainEnabled, setCustomGainEnabled] = useState(false);
   const [customGain, setCustomGain] = useState('4');
   const [customActorStage, setCustomActorStage] = useState<StageSelection>('any');
   const [customPartnerStage, setCustomPartnerStage] = useState<StageSelection>('any');
   const [customPositionFamily, setCustomPositionFamily] = useState<PositionFamily>('oral');
   const [customPositionLabel, setCustomPositionLabel] = useState('');
-  const [customPositionRecipient, setCustomPositionRecipient] = useState<PositionRecipient>('both');
+  const [customPositionRecipient, setCustomPositionRecipient] = useState<TurnAudience>('both');
   const [customPositionOrder, setCustomPositionOrder] = useState<1 | 2 | 3 | 4>(1);
   const [customPositionRarity, setCustomPositionRarity] = useState<PositionRarity>('luxury');
   const [progressionTouched, setProgressionTouched] = useState(false);
@@ -557,7 +556,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       if (audienceFilter === 'all') return true;
       return getCardDeck(card) === 'position'
         ? card.position?.recipient === audienceFilter
-        : getCardAudience(card) === audienceFilter;
+        : getCardTurnAudience(card) === audienceFilter;
     })
     .sort(compareCollectionCards);
 
@@ -782,7 +781,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setTimerTouched(false);
     setCustomDeck(cardDeck);
     setCustomStars(cardDeck === 'position' ? derivePositionDifficultyStars(card) : deriveDifficultyStars(card));
-    setCustomAudience(getCardAudience(card));
+    setCustomAudience(getCardTurnAudience(card));
     const existingGain = cardDeck === 'position'
       ? card.position?.luxuryGain
       : card.progression?.intimacyGain;
@@ -792,7 +791,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     setCustomPartnerStage(card.progression?.partnerStages?.[0] ?? 'any');
     setCustomPositionFamily(card.position?.family ?? 'oral');
     setCustomPositionLabel(card.position?.customLabel ?? '');
-    setCustomPositionRecipient(card.position?.recipient ?? 'both');
+    setCustomPositionRecipient(getCardTurnAudience(card));
     setCustomPositionOrder(card.position?.orderGroup ?? 1);
     setCustomPositionRarity(card.position?.rarity ?? 'luxury');
     setProgressionTouched(false);
@@ -839,7 +838,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       deck: customDeck,
       progression: {
         difficultyStars: Math.min(customStars, 5) as DifficultyStars,
-        audience: customDeck === 'position' ? 'both' : customAudience,
+        turnAudience: customDeck === 'position' ? 'both' : customAudience,
         intimacyGain: customDeck === 'standard' && customGainEnabled ? parsedCustomGain : undefined,
         actorStages: customActorStage === 'any' ? undefined : [customActorStage],
         partnerStages: customPartnerStage === 'any' ? undefined : [customPartnerStage],
@@ -850,7 +849,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
             customLabel: customPositionFamily === 'other'
               ? customPositionLabel.trim() || 'Tư thế khác'
               : undefined,
-            recipient: customPositionRecipient,
+            turnAudience: customPositionRecipient,
             orderGroup: customPositionFamily === 'have_sex' ? 4 : customPositionOrder,
             rarity: customPositionFamily === 'have_sex' ? 'mythic' : customPositionRarity,
             difficultyStars: customStars,
@@ -873,7 +872,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
     }
 
     if (editingCard) {
-      onUpdateCard(nextCard, {
+      onUpdateCard?.(nextCard, {
         clothingEffectTouched,
         illustrationTouched,
         timerTouched,
@@ -881,7 +880,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
         positionTouched,
       });
     } else {
-      onAddCustomCard(nextCard);
+      onAddCustomCard?.(nextCard);
     }
     resetEditor();
     setIsAdding(false);
@@ -965,21 +964,11 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
         </h2>
 
         <div className="flex items-center justify-end gap-2">
-          <span
-            className={`hidden items-center gap-1 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] sm:flex ${
-              isDeveloper
-                ? 'border-amber-300/30 bg-amber-300/10 text-amber-200'
-                : 'border-white/10 bg-white/[0.04] text-neutral-400'
-            }`}
-            aria-label={isDeveloper ? 'Chế độ Developer' : 'Chế độ Player'}
-          >
-            {isDeveloper ? (
-              <Code2 className="h-3 w-3" aria-hidden="true" />
-            ) : (
-              <LockKeyhole className="h-3 w-3" aria-hidden="true" />
-            )}
-            {isDeveloper ? 'Developer' : 'Player'}
-          </span>
+          {isDeveloper && (
+            <span className="hidden items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-amber-200 sm:flex" aria-label="Khu vực quản trị nội dung">
+              <Code2 className="h-3 w-3" aria-hidden="true" /> Admin
+            </span>
+          )}
 
           {isDeveloper && (
             <>
@@ -1201,18 +1190,16 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
             </select>
           </label>
           <label className="text-[10px] text-neutral-500">
-            Đối tượng
+            Lượt được phép rút
             <select
               value={audienceFilter}
-              onChange={(event) => setAudienceFilter(event.target.value as 'all' | CardAudience)}
+              onChange={(event) => setAudienceFilter(event.target.value as 'all' | TurnAudience)}
               className="mt-1 min-h-10 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-2 text-xs text-neutral-200 outline-none focus:border-amber-300/50"
             >
               <option value="all">Tất cả</option>
               <option value="male">Nam</option>
               <option value="female">Nữ</option>
               <option value="both">Cả hai</option>
-              <option value="current">Người đang lượt</option>
-              <option value="opponent">Đối phương</option>
             </select>
           </label>
         </div>
@@ -1467,20 +1454,18 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
 
                   {customDeck === 'standard' ? (
                     <label className="block text-[10px] text-neutral-400">
-                      Người chơi phù hợp
+                      Lượt được phép rút
                       <select
                         value={customAudience}
-                        onChange={(event) => { setCustomAudience(event.target.value as CardAudience); setProgressionTouched(true); }}
+                        onChange={(event) => { setCustomAudience(event.target.value as TurnAudience); setProgressionTouched(true); }}
                         className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 text-xs text-white outline-none focus:border-amber-300/50"
                       >
                         <option value="both">Cả hai</option>
                         <option value="male">Nam</option>
                         <option value="female">Nữ</option>
-                        <option value="current">Người đang lượt</option>
-                        <option value="opponent">Đối phương</option>
                       </select>
                       <span className="mt-1.5 block text-[9px] leading-relaxed text-neutral-500">
-                        “Đối phương” chuyển người thực hiện sang người còn lại nhưng vẫn chỉ dùng một lượt bài.
+                        Chỉ quyết định lượt nào có thể rút. Người rút luôn là người được tính kết quả.
                       </span>
                     </label>
                   ) : (
@@ -1513,10 +1498,10 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                         </select>
                       </label>
                       <label className="text-[10px] text-neutral-400">
-                        Người nhận
+                        Lượt được phép rút
                         <select
                           value={customPositionRecipient}
-                          onChange={(event) => { setCustomPositionRecipient(event.target.value as PositionRecipient); setPositionTouched(true); }}
+                          onChange={(event) => { setCustomPositionRecipient(event.target.value as TurnAudience); setPositionTouched(true); }}
                           className="mt-1 min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-2 text-xs text-white outline-none focus:border-amber-300/50"
                         >
                           <option value="male">Nam</option>
@@ -1724,7 +1709,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
                     </div>
                     <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-labelledby="card-timer-label">
                       {([
-                        ['inherit', 'Theo ván'],
+                        ['inherit', 'Mặc định 60s'],
                         ['disabled', 'Không đếm'],
                         ['custom', 'Thời gian riêng'],
                       ] as const).map(([mode, label]) => (
@@ -2231,7 +2216,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
       </AnimatePresence>
 
       <AnimatePresence>
-        {showProgressionConfig && isDeveloper && (
+        {showProgressionConfig && isDeveloper && onProgressionConfigChange && onLuxuryProgressionConfigChange && (
           <ProgressionConfigModal
             config={progressionConfig}
             onChange={onProgressionConfigChange}

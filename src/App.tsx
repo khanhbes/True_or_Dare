@@ -8,6 +8,7 @@ import { SummaryModal } from './components/SummaryModal';
 import { RulesModal } from './components/RulesModal';
 import {
   CardItem,
+  CardResolutionEvent,
   ClothingRemovalEvent,
   GameEndReason,
   GameSettings,
@@ -18,6 +19,7 @@ import {
   PendingDifficultyBoost,
   Player,
   PlayerRewardState,
+  PositionSessionStats,
   ProgressionConfig,
   RewardEvent,
 } from './types';
@@ -28,6 +30,14 @@ import { getCardDeck, hydrateLuxuryProgressionConfig, hydrateProgressionConfig }
 import { browserCardImageStore, hydrateCardImages, prepareCardsForStorage } from './utils/cardImageStore';
 import { DEFAULT_PLAYER_1, DEFAULT_PLAYER_2, loadStoredPlayer } from './utils/playerStorage';
 import { createRewardStates } from './utils/rewards';
+import { compareCollectionCards } from './utils/cardOrdering';
+import {
+  EMPTY_POSITION_SESSION_STATS,
+  appendCardResolutionEvent,
+  applyPositionResolution,
+  recordPositionDraw,
+  recordPositionOpen,
+} from './utils/gameResolution';
 import { PlayerLoginScreen } from './components/PlayerLoginScreen';
 import {
   fetchAdminPlayerStats,
@@ -201,7 +211,8 @@ export default function App() {
   const [intimacyEvents, setIntimacyEvents] = useState<IntimacyEvent[]>([]);
   const [journeyPhase, setJourneyPhase] = useState<JourneyPhase>('standard');
   const [sessionPositionCardIds, setSessionPositionCardIds] = useState<string[]>([]);
-  const [sessionPositionRevealCount, setSessionPositionRevealCount] = useState(0);
+  const [positionSessionStats, setPositionSessionStats] = useState<PositionSessionStats>({ ...EMPTY_POSITION_SESSION_STATS });
+  const [cardResolutionEvents, setCardResolutionEvents] = useState<CardResolutionEvent[]>([]);
   const [playerRewards, setPlayerRewards] = useState<[PlayerRewardState, PlayerRewardState]>(createRewardStates);
   const [pendingDifficultyBoosts, setPendingDifficultyBoosts] = useState<PendingDifficultyBoost[]>([]);
   const [rewardEvents, setRewardEvents] = useState<RewardEvent[]>([]);
@@ -374,7 +385,7 @@ export default function App() {
       .filter((card) => !deletedSystemCardIds.includes(card.id))
       .map((card) => mergeEditedSystemCard(card, editedCardMap.get(card.id))),
     ...customCards,
-  ];
+  ].sort(compareCollectionCards);
 
   // Filter available cards by active levels selected in settings
   const availableCards = allCards.filter(
@@ -680,8 +691,8 @@ export default function App() {
     const backup = await exportLocalCatalogZip({
       schemaVersion: cloudCatalog?.schemaVersion,
       datasetRevision: datasetRevisionRef.current,
-      customCards,
-      editedCards,
+      customCards: [...customCards].sort(compareCollectionCards),
+      editedCards: [...editedCards].sort(compareCollectionCards),
       deletedSystemCardIds,
       progressionConfig,
       luxuryProgressionConfig,
@@ -750,7 +761,8 @@ export default function App() {
     setIntimacyEvents([]);
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
-    setSessionPositionRevealCount(0);
+    setPositionSessionStats({ ...EMPTY_POSITION_SESSION_STATS });
+    setCardResolutionEvents([]);
     setPlayerRewards(createRewardStates());
     setPendingDifficultyBoosts([]);
     setRewardEvents([]);
@@ -781,7 +793,8 @@ export default function App() {
     setIntimacyEvents([]);
     setJourneyPhase('standard');
     setSessionPositionCardIds([]);
-    setSessionPositionRevealCount(0);
+    setPositionSessionStats({ ...EMPTY_POSITION_SESSION_STATS });
+    setCardResolutionEvents([]);
     setPlayerRewards(createRewardStates());
     setPendingDifficultyBoosts([]);
     setRewardEvents([]);
@@ -834,10 +847,6 @@ export default function App() {
         {screen === 'intro' && (
           <IntroScreen
             mode={appMode}
-            onModeChange={(mode) => {
-              if (mode === appMode) return;
-              window.location.assign(mode === 'developer' ? '/admin' : '/');
-            }}
             onStart={() => appMode === 'developer' ? openCollection('intro') : setScreen('setup')}
             onOpenCollection={() => openCollection('intro')}
             onOpenRules={() => setShowRules(true)}
@@ -897,15 +906,18 @@ export default function App() {
             onLuxuryIntimacyPercentChange={setLuxuryIntimacyPercent}
             onAddIntimacyEvents={(events) => setIntimacyEvents((current) => [...current, ...events])}
             onJourneyPhaseChange={setJourneyPhase}
-            onRevealPositionCard={() => {
-              setSessionPositionRevealCount((count) => count + 1);
-            }}
+            onDrawPositionCard={() => setPositionSessionStats(recordPositionDraw)}
+            onOpenPositionCard={() => setPositionSessionStats(recordPositionOpen)}
             onSessionPositionCardIdsChange={setSessionPositionCardIds}
             playerRewards={playerRewards}
             pendingDifficultyBoosts={pendingDifficultyBoosts}
             onPlayerRewardsChange={setPlayerRewards}
             onPendingDifficultyBoostsChange={setPendingDifficultyBoosts}
             onAddRewardEvent={(event) => setRewardEvents((events) => [...events, event])}
+            onAddCardResolutionEvent={(event) => {
+              setCardResolutionEvents((events) => appendCardResolutionEvent(events, event));
+              setPositionSessionStats((stats) => applyPositionResolution(stats, event));
+            }}
           />
           </div>
         )}
@@ -919,18 +931,18 @@ export default function App() {
             backDestination={collectionReturnScreen === 'game' ? 'game' : 'home'}
             favorites={favorites}
             onToggleFavorite={handleToggleFavorite}
-            onAddCustomCard={handleAddCustomCard}
-            onUpdateCard={handleUpdateCard}
-            onDeleteCard={handleDeleteCard}
+            onAddCustomCard={appMode === 'developer' ? handleAddCustomCard : undefined}
+            onUpdateCard={appMode === 'developer' ? handleUpdateCard : undefined}
+            onDeleteCard={appMode === 'developer' ? handleDeleteCard : undefined}
             progressionConfig={progressionConfig}
-            onProgressionConfigChange={handleProgressionConfigChange}
+            onProgressionConfigChange={appMode === 'developer' ? handleProgressionConfigChange : undefined}
             luxuryProgressionConfig={luxuryProgressionConfig}
-            onLuxuryProgressionConfigChange={handleLuxuryProgressionConfigChange}
-            catalogSync={catalogSync}
-            playerStats={adminPlayerStats}
-            onExportCatalog={handleExportCatalog}
-            onImportCatalog={handleImportCatalog}
-            onCreateCloudBackup={handleCreateCloudBackup}
+            onLuxuryProgressionConfigChange={appMode === 'developer' ? handleLuxuryProgressionConfigChange : undefined}
+            catalogSync={appMode === 'developer' ? catalogSync : undefined}
+            playerStats={appMode === 'developer' ? adminPlayerStats : undefined}
+            onExportCatalog={appMode === 'developer' ? handleExportCatalog : undefined}
+            onImportCatalog={appMode === 'developer' ? handleImportCatalog : undefined}
+            onCreateCloudBackup={appMode === 'developer' ? handleCreateCloudBackup : undefined}
             onBack={() => setScreen(collectionReturnScreen)}
           />
           </Suspense>
@@ -949,7 +961,8 @@ export default function App() {
           intimacyPercent={intimacyPercent}
           luxuryIntimacyPercent={luxuryIntimacyPercent}
           intimacyEvents={intimacyEvents}
-          positionCardsRevealed={sessionPositionRevealCount}
+          positionSessionStats={positionSessionStats}
+          cardResolutionEvents={cardResolutionEvents}
           journeyPhase={journeyPhase}
           playerRewards={playerRewards}
           rewardEvents={rewardEvents}

@@ -5,6 +5,7 @@ import process from 'node:process';
 import { strFromU8, unzipSync } from 'fflate';
 import { INITIAL_CARDS } from '../src/data/cards';
 import { mergeEditedSystemCard } from '../src/utils/cardSelection';
+import { compareCollectionCards } from '../src/utils/cardOrdering';
 import type { CardItem } from '../src/types';
 
 interface BackupAsset {
@@ -53,7 +54,9 @@ const cards = [
   ...INITIAL_CARDS.filter((card) => !deleted.has(card.id)).map((card) =>
     mergeEditedSystemCard(card, overrides.get(card.id))),
   ...bundle.customCards,
-];
+].sort(compareCollectionCards);
+bundle.customCards.sort(compareCollectionCards);
+bundle.editedCards.sort(compareCollectionCards);
 if (INITIAL_CARDS.length !== 108 ||
     cards.length !== INITIAL_CARDS.length - bundle.deletedSystemCardIds.length + bundle.customCards.length) {
   throw new Error('Số lượng catalog sau merge không hợp lệ');

@@ -52,7 +52,7 @@ const outfitWithSlots = (
   };
 };
 
-test('hydrate settings migrates legacy values and supplies outfit defaults', () => {
+test('hydrate settings ignores legacy timer values and supplies outfit defaults', () => {
   const settings = hydrateGameSettings({
     levels: ['gentle'],
     roundsMode: 'target',
@@ -64,10 +64,10 @@ test('hydrate settings migrates legacy values and supplies outfit defaults', () 
   });
 
   assert.deepEqual(settings.levels, ['gentle']);
-  assert.equal(settings.truthTimerEnabled, false);
-  assert.equal(settings.truthTimerDuration, 45);
-  assert.equal(settings.dareTimerEnabled, false);
-  assert.equal(settings.dareTimerDuration, 20);
+  assert.equal('enableTimer' in settings, false);
+  assert.equal('timerDuration' in settings, false);
+  assert.equal('truthTimerEnabled' in settings, false);
+  assert.equal('dareTimerEnabled' in settings, false);
   assert.equal(settings.penaltyClothingEnabled, true);
   assert.equal(Object.keys(settings.outfits[0].garments).length, 3);
   assert.equal(Object.keys(settings.outfits[1].garments).length, 4);

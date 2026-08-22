@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Heart, User, EyeOff, Timer, Shuffle, Check, ArrowLeft, Play, ChevronDown, HelpCircle, Shirt, ShieldCheck } from 'lucide-react';
+import { Heart, User, EyeOff, Shuffle, Check, ArrowLeft, Play, ChevronDown, HelpCircle, Shirt, ShieldCheck } from 'lucide-react';
 import { CardLevel, GameSettings, OutfitConfig, Player } from '../types';
 import { LEVEL_INFO } from '../data/cards';
 import { soundEngine } from '../utils/audio';
@@ -16,85 +16,6 @@ interface SetupScreenProps {
 }
 
 const AVATAR_OPTIONS = ['👨‍💼', '👩‍💼', '👑', '💖', '🔥', '🍷', '🌹', '🦋'];
-const TIMER_PRESETS = [15, 30, 45, 60] as const;
-
-const clampTimerDuration = (value: number, fallback: number) =>
-  Number.isInteger(value) && value >= 1 && value <= 3600 ? value : fallback;
-
-interface TimerSettingRowProps {
-  title: string;
-  description: string;
-  enabled: boolean;
-  duration: number;
-  tone: 'rose' | 'amber';
-  onEnabledChange: (enabled: boolean) => void;
-  onDurationChange: (duration: number) => void;
-}
-
-const TimerSettingRow: React.FC<TimerSettingRowProps> = ({
-  title,
-  description,
-  enabled,
-  duration,
-  tone,
-  onEnabledChange,
-  onDurationChange,
-}) => {
-  const enabledSwitchClass = tone === 'rose'
-    ? 'border-rose-300/50 bg-rose-500/25 focus-visible:ring-rose-300'
-    : 'border-amber-300/50 bg-amber-500/25 focus-visible:ring-amber-300';
-  const selectedPresetClass = tone === 'rose'
-    ? 'border-rose-300/60 bg-rose-400/15 text-rose-100'
-    : 'border-amber-300/60 bg-amber-400/15 text-amber-100';
-  return (
-    <div className="rounded-xl border border-white/10 bg-black/15 p-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-white">{title}</div>
-          <div className="mt-0.5 text-xs leading-relaxed text-neutral-400">{description}</div>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={enabled}
-          aria-label={`Bật đếm ngược cho ${title.toLowerCase()}`}
-          onClick={() => onEnabledChange(!enabled)}
-          className={`relative h-11 w-[68px] shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 ${enabled ? enabledSwitchClass : 'border-neutral-700 bg-neutral-800 focus-visible:ring-neutral-500'}`}
-        >
-          <span className={`absolute top-1/2 h-7 w-7 -translate-y-1/2 rounded-full bg-white shadow transition-[left] motion-reduce:transition-none ${enabled ? 'left-[34px]' : 'left-1'}`} />
-        </button>
-      </div>
-      {enabled && (
-        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-[repeat(4,minmax(0,1fr))_110px]">
-          {TIMER_PRESETS.map((seconds) => (
-            <button
-              key={seconds}
-              type="button"
-              aria-pressed={duration === seconds}
-              onClick={() => onDurationChange(seconds)}
-              className={`min-h-11 rounded-xl border text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 ${duration === seconds ? selectedPresetClass : 'border-neutral-700 bg-neutral-950/55 text-neutral-400 hover:text-white'}`}
-            >
-              {seconds}s
-            </button>
-          ))}
-          <label className="col-span-4 sm:col-span-1">
-            <span className="sr-only">Số giây tùy chỉnh cho {title.toLowerCase()}</span>
-            <input
-              type="number"
-              min={1}
-              max={3600}
-              step={1}
-              value={duration}
-              onChange={(event) => onDurationChange(Number(event.target.value))}
-              className="min-h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 text-center text-xs text-white outline-none focus:border-amber-300/60"
-            />
-          </label>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const cloneOutfitConfig = (outfit: OutfitConfig): OutfitConfig => ({
   presentation: outfit.presentation,
   garments: { ...outfit.garments },
@@ -163,10 +84,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
 
   const [selectedLevels, setSelectedLevels] = useState<CardLevel[]>(initialSettings.levels);
   const [privacyDefault, setPrivacyDefault] = useState<boolean>(initialSettings.privacyDefault);
-  const [truthTimerEnabled, setTruthTimerEnabled] = useState(initialSettings.truthTimerEnabled);
-  const [truthTimerDuration, setTruthTimerDuration] = useState(initialSettings.truthTimerDuration);
-  const [dareTimerEnabled, setDareTimerEnabled] = useState(initialSettings.dareTimerEnabled);
-  const [dareTimerDuration, setDareTimerDuration] = useState(initialSettings.dareTimerDuration);
   const [drawMode, setDrawMode] = useState<'random' | 'choose'>(initialSettings.drawMode);
   const [outfits, setOutfits] = useState<[OutfitConfig, OutfitConfig]>(() => [
     cloneOutfitConfig(initialSettings.outfits[0]),
@@ -210,12 +127,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
       roundsMode: 'unlimited',
       targetRounds: initialSettings.targetRounds,
       privacyDefault,
-      enableTimer: truthTimerEnabled || dareTimerEnabled,
-      timerDuration: clampTimerDuration(dareTimerDuration, 30),
-      truthTimerEnabled,
-      truthTimerDuration: clampTimerDuration(truthTimerDuration, 45),
-      dareTimerEnabled,
-      dareTimerDuration: clampTimerDuration(dareTimerDuration, 30),
       drawMode,
       outfits,
       penaltyClothingEnabled,
@@ -484,35 +395,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
                 Tự chọn trước
               </button>
             </div>
-          </div>
-
-          {/* Countdown defaults by card type */}
-          <div className="space-y-3 border-b border-neutral-800 pb-4">
-            <div className="flex items-start gap-2.5">
-              <Timer className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
-              <div>
-                <div className="text-sm font-medium text-white">Thời gian thực hiện</div>
-                <div className="text-xs text-neutral-400">Áp dụng mặc định; Developer có thể đặt thời gian riêng hoặc tắt trên từng lá.</div>
-              </div>
-            </div>
-            <TimerSettingRow
-              title="Sự thật"
-              description="Thời gian suy nghĩ và trả lời câu hỏi."
-              enabled={truthTimerEnabled}
-              duration={truthTimerDuration}
-              tone="rose"
-              onEnabledChange={setTruthTimerEnabled}
-              onDurationChange={setTruthTimerDuration}
-            />
-            <TimerSettingRow
-              title="Hành động / Thử thách"
-              description="Thời gian hoàn thành hành động, gồm cả bài Tư thế."
-              enabled={dareTimerEnabled}
-              duration={dareTimerDuration}
-              tone="amber"
-              onEnabledChange={setDareTimerEnabled}
-              onDurationChange={setDareTimerDuration}
-            />
           </div>
 
           {/* Clothing penalty toggle */}

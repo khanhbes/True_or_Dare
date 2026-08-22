@@ -231,6 +231,8 @@ const BASE_CARDS: CardItem[] = [
     level: 'gentle',
     content: 'Người nam hãy nhìn vào mắt người nữ và nói một lời khen chân thành mà trước đây bạn chưa từng nói.',
     icon: 'couple_eye_contact',
+    timerSeconds: null,
+    gameplayEffect: { kind: 'pass_turn' },
     progression: { difficultyStars: 2, audience: 'male' },
   },
   {

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Trophy, Heart, RotateCcw, X, CheckCircle2, Layers3, Star, Shuffle, TrendingUp } from 'lucide-react';
-import { ClothingRemovalEvent, GameEndReason, IntimacyEvent, JourneyPhase, OutfitState, Player, PlayerRewardState, RewardEvent } from '../types';
+import { CardResolutionEvent, ClothingRemovalEvent, GameEndReason, IntimacyEvent, JourneyPhase, OutfitState, Player, PlayerRewardState, PositionSessionStats, RewardEvent } from '../types';
 import { getPresentGarmentSlots } from '../utils/wardrobe';
 
 interface SummaryModalProps {
@@ -14,7 +14,8 @@ interface SummaryModalProps {
   intimacyPercent?: number;
   luxuryIntimacyPercent?: number;
   intimacyEvents?: IntimacyEvent[];
-  positionCardsRevealed?: number;
+  positionSessionStats?: PositionSessionStats;
+  cardResolutionEvents?: CardResolutionEvent[];
   journeyPhase?: JourneyPhase;
   playerRewards?: [PlayerRewardState, PlayerRewardState];
   rewardEvents?: RewardEvent[];
@@ -55,7 +56,8 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   intimacyPercent,
   luxuryIntimacyPercent = 0,
   intimacyEvents,
-  positionCardsRevealed = 0,
+  positionSessionStats = { drawn: 0, opened: 0, completed: 0, skipped: 0 },
+  cardResolutionEvents,
   journeyPhase,
   playerRewards,
   rewardEvents,
@@ -148,6 +150,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
     const removedCount = Math.max(0, initialCount - remainingCount);
     const cardRemovalCount = getRemovalCount(removalEvents, playerIndex, 'card');
     const penaltyRemovalCount = getRemovalCount(removalEvents, playerIndex, 'penalty');
+    const preparationRemovalCount = getRemovalCount(removalEvents, playerIndex, 'preparation');
 
     return (
       <div className="mt-3 border-t border-white/10 pt-3">
@@ -174,6 +177,8 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
             Theo thẻ: <span className="font-semibold text-neutral-200">{cardRemovalCount}</span>
             <span aria-hidden="true"> · </span>
             Do luật phạt: <span className="font-semibold text-neutral-200">{penaltyRemovalCount}</span>
+            <span aria-hidden="true"> · </span>
+            Chuẩn bị: <span className="font-semibold text-neutral-200">{preparationRemovalCount}</span>
           </p>
         )}
       </div>
@@ -288,8 +293,8 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
                 <div className="text-xs font-bold text-rose-300">+{clothingGain}%</div>
               </div>
               <div className="rounded-lg bg-amber-500/[0.07] px-1 py-1.5">
-                <div className="text-[9px] text-neutral-500">Tư thế đã mở</div>
-                <div className="text-xs font-bold text-amber-300">{positionCardsRevealed}</div>
+                <div className="text-[9px] text-neutral-500">Tư thế rút / mở</div>
+                <div className="text-xs font-bold text-amber-300">{positionSessionStats.drawn} / {positionSessionStats.opened}</div>
               </div>
               <div className="rounded-lg bg-violet-500/[0.07] px-1 py-1.5">
                 <div className="text-[9px] text-neutral-500">Luxury</div>
@@ -299,6 +304,13 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
           )}
           {removalEvents && (
             <p className="pt-1 text-[10px] text-neutral-400">Đổi đồ: <strong className="text-neutral-200">{swapCount}</strong> · Món bị thay: <strong className="text-neutral-200">{replacedCount}</strong></p>
+          )}
+          {(positionSessionStats.drawn > 0 || cardResolutionEvents?.length) && (
+            <p className="pt-1 text-[10px] text-neutral-400">
+              Tư thế hoàn thành: <strong className="text-emerald-200">{positionSessionStats.completed}</strong>
+              {' · '}Bỏ qua: <strong className="text-neutral-200">{positionSessionStats.skipped}</strong>
+              {' · '}Resolution: <strong className="text-neutral-200">{cardResolutionEvents?.length ?? 0}</strong>
+            </p>
           )}
           {journeyPhase === 'final' && (
             <p className="pt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-200">

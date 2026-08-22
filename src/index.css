@@ -420,6 +420,146 @@
   filter: drop-shadow(0 0 14px rgba(226, 194, 117, 0.28));
 }
 
+/* Ceremonial position draw: sapphire lacquer, champagne edge, restrained foil. */
+.luxury-deck {
+  isolation: isolate;
+  border: 0;
+  background: transparent;
+}
+
+.luxury-deck__card,
+.luxury-deck__face,
+.luxury-shuffle__card,
+.luxury-card-back {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(74, 112, 177, .28), transparent 32%),
+    linear-gradient(155deg, #17294c 0%, #080d20 52%, #03050d 100%);
+  border: 2px solid rgba(226, 194, 117, .72);
+  box-shadow:
+    0 24px 65px rgba(0, 0, 0, .52),
+    0 0 24px rgba(226, 194, 117, .12),
+    inset 0 0 0 1px rgba(255, 244, 214, .12);
+}
+
+.luxury-deck__card,
+.luxury-deck__face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: 1.4rem;
+}
+
+.luxury-deck__card--left {
+  z-index: -2;
+  opacity: .42;
+  transform: translate(-8px, 8px) rotate(-4deg);
+}
+
+.luxury-deck__card--right {
+  z-index: -1;
+  opacity: .58;
+  transform: translate(7px, 4px) rotate(2.5deg);
+}
+
+.luxury-deck__face {
+  overflow: hidden;
+  padding: 13px;
+}
+
+.luxury-deck__face::after,
+.luxury-shuffle__card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(112deg, transparent 28%, rgba(255, 244, 214, .2) 46%, transparent 63%);
+  transform: translateX(-145%);
+  animation: luxury-deck-foil 4.8s ease-in-out infinite;
+}
+
+.luxury-deck__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(247, 231, 176, .38);
+  border-radius: 1rem;
+  padding: 18px 12px;
+  background:
+    radial-gradient(circle at center, rgba(226, 194, 117, .08), transparent 34%),
+    repeating-radial-gradient(circle at center, transparent 0 26px, rgba(247, 231, 176, .055) 27px 28px);
+}
+
+.luxury-deck__seal {
+  display: grid;
+  width: 70px;
+  height: 70px;
+  place-items: center;
+  border: 1px solid rgba(247, 231, 176, .72);
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(226, 194, 117, .2), rgba(7, 11, 24, .3) 68%);
+  color: #fff4d6;
+  font-size: 1.7rem;
+  box-shadow: 0 0 24px rgba(226, 194, 117, .18), inset 0 0 16px rgba(226, 194, 117, .1);
+}
+
+.luxury-shuffle__card {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 1.35rem;
+  padding: 12px;
+  transform-origin: 50% 85%;
+}
+
+.luxury-card-back {
+  overflow: hidden;
+}
+
+.luxury-unseal-button {
+  border-color: rgba(247, 231, 176, .62);
+  background: linear-gradient(135deg, rgba(226, 194, 117, .2), rgba(31, 79, 142, .2));
+  color: #fff4d6;
+  box-shadow: 0 0 22px rgba(226, 194, 117, .12);
+}
+
+.luxury-unseal-button:hover {
+  border-color: rgba(255, 244, 214, .9);
+  background: linear-gradient(135deg, rgba(226, 194, 117, .27), rgba(31, 79, 142, .28));
+}
+
+.position-content-reveal {
+  position: relative;
+  isolation: isolate;
+}
+
+.position-content-reveal::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(108deg, transparent 24%, rgba(255, 244, 214, .32) 48%, transparent 68%);
+  transform: translateX(-135%);
+  animation: position-content-unseal .9s cubic-bezier(.22, 1, .36, 1) 1 forwards;
+}
+
+@keyframes luxury-deck-foil {
+  0%, 58% { transform: translateX(-145%); opacity: 0; }
+  68% { opacity: .8; }
+  100% { transform: translateX(145%); opacity: 0; }
+}
+
+@keyframes position-content-unseal {
+  0% { transform: translateX(-135%); opacity: 0; }
+  22% { opacity: .8; }
+  100% { transform: translateX(135%); opacity: 0; }
+}
+
 /* --- RAREST CARD: obsidian, imperial violet, platinum and rose gold --- */
 .card-position-rare {
   background:
@@ -602,6 +742,9 @@
     opacity: .18;
   }
   .game-card::after,
+  .luxury-deck__face::after,
+  .luxury-shuffle__card::after,
+  .position-content-reveal::after,
   .card-position-rare,
   .card-position-rare::before,
   .card-position-rare .mythic-icon-aura,

@@ -132,12 +132,6 @@ export const DEFAULT_GAME_SETTINGS: GameSettings = {
   roundsMode: 'unlimited',
   targetRounds: 16,
   privacyDefault: true,
-  enableTimer: true,
-  timerDuration: 30,
-  truthTimerEnabled: false,
-  truthTimerDuration: 45,
-  dareTimerEnabled: true,
-  dareTimerDuration: 30,
   drawMode: 'random',
   outfits: [cloneOutfit(MALE_DEFAULT), cloneOutfit(FEMALE_DEFAULT)],
   penaltyClothingEnabled: true,
@@ -210,14 +204,6 @@ export const hydrateGameSettings = (value: unknown): GameSettings => {
       ))]
     : [];
   const savedOutfits = Array.isArray(value.outfits) ? value.outfits : [];
-  const legacyTimerEnabled = typeof value.enableTimer === 'boolean'
-    ? value.enableTimer
-    : DEFAULT_GAME_SETTINGS.enableTimer;
-  const legacyTimerDuration = positiveInteger(
-    value.timerDuration,
-    DEFAULT_GAME_SETTINGS.timerDuration,
-  );
-
   return {
     levels: levels.length > 0 ? levels : [...DEFAULT_GAME_SETTINGS.levels],
     roundsMode: value.roundsMode === 'target' ? 'target' : 'unlimited',
@@ -226,21 +212,6 @@ export const hydrateGameSettings = (value: unknown): GameSettings => {
       typeof value.privacyDefault === 'boolean'
         ? value.privacyDefault
         : DEFAULT_GAME_SETTINGS.privacyDefault,
-    enableTimer: legacyTimerEnabled,
-    timerDuration: legacyTimerDuration,
-    truthTimerEnabled:
-      typeof value.truthTimerEnabled === 'boolean'
-        ? value.truthTimerEnabled
-        : DEFAULT_GAME_SETTINGS.truthTimerEnabled,
-    truthTimerDuration: positiveInteger(
-      value.truthTimerDuration,
-      DEFAULT_GAME_SETTINGS.truthTimerDuration,
-    ),
-    dareTimerEnabled:
-      typeof value.dareTimerEnabled === 'boolean'
-        ? value.dareTimerEnabled
-        : legacyTimerEnabled,
-    dareTimerDuration: positiveInteger(value.dareTimerDuration, legacyTimerDuration),
     drawMode: value.drawMode === 'choose' ? 'choose' : 'random',
     outfits: [
       hydrateOutfitConfig(savedOutfits[0], 'male'),

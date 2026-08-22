@@ -22,8 +22,8 @@ import {
 } from './progression';
 
 const outfits = [
-  createOutfitState(DEFAULT_GAME_SETTINGS.outfits[0]),
-  createOutfitState(DEFAULT_GAME_SETTINGS.outfits[1]),
+  createOutfitState({ ...DEFAULT_GAME_SETTINGS.outfits[0], garments: {} }),
+  createOutfitState({ ...DEFAULT_GAME_SETTINGS.outfits[1], garments: {} }),
 ] as const;
 
 const makeCard = (
@@ -97,10 +97,10 @@ test('collection order groups decks and sorts standard and position cards determ
     .sort(compareCollectionCards)
     .map((card) => card.id);
 
-  assert.deepEqual(sorted, ['g-t-2a', 'g-t-10', 'g-t-2', 'g-d-10', 'pos-2', 'pos-5']);
+  assert.deepEqual(sorted, ['g-t-2a', 'g-t-10', 'g-d-10', 'g-t-2', 'pos-2', 'pos-5']);
 });
 
-test('relative audiences resolve the correct performer without changing gender audiences', () => {
+test('legacy relative audiences migrate to both and the drawer is always the performer', () => {
   const currentCard = makeCard('current', 'dare', 1);
   currentCard.progression!.audience = 'current';
   const opponentCard = makeCard('opponent', 'dare', 1);
@@ -109,8 +109,8 @@ test('relative audiences resolve the correct performer without changing gender a
 
   assert.equal(getStandardCardPerformerIndex(currentCard, 0), 0);
   assert.equal(getStandardCardPerformerIndex(currentCard, 1), 1);
-  assert.equal(getStandardCardPerformerIndex(opponentCard, 0), 1);
-  assert.equal(getStandardCardPerformerIndex(opponentCard, 1), 0);
+  assert.equal(getStandardCardPerformerIndex(opponentCard, 0), 0);
+  assert.equal(getStandardCardPerformerIndex(opponentCard, 1), 1);
   assert.equal(getStandardCardPerformerIndex(femaleCard, 0), 0);
 });
 
@@ -315,7 +315,7 @@ test('config hydration preserves zero weights and clamps malformed or oversized 
   assert.equal(hydrated.cardRemovalBonus, 11);
 });
 
-test('Luxury probabilities follow every boundary and unlock 10 stars only from 80 percent', () => {
+test('Luxury probabilities follow every boundary and keep Have Sex independent', () => {
   const cards = Array.from({ length: 10 }, (_, index) =>
     makePositionCard(`position-${index + 1}`, (index + 1) as PositionDifficultyStars));
   const expected = [
@@ -323,7 +323,7 @@ test('Luxury probabilities follow every boundary and unlock 10 stars only from 8
     [20, { 2: .2, 3: .4, 4: .25, 5: .15 }],
     [40, { 3: .1, 4: .25, 5: .35, 6: .2, 7: .1 }],
     [60, { 5: .1, 6: .25, 7: .35, 8: .2, 9: .1 }],
-    [80, { 5: .05, 6: .1, 7: .2, 8: .25, 9: .35, 10: .05 }],
+    [80, { 5: .05 / .95, 6: .1 / .95, 7: .2 / .95, 8: .25 / .95, 9: .35 / .95 }],
   ] as const;
 
   for (const [percent, weights] of expected) {
@@ -340,6 +340,7 @@ test('Luxury probabilities follow every boundary and unlock 10 stars only from 8
       const expectedWeight = (weights as Partial<Record<PositionDifficultyStars, number>>)[star] ?? 0;
       assert.ok(Math.abs(result.probabilities.stars[star] - expectedWeight) < 1e-10);
     }
+    assert.equal(result.probabilities.finalCardChance, percent >= 80 ? 0.05 : 0);
   }
 
   const beforeUnlock = selectLuxuryPositionCard({
@@ -399,6 +400,64 @@ test('Luxury selection normalizes missing stars, avoids repeats and resets only 
   assert.equal(reset.nextUsedCardIds.length, 1);
 });
 
+test('Luxury selection respects the current male or female turn and keeps both eligible', () => {
+  const male = makePositionCard('male-only', 3);
+  male.position!.recipient = 'male';
+  const female = makePositionCard('female-only', 3);
+  female.position!.recipient = 'female';
+  const both = makePositionCard('both', 3);
+  both.position!.recipient = 'both';
+
+  const maleFirst = selectLuxuryPositionCard({
+    cards: [male, female, both],
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    luxuryPercent: 0,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.equal(maleFirst.card?.id, 'male-only');
+  const maleSecond = selectLuxuryPositionCard({
+    cards: [male, female, both],
+    actorIndex: 0,
+    outfits,
+    usedCardIds: maleFirst.nextUsedCardIds,
+    luxuryPercent: 0,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.equal(maleSecond.card?.id, 'both');
+
+  const femaleFirst = selectLuxuryPositionCard({
+    cards: [male, female, both],
+    actorIndex: 1,
+    outfits,
+    usedCardIds: [],
+    luxuryPercent: 0,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.equal(femaleFirst.card?.id, 'female-only');
+  assert.notEqual(femaleFirst.card?.id, 'male-only');
+});
+
+test('Luxury selection never falls back to the other recipient', () => {
+  const female = makePositionCard('female-only', 3);
+  female.position!.recipient = 'female';
+  const result = selectLuxuryPositionCard({
+    cards: [female],
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    luxuryPercent: 0,
+    config: DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    random: () => 0,
+  });
+  assert.equal(result.card, null);
+  assert.equal(result.errorCode, 'no_cards');
+});
+
 test('Luxury completion uses 6–14 defaults, per-card override and clamps at 100', () => {
   assert.deepEqual(
     calculateCompletedPositionLuxury(0, makePositionCard('one', 1), DEFAULT_LUXURY_PROGRESSION_CONFIG),
@@ -426,7 +485,7 @@ test('100 percent forces the 10-star final and reports a missing final without c
     random: () => 0,
   });
   assert.equal(forced.card?.id, 'final');
-  assert.equal(forced.probabilities.stars[10], 1);
+  assert.equal(forced.probabilities.finalCardChance, 1);
   const missing = selectLuxuryPositionCard({
     cards: [makePositionCard('nine', 9)],
     actorIndex: 0,
@@ -485,7 +544,7 @@ test('the 10-star roll is exactly five percent at 80–99 and is independent fro
   const base = { cards, actorIndex: 0 as const, outfits, usedCardIds: ['five'], luxuryPercent: 99, config: DEFAULT_LUXURY_PROGRESSION_CONFIG };
   const hit = selectLuxuryPositionCard({ ...base, random: () => 0.049999 });
   assert.equal(hit.card?.id, 'final');
-  assert.equal(hit.probabilities.stars[10], 0.05);
+  assert.equal(hit.probabilities.finalCardChance, 0.05);
   const miss = selectLuxuryPositionCard({ ...base, random: () => 0.05 });
   assert.equal(miss.card?.id, 'five');
   assert.equal(miss.didResetPool, true);

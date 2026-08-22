@@ -144,14 +144,23 @@ export const normalizeCardClothingEffect = (card: CardItem): CardItem => {
     if (card.position?.family === 'have_sex') {
       const next = { ...card };
       delete next.clothingEffect;
+      delete next.gameplayEffect;
       return next;
     }
     if (effect.target === 'self' || effect.target === 'opponent') {
+      const turnAudience = card.position?.turnAudience ?? card.position?.recipient ?? 'both';
+      const explicitTarget = effect.target === 'self'
+        ? turnAudience
+        : turnAudience === 'male'
+          ? 'female'
+          : turnAudience === 'female'
+            ? 'male'
+            : 'both';
       return {
         ...card,
         clothingEffect: {
           kind: 'remove_garment',
-          target: card.position?.recipient ?? 'both',
+          target: explicitTarget,
         },
       };
     }
@@ -301,6 +310,10 @@ export const mergeEditedSystemCard = (
       editedCard.clothingEffect === undefined
         ? systemCard.clothingEffect
         : editedCard.clothingEffect,
+    gameplayEffect:
+      editedCard.gameplayEffect === undefined
+        ? systemCard.gameplayEffect
+        : editedCard.gameplayEffect,
     timerSeconds:
       editedCard.timerSeconds === undefined
         ? systemCard.timerSeconds

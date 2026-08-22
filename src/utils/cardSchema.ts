@@ -39,7 +39,13 @@ export const isStoredCard = (value: unknown): value is CardItem => {
     typeof progression.difficultyStars === 'number' &&
     Number.isInteger(progression.difficultyStars) &&
     progression.difficultyStars >= 1 && progression.difficultyStars <= 5 &&
-    typeof progression.audience === 'string' && CARD_AUDIENCES.has(progression.audience) &&
+    (progression.turnAudience === undefined || (
+      typeof progression.turnAudience === 'string' && POSITION_RECIPIENTS.has(progression.turnAudience)
+    )) &&
+    (progression.audience === undefined || (
+      typeof progression.audience === 'string' && CARD_AUDIENCES.has(progression.audience)
+    )) &&
+    (progression.turnAudience !== undefined || progression.audience !== undefined) &&
     (progression.intimacyGain === undefined || (
       typeof progression.intimacyGain === 'number' &&
       Number.isFinite(progression.intimacyGain) &&
@@ -51,7 +57,13 @@ export const isStoredCard = (value: unknown): value is CardItem => {
     isRecord(position) &&
     typeof position.family === 'string' && POSITION_FAMILIES.has(position.family) &&
     isOptionalString(position.customLabel) &&
-    typeof position.recipient === 'string' && POSITION_RECIPIENTS.has(position.recipient) &&
+    (position.turnAudience === undefined || (
+      typeof position.turnAudience === 'string' && POSITION_RECIPIENTS.has(position.turnAudience)
+    )) &&
+    (position.recipient === undefined || (
+      typeof position.recipient === 'string' && POSITION_RECIPIENTS.has(position.recipient)
+    )) &&
+    (position.turnAudience !== undefined || position.recipient !== undefined) &&
     typeof position.orderGroup === 'number' && [1, 2, 3, 4].includes(position.orderGroup) &&
     (position.rarity === 'luxury' || position.rarity === 'mythic') &&
     (position.difficultyStars === undefined || (
@@ -93,7 +105,11 @@ export const isStoredCard = (value: unknown): value is CardItem => {
     isOptionalString(value.icon) && isOptionalString(value.customImage) &&
     isOptionalString(value.customImageId) &&
     (value.illustrationOverride === undefined || typeof value.illustrationOverride === 'boolean') &&
-    hasValidAppearance && hasValidEffect
+    hasValidAppearance && hasValidEffect && (
+      value.gameplayEffect === undefined || value.gameplayEffect === null || (
+        isRecord(value.gameplayEffect) && value.gameplayEffect.kind === 'pass_turn'
+      )
+    )
   );
 };
 
@@ -107,6 +123,7 @@ export const normalizeStoredCard = (card: CardItem): CardItem => {
   }
   if (normalized.deck === 'position' && normalized.position?.family === 'have_sex') {
     delete normalized.clothingEffect;
+    delete normalized.gameplayEffect;
   }
   return normalized;
 };
@@ -138,7 +155,8 @@ export const isProgressionConfigValue = (value: unknown): value is ProgressionCo
 
 export const isLuxuryProgressionConfigValue = (value: unknown): value is LuxuryProgressionConfig => {
   if (!isRecord(value) || !Array.isArray(value.bands) || value.bands.length !== 5 ||
-      !isRecord(value.starGains)) return false;
+      !isRecord(value.starGains) ||
+      (value.finalCardChance !== undefined && !isWeight(value.finalCardChance))) return false;
   const stars = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   const gains = stars.map((star) => value.starGains[String(star)]);
   if (!gains.every(isWeight) || !gains.slice(0, 9).some((gain) => gain > 0)) return false;

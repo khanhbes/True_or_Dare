@@ -72,12 +72,6 @@ export const PlayerLoginScreen: React.FC<PlayerLoginScreenProps> = ({ onLogin, i
           <span className="inline-flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> Chỉ dùng để thống kê người chơi</span>
           <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Ứng dụng không lưu IP người chơi</span>
         </div>
-        <a
-          href="/admin"
-          className="mt-7 inline-flex min-h-11 items-center text-xs font-semibold text-neutral-500 underline decoration-white/15 underline-offset-4 transition-colors hover:text-rose-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200"
-        >
-          Đăng nhập quản trị viên
-        </a>
       </section>
     </main>
   );

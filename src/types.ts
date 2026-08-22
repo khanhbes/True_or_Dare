@@ -4,7 +4,9 @@ export type PlayerIndex = 0 | 1;
 export type CardDeck = 'standard' | 'position';
 export type DifficultyStars = 1 | 2 | 3 | 4 | 5;
 export type PositionDifficultyStars = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-export type CardAudience = 'male' | 'female' | 'both' | 'current' | 'opponent';
+export type TurnAudience = 'male' | 'female' | 'both';
+/** @deprecated Hydrated for old backups only. New writes use TurnAudience. */
+export type CardAudience = TurnAudience | 'current' | 'opponent';
 export type PositionFamily = 'oral' | 'blowjob' | 'handjob' | 'have_sex' | 'other';
 export type PositionRecipient = 'male' | 'female' | 'both';
 export type PositionRarity = 'luxury' | 'mythic';
@@ -46,8 +48,10 @@ export type ClothingEffect =
 
 export interface CardProgressionMetadata {
   difficultyStars: DifficultyStars;
-  /** Gender eligibility, or an explicit performer relative to the current turn. */
-  audience: CardAudience;
+  /** The player turn on which this card can be drawn. */
+  turnAudience?: TurnAudience;
+  /** @deprecated Legacy field retained for backup compatibility. */
+  audience?: CardAudience;
   /** Overrides the global gain for this star rating when supplied. */
   intimacyGain?: number;
   actorStages?: OutfitStage[];
@@ -58,7 +62,10 @@ export interface PositionMetadata {
   family: PositionFamily;
   /** Developer-defined label when family is `other`. */
   customLabel?: string;
-  recipient: PositionRecipient;
+  /** The player turn on which this card can be drawn. */
+  turnAudience?: TurnAudience;
+  /** @deprecated Legacy field retained for backup compatibility. */
+  recipient?: PositionRecipient;
   /** Oral=1, blowjob=2, handjob=3, final rare card=4. */
   orderGroup: 1 | 2 | 3 | 4;
   rarity: PositionRarity;
@@ -99,6 +106,8 @@ export interface LuxuryProgressionBand {
 export interface LuxuryProgressionConfig {
   bands: LuxuryProgressionBand[];
   starGains: Record<PositionDifficultyStars, number>;
+  /** Independent chance (0–100) to draw a Have Sex card at 80–99% Luxury. */
+  finalCardChance: number;
 }
 
 export type JourneyPhase = 'standard' | 'position_consent' | 'position' | 'final';
@@ -134,7 +143,28 @@ export interface RewardEvent {
   cardId?: string;
 }
 
-export type ClothingRemovalSource = 'card' | 'penalty';
+export type ClothingRemovalSource = 'card' | 'penalty' | 'preparation';
+
+export type CardResolutionStatus = 'completed' | 'skipped' | 'rerolled' | 'passed' | 'final_viewed';
+
+export interface CardResolutionEvent {
+  id: string;
+  cardId: string;
+  playerIndex: PlayerIndex;
+  status: CardResolutionStatus;
+  deck: CardDeck;
+  round: number;
+  timestamp: number;
+}
+
+export interface PositionSessionStats {
+  drawn: number;
+  opened: number;
+  completed: number;
+  skipped: number;
+}
+
+export type CardGameplayEffect = { kind: 'pass_turn' };
 
 export interface ClothingRemovalEvent {
   actorPlayerIndex: PlayerIndex;
@@ -172,6 +202,7 @@ export interface CardItem {
   /** Optional per-card visual sizing. Missing values use the normal 1× layout. */
   appearance?: CardAppearance;
   clothingEffect?: ClothingEffect | null;
+  gameplayEffect?: CardGameplayEffect | null;
   /** Missing means a legacy/custom standard card. */
   deck?: CardDeck;
   progression?: CardProgressionMetadata | null;
@@ -191,13 +222,6 @@ export interface GameSettings {
   roundsMode: 'unlimited' | 'target';
   targetRounds: number;
   privacyDefault: boolean; // Hide content until click
-  enableTimer: boolean;
-  timerDuration: number; // in seconds
-  /** Per-type countdown settings. Legacy enableTimer/timerDuration hydrate into dare values. */
-  truthTimerEnabled: boolean;
-  truthTimerDuration: number;
-  dareTimerEnabled: boolean;
-  dareTimerDuration: number;
   drawMode: 'random' | 'choose'; // Allow player to pick Truth or Dare first or complete random
   outfits: [OutfitConfig, OutfitConfig];
   penaltyClothingEnabled: boolean;

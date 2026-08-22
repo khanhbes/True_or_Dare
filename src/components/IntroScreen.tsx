@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Heart, Flame, Sparkles, Volume2, VolumeX, BookOpen, Play, HelpCircle, UserRound, Code2 } from 'lucide-react';
+import { Heart, Flame, Sparkles, Volume2, VolumeX, BookOpen, Play, HelpCircle, Code2 } from 'lucide-react';
 import { soundEngine } from '../utils/audio';
 
 interface IntroScreenProps {
   mode: 'player' | 'developer';
-  onModeChange: (mode: 'player' | 'developer') => void;
   onStart: () => void;
   onOpenCollection: () => void;
   onOpenRules: () => void;
 }
 
-export const IntroScreen: React.FC<IntroScreenProps> = ({ mode, onModeChange, onStart, onOpenCollection, onOpenRules }) => {
+export const IntroScreen: React.FC<IntroScreenProps> = ({ mode, onStart, onOpenCollection, onOpenRules }) => {
   const [isMusicOn, setIsMusicOn] = useState(soundEngine.isMusicOn());
 
   const handleToggleMusic = () => {
@@ -41,23 +40,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ mode, onModeChange, on
           </button>
         </div>
 
-        <div className="mx-auto mt-3 grid w-full max-w-xs grid-cols-2 rounded-full border border-white/10 bg-black/25 p-1" role="group" aria-label="Chọn chế độ ứng dụng">
-          {([
-            { id: 'player' as const, label: 'Player', icon: UserRound },
-            { id: 'developer' as const, label: 'Developer', icon: Code2 },
-          ]).map(({ id, label, icon: ModeIcon }) => (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={mode === id}
-              onClick={() => onModeChange(id)}
-              className={`flex min-h-10 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition ${mode === id ? 'bg-rose-500/18 text-rose-100 shadow-[0_0_0_1px_rgba(251,113,133,.4)]' : 'text-neutral-500 hover:text-white'}`}
-            >
-              <ModeIcon className="h-3.5 w-3.5" />
-              {label}
-            </button>
-          ))}
-        </div>
+        {mode === 'developer' && (
+          <div className="mx-auto mt-3 flex w-full max-w-xs items-center justify-between rounded-full border border-amber-300/20 bg-black/25 px-3 py-1.5 text-[11px]">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-amber-100"><Code2 className="h-3.5 w-3.5" /> Quản trị nội dung</span>
+            <a href="/" className="rounded-full px-2 py-1 text-neutral-400 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-200">Xem trang chơi</a>
+          </div>
+        )}
       </div>
 
       {/* Main Center Intro Section */}

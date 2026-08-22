@@ -55,7 +55,8 @@ export const ProgressionConfigModal: React.FC<ProgressionConfigModalProps> = ({
     POSITION_DIFFICULTY_STARS.every((star) => Number.isFinite(band.starWeights[star]) && band.starWeights[star] >= 0 && band.starWeights[star] <= 100)
   ) && POSITION_DIFFICULTY_STARS.every((star) =>
     Number.isFinite(luxuryDraft.starGains[star]) && luxuryDraft.starGains[star] >= 0 && luxuryDraft.starGains[star] <= 100
-  ) && POSITION_DIFFICULTY_STARS.some((star) => star < 10 && luxuryDraft.starGains[star] > 0);
+  ) && POSITION_DIFFICULTY_STARS.some((star) => star < 10 && luxuryDraft.starGains[star] > 0) &&
+    Number.isFinite(luxuryDraft.finalCardChance) && luxuryDraft.finalCardChance >= 0 && luxuryDraft.finalCardChance <= 100;
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -311,6 +312,23 @@ export const ProgressionConfigModal: React.FC<ProgressionConfigModalProps> = ({
                     </label>
                   ))}
                 </div>
+                <label className="mt-4 block max-w-xs text-[10px] text-neutral-400">
+                  Xác suất Have Sex ở 80–99%
+                  <div className="relative mt-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={luxuryDraft.finalCardChance}
+                      onChange={(event) => setLuxuryDraft((current) => ({
+                        ...cloneLuxuryProgressionConfig(current),
+                        finalCardChance: Number(event.target.value),
+                      }))}
+                      className="h-11 w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 pr-8 text-white outline-none focus:border-[#d7b1ff]/60"
+                    />
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-600">%</span>
+                  </div>
+                </label>
               </section>
             </>
           )}
