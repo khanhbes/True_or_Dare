@@ -17,13 +17,16 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withSequence,
+  Easing,
   FadeIn,
-  SlideInUp,
   ZoomIn,
+  runOnJS,
 } from 'react-native-reanimated';
 import {
   Heart,
@@ -50,11 +53,16 @@ import type {
   JourneyPhase,
   LuxuryProgressionConfig,
   OutfitState,
+  PendingDifficultyBoost,
   Player,
   PlayerIndex,
+  PlayerRewardState,
   PositionSessionStats,
   ProgressionConfig,
+  RewardEvent,
 } from '@/shared/types';
+import { DrawProbabilityPanel } from '@/components/DrawProbabilityPanel';
+import { CompletionToast, type CompletionToastData } from '@/components/CompletionToast';
 import { GameCard } from '@/components/GameCard';
 import { OutfitFigure } from '@/components/OutfitFigure';
 import {
@@ -70,12 +78,22 @@ import {
   selectJourneyCard,
   selectLuxuryPositionCard,
   calculateCompletedCardIntimacy,
+  calculateCompletedPositionLuxury,
+  deriveDifficultyStars,
   isStandardJourneyCardEligible,
   getStandardCardPerformerIndex,
   getCardTurnAudience,
   type JourneyDrawProbabilities,
   type LuxuryDrawProbabilities,
 } from '@/shared/utils/progression';
+import {
+  createRewardStates,
+  awardStars,
+  spendReward,
+  refundPendingDifficultyBoost,
+  REROLL_STAR_COST,
+  DIFFICULTY_BOOST_STAR_COST,
+} from '@/shared/utils/rewards';
 import { resolveCardTimerSeconds } from '@/shared/utils/cardTimer';
 import {
   getOutfitStage,
@@ -131,6 +149,21 @@ interface GameTableProps {
   onPositionSessionStatsChange: (stats: PositionSessionStats) => void;
   drawProbabilitySnapshot: JourneyDrawProbabilities | LuxuryDrawProbabilities | null;
   onDrawProbabilitySnapshotChange: (probs: JourneyDrawProbabilities | LuxuryDrawProbabilities | null) => void;
+  // Task 2: Reward props
+  playerRewards: [PlayerRewardState, PlayerRewardState];
+  onPlayerRewardsChange: (rewards: [PlayerRewardState, PlayerRewardState]) => void;
+  rewardEvents: RewardEvent[];
+  onAddRewardEvent: (event: RewardEvent) => void;
+  // Task 3: Pending difficulty boost
+  pendingDifficultyBoost: PendingDifficultyBoost | null;
+  onPendingDifficultyBoostChange: (boost: PendingDifficultyBoost | null) => void;
+  // Task 5: External terminal summary control from game.tsx
+  externalShowSummary?: boolean;
+  externalSummaryTerminal?: boolean;
+  externalSummaryEndReason?: GameEndReason | null;
+  onSummaryHome?: () => void;
+  onSummaryRestart?: () => void;
+  onSummaryClose?: () => void;
 }
 
 type CardState = 'deck' | 'drawn_hidden' | 'drawn_revealed' | 'completed';
@@ -184,6 +217,20 @@ export const GameTable: React.FC<GameTableProps> = ({
   onPositionSessionStatsChange,
   drawProbabilitySnapshot,
   onDrawProbabilitySnapshotChange,
+  // Task 2
+  playerRewards,
+  onPlayerRewardsChange,
+  onAddRewardEvent,
+  // Task 3
+  pendingDifficultyBoost,
+  onPendingDifficultyBoostChange,
+  // Task 5
+  externalShowSummary,
+  externalSummaryTerminal,
+  externalSummaryEndReason,
+  onSummaryHome,
+  onSummaryRestart,
+  onSummaryClose,
 }) => {
   const players = [player1, player2] as const;
   const currentPlayer = players[currentPlayerIndex];
@@ -194,6 +241,16 @@ export const GameTable: React.FC<GameTableProps> = ({
   const [isPrivacyHidden, setIsPrivacyHidden] = useState(settings.privacyDefault);
   const [timerRemaining, setTimerRemaining] = useState<number | null>(null);
   const [showTypeChooser, setShowTypeChooser] = useState(false);
+  // Task 2: reroll state
+  const [hasRerolledThisTurn, setHasRerolledThisTurn] = useState(false);
+  // Task 7: completion toast
+  const [toastData, setToastData] = useState<CompletionToastData | null>(null);
+  // Task 7: confetti ref
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const confettiRef = useRef<any>(null);
+  // Task 9: 3D flip animation
+  const flipRotation = useSharedValue(0);
+  const [flipContentVisible, setFlipContentVisible] = useState(false);
 
   // Dialog States
   const [showPenaltyPrompt, setShowPenaltyPrompt] = useState(false);
@@ -244,11 +301,31 @@ export const GameTable: React.FC<GameTableProps> = ({
     }
   }, [journeyPhase, outfitStates]);
 
+  // Task 9: 3D Flip animated style
+  const flipAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ perspective: 800 }, { rotateY: `${flipRotation.value}deg` }],
+  }));
+
+  const doFlip3D = (onMidpoint: () => void) => {
+    flipRotation.value = 0;
+    flipRotation.value = withSequence(
+      withTiming(90, { duration: 300, easing: Easing.out(Easing.cubic) }, (finished) => {
+        if (finished) runOnJS(onMidpoint)();
+      }),
+      withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) }),
+    );
+  };
+
   // --- Draw Card (standard) ---
   const drawStandardCard = useCallback(
     (typeChoice?: CardType) => {
       soundEngine.playShuffle();
+      setHasRerolledThisTurn(false);
       // Bug 3 fix: filter by settings.levels (not all levels)
+      // Task 3: pass difficultyBoost from pendingDifficultyBoost
+      const isBoostActive =
+        pendingDifficultyBoost !== null &&
+        pendingDifficultyBoost.targetPlayerIndex === currentPlayerIndex;
       const result = selectJourneyCard({
         cards: availableCards,
         preferredType: typeChoice ?? null,
@@ -258,7 +335,13 @@ export const GameTable: React.FC<GameTableProps> = ({
         levels: settings.levels,
         intimacyPercent,
         config: progressionConfig,
+        difficultyBoost: isBoostActive,
       });
+
+      // Task 3: clear pending boost after draw
+      if (isBoostActive) {
+        onPendingDifficultyBoostChange(null);
+      }
 
       // Bug 4 fix: save snapshot at draw time
       onDrawProbabilitySnapshotChange(result.probabilities);
@@ -282,7 +365,9 @@ export const GameTable: React.FC<GameTableProps> = ({
       settings.privacyDefault,
       settings.levels,
       usedStandardCardIds,
+      pendingDifficultyBoost,
       onDrawProbabilitySnapshotChange,
+      onPendingDifficultyBoostChange,
     ],
   );
 
@@ -336,33 +421,36 @@ export const GameTable: React.FC<GameTableProps> = ({
     }
   };
 
-  // Reveal Card
+  // Reveal Card — Task 9: 3D flip animation
   const revealCard = () => {
     soundEngine.playCardFlip();
-    setCardState('drawn_revealed');
-    setIsPrivacyHidden(false);
 
     // Bug 5 fix: increase "opened" stat here (not at draw)
     if (selectedCard && getCardDeck(selectedCard) === 'position') {
       onPositionSessionStatsChange(recordPositionOpen(positionSessionStats));
     }
 
-    if (selectedCard) {
-      const timerSeconds = resolveCardTimerSeconds(selectedCard, settings);
-      if (timerSeconds) {
-        setTimerRemaining(timerSeconds);
-        timerRef.current = setInterval(() => {
-          setTimerRemaining((prev) => {
-            if (prev === null || prev <= 1) {
-              if (timerRef.current) clearInterval(timerRef.current);
-              haptics.warning();
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
+    // 3D flip: phase 1 (0→90°), at midpoint swap content, phase 2 (90→0°)
+    doFlip3D(() => {
+      setCardState('drawn_revealed');
+      setIsPrivacyHidden(false);
+      if (selectedCard) {
+        const timerSeconds = resolveCardTimerSeconds(selectedCard, settings);
+        if (timerSeconds) {
+          setTimerRemaining(timerSeconds);
+          timerRef.current = setInterval(() => {
+            setTimerRemaining((prev) => {
+              if (prev === null || prev <= 1) {
+                if (timerRef.current) clearInterval(timerRef.current);
+                haptics.warning();
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+        }
       }
-    }
+    });
   };
 
   // Advance turn helper
@@ -370,6 +458,8 @@ export const GameTable: React.FC<GameTableProps> = ({
     setSelectedCard(null);
     setCardState('deck');
     setTimerRemaining(null);
+    setHasRerolledThisTurn(false);
+    flipRotation.value = 0;
     onDrawProbabilitySnapshotChange(null);
     onNextTurn();
   };
@@ -412,15 +502,13 @@ export const GameTable: React.FC<GameTableProps> = ({
   };
 
   // Complete Card — Bug 6: check pass_turn, Bug 1: clothing effect on position cards
+  // (This function is only called on normal "Hoàn thành")
   const completeCard = () => {
     if (!selectedCard) return;
     if (timerRef.current) clearInterval(timerRef.current);
     soundEngine.playComplete();
 
     const deck = getCardDeck(selectedCard);
-
-    // Bug 6 fix: pass_turn card — "Chuyển lượt" button calls passCard, not completeCard
-    // (This function is only called on normal "Hoàn thành")
 
     // Update player completed count
     const updatedPlayers = [...players] as [Player, Player];
@@ -448,10 +536,15 @@ export const GameTable: React.FC<GameTableProps> = ({
       onPositionSessionStatsChange(applyPositionResolution(positionSessionStats, event));
     }
 
-    // Calculate intimacy gain
+    // Calculate intimacy/luxury gain + Task 2: award stars
+    let toastIntimacyGain: number | undefined;
+    let toastStarGain: number | undefined;
+    let toastLuxuryGain: number | undefined;
+
     if (deck === 'standard') {
       const gainResult = calculateCompletedCardIntimacy(intimacyPercent, selectedCard, progressionConfig, false);
       const gain = gainResult.totalApplied;
+      toastIntimacyGain = gain;
       const newPercent = Math.min(100, intimacyPercent + gain);
       onIntimacyPercentChange(newPercent);
       onAddIntimacyEvents([
@@ -467,11 +560,36 @@ export const GameTable: React.FC<GameTableProps> = ({
       // Check if standard intimacy reaches 100% → trigger position phase
       if (newPercent >= 100 && journeyPhase === 'standard') {
         onJourneyPhaseChange('position_consent');
+        // Task 3: refund pending boost if intimacy hits 100
+        if (pendingDifficultyBoost) {
+          const refunded = refundPendingDifficultyBoost(playerRewards, pendingDifficultyBoost);
+          onPlayerRewardsChange(refunded);
+          onPendingDifficultyBoostChange(null);
+        }
       }
+
+      // Task 2: award stars
+      const stars = deriveDifficultyStars(selectedCard);
+      toastStarGain = stars;
+      const nextRewards = awardStars(playerRewards, currentPlayerIndex, stars);
+      onPlayerRewardsChange(nextRewards);
+      onAddRewardEvent({
+        kind: 'earned_stars',
+        playerIndex: currentPlayerIndex,
+        amount: stars,
+        round: currentRound,
+        timestamp: Date.now(),
+        cardId: selectedCard.id,
+      });
     } else if (deck === 'position') {
-      // Luxury gain
-      const luxuryGain = selectedCard.position?.luxuryGain ?? 10;
-      const newLuxury = Math.min(100, luxuryIntimacyPercent + luxuryGain);
+      // Task 1 fix: use calculateCompletedPositionLuxury instead of hardcode luxuryGain ?? 10
+      const luxuryResult = calculateCompletedPositionLuxury(
+        luxuryIntimacyPercent,
+        selectedCard,
+        luxuryProgressionConfig,
+      );
+      toastLuxuryGain = luxuryResult.totalApplied;
+      const newLuxury = luxuryResult.nextPercent;
       onLuxuryIntimacyPercentChange(newLuxury);
       if (newLuxury >= 100) {
         onJourneyPhaseChange('final');
@@ -479,6 +597,15 @@ export const GameTable: React.FC<GameTableProps> = ({
     }
 
     onUnlockCard(selectedCard.id);
+
+    // Task 7: show confetti + toast
+    try { confettiRef.current?.start(); } catch {}
+    setToastData({
+      intimacyGain: toastIntimacyGain,
+      starGain: toastStarGain,
+      luxuryGain: toastLuxuryGain,
+      isPosition: deck === 'position',
+    });
 
     // Bug 1 fix: check clothing effect on position cards too (no cardRemovalBonus for position)
     const hadDialog = triggerClothingDialog(selectedCard, () => {
@@ -648,6 +775,93 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   const isPassTurn = selectedCard?.gameplayEffect?.kind === 'pass_turn';
   const isPositionPhase = journeyPhase === 'position' || journeyPhase === 'final';
+  const isHaveSexCard = selectedCard?.position?.family === 'have_sex';
+
+  // Task 2: Reroll handler
+  const handleReroll = () => {
+    if (!selectedCard || hasRerolledThisTurn) return;
+    const nextRewards = spendReward(playerRewards, currentPlayerIndex, 'reroll');
+    if (!nextRewards) return; // insufficient balance
+
+    onPlayerRewardsChange(nextRewards);
+    onAddRewardEvent({
+      kind: 'rerolled_card',
+      playerIndex: currentPlayerIndex,
+      amount: REROLL_STAR_COST,
+      round: currentRound,
+      timestamp: Date.now(),
+      cardId: selectedCard.id,
+    });
+
+    // Record rerolled event for the old card
+    const resolutionId = `${selectedCard.id}_${currentRound}_rerolled_${Date.now()}`;
+    onAddResolutionEvent({
+      id: resolutionId,
+      cardId: selectedCard.id,
+      playerIndex: currentPlayerIndex,
+      status: 'rerolled',
+      deck: getCardDeck(selectedCard),
+      round: currentRound,
+      timestamp: Date.now(),
+    });
+
+    setHasRerolledThisTurn(true);
+    // Draw a new card, excluding the rerolled card
+    soundEngine.playShuffle();
+    const result = selectJourneyCard({
+      cards: availableCards,
+      actorIndex: currentPlayerIndex,
+      outfits: outfitStates,
+      usedCardIds: usedStandardCardIds,
+      excludedCardIds: [selectedCard.id],
+      levels: settings.levels,
+      intimacyPercent,
+      config: progressionConfig,
+    });
+    if (result.card) {
+      setSelectedCard(result.card);
+      setUsedStandardCardIds(result.nextUsedCardIds);
+      setCardState('drawn_revealed');
+    }
+  };
+
+  // Task 3: Difficulty Boost handler
+  const handleBoost = () => {
+    if (pendingDifficultyBoost !== null) return; // already pending
+    const nextRewards = spendReward(playerRewards, currentPlayerIndex, 'difficulty_boost');
+    if (!nextRewards) return;
+
+    onPlayerRewardsChange(nextRewards);
+    onAddRewardEvent({
+      kind: 'queued_difficulty_boost',
+      playerIndex: currentPlayerIndex,
+      amount: DIFFICULTY_BOOST_STAR_COST,
+      round: currentRound,
+      timestamp: Date.now(),
+    });
+    onPendingDifficultyBoostChange({
+      ownerPlayerIndex: currentPlayerIndex,
+      targetPlayerIndex: opponentIndex,
+      queuedRound: currentRound,
+    });
+  };
+
+  // Task 5: Have Sex card — final_viewed
+  const handleHaveSexViewed = () => {
+    if (!selectedCard) return;
+    if (timerRef.current) clearInterval(timerRef.current);
+    const resolutionId = `${selectedCard.id}_${currentRound}_final_${Date.now()}`;
+    onAddResolutionEvent({
+      id: resolutionId,
+      cardId: selectedCard.id,
+      playerIndex: currentPlayerIndex,
+      status: 'final_viewed',
+      deck: getCardDeck(selectedCard),
+      round: currentRound,
+      timestamp: Date.now(),
+    });
+    onFinishGame('have_sex');
+  };
 
   return (
     <ScrollView className="flex-1" contentContainerStyle={styles.container}>
@@ -659,6 +873,10 @@ export const GameTable: React.FC<GameTableProps> = ({
             <Text style={styles.playerName}>{currentPlayer.name}</Text>
             <Text style={styles.playerMeta}>
               Lượt {currentRound} · {currentPlayer.completedCount}✓ · {currentPlayer.skippedCount}✗
+            </Text>
+            {/* Task 2: star balance */}
+            <Text style={styles.starBalance}>
+              ⭐ {playerRewards[currentPlayerIndex].starBalance}
             </Text>
           </View>
         </View>
@@ -706,7 +924,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         </View>
       )}
 
-      {/* Position consent prompt */}
+      {/* Position consent prompt — Task 5: add 'Kết thúc tại đây' button */}
       {journeyPhase === 'position_consent' && cardState === 'deck' && !isInPreparation && (
         <Animated.View entering={FadeIn.duration(400)} style={styles.consentBox}>
           <Text style={styles.consentTitle}>✨ Sẵn sàng cho pha Tư thế?</Text>
@@ -715,6 +933,10 @@ export const GameTable: React.FC<GameTableProps> = ({
           </Text>
           <Pressable onPress={startPreparation} style={styles.consentBtn}>
             <Text style={styles.consentBtnText}>Bắt đầu chuẩn bị</Text>
+          </Pressable>
+          {/* Task 5: end here button */}
+          <Pressable onPress={() => onFinishGame('pink_complete')} style={[styles.consentBtn, { backgroundColor: '#db2777' }]}>
+            <Text style={styles.consentBtnText}>🏁 Kết thúc tại đây</Text>
           </Pressable>
           <Pressable onPress={() => onJourneyPhaseChange('standard')} style={styles.consentSkipBtn}>
             <Text style={styles.consentSkipBtnText}>Chưa sẵn sàng</Text>
@@ -760,10 +982,33 @@ export const GameTable: React.FC<GameTableProps> = ({
               >
                 {OUTFIT_STAGE_COPY[stage]} ({count})
               </Text>
+              {/* Task 3: boost pending indicator */}
+              {pendingDifficultyBoost?.targetPlayerIndex === idx && (
+                <Text style={styles.boostIndicator}>🔥 Boost đang chờ</Text>
+              )}
+              {/* Task 2: star balance per player */}
+              <Text style={styles.dockStarBalance}>⭐ {playerRewards[idx].starBalance}</Text>
             </View>
           );
         })}
       </View>
+
+      {/* Task 6: Draw Probability Panel */}
+      {!isPositionPhase && (
+        <DrawProbabilityPanel
+          cardState={cardState}
+          journeyPhase={journeyPhase}
+          availableCards={availableCards}
+          actorIndex={currentPlayerIndex}
+          outfits={outfitStates}
+          usedCardIds={usedStandardCardIds}
+          levels={settings.levels}
+          intimacyPercent={intimacyPercent}
+          config={progressionConfig}
+          pendingDifficultyBoost={!!pendingDifficultyBoost}
+          snapshot={drawProbabilitySnapshot}
+        />
+      )}
 
       {/* Main Card Area */}
       <View style={styles.cardCenterArea}>
@@ -810,6 +1055,27 @@ export const GameTable: React.FC<GameTableProps> = ({
                 {isPositionPhase ? 'Rút Tư Thế' : 'Rút Lá Bài'}
               </Text>
             </Pressable>
+
+            {/* Task 3: Boost button — standard phase, deck state */}
+            {!isPositionPhase && journeyPhase === 'standard' && (
+              <Pressable
+                onPress={handleBoost}
+                disabled={
+                  playerRewards[currentPlayerIndex].starBalance < DIFFICULTY_BOOST_STAR_COST ||
+                  pendingDifficultyBoost !== null
+                }
+                style={({ pressed }) => [
+                  styles.boostBtn,
+                  (playerRewards[currentPlayerIndex].starBalance < DIFFICULTY_BOOST_STAR_COST ||
+                    pendingDifficultyBoost !== null) && { opacity: 0.45 },
+                  { transform: [{ scale: pressed ? 0.96 : 1 }] },
+                ]}
+              >
+                <Text style={styles.boostBtnText}>
+                  🔥 Boost (+{DIFFICULTY_BOOST_STAR_COST}⭐)
+                </Text>
+              </Pressable>
+            )}
           </Animated.View>
         )}
 
@@ -846,9 +1112,9 @@ export const GameTable: React.FC<GameTableProps> = ({
           </Animated.View>
         )}
 
-        {/* Drawn Card Display */}
+        {/* Drawn Card Display — Task 9: 3D flip animation */}
         {selectedCard && cardState !== 'deck' && (
-          <Animated.View entering={SlideInUp.duration(400)} style={styles.drawnCardWrapper}>
+          <Animated.View style={[styles.drawnCardWrapper, flipAnimatedStyle]}>
             <GameCard
               card={selectedCard}
               size="lg"
@@ -884,7 +1150,19 @@ export const GameTable: React.FC<GameTableProps> = ({
             {/* Action Buttons */}
             {cardState === 'drawn_revealed' && (
               <View style={styles.cardActionsRow}>
-                {isPassTurn ? (
+                {/* Task 5: Have Sex card — single button */}
+                {isHaveSexCard ? (
+                  <Pressable
+                    onPress={handleHaveSexViewed}
+                    style={({ pressed }) => [
+                      styles.haveSexBtn,
+                      { transform: [{ scale: pressed ? 0.96 : 1 }] },
+                    ]}
+                  >
+                    <Heart size={18} color="#fff" />
+                    <Text style={styles.haveSexBtnText}>Đã xem · Kết thúc ván</Text>
+                  </Pressable>
+                ) : isPassTurn ? (
                   /* Bug 6 fix: pass_turn → "Chuyển lượt" button */
                   <Pressable
                     onPress={passCard}
@@ -922,6 +1200,29 @@ export const GameTable: React.FC<GameTableProps> = ({
                   </>
                 )}
               </View>
+            )}
+
+            {/* Task 2: Reroll button — only on drawn_revealed, standard deck, once per turn */}
+            {cardState === 'drawn_revealed' &&
+              !isHaveSexCard && !isPassTurn &&
+              getCardDeck(selectedCard) === 'standard' && (
+              <Pressable
+                onPress={handleReroll}
+                disabled={
+                  hasRerolledThisTurn ||
+                  playerRewards[currentPlayerIndex].starBalance < REROLL_STAR_COST
+                }
+                style={({ pressed }) => [
+                  styles.rerollBtn,
+                  (hasRerolledThisTurn ||
+                    playerRewards[currentPlayerIndex].starBalance < REROLL_STAR_COST) && { opacity: 0.4 },
+                  { transform: [{ scale: pressed ? 0.96 : 1 }] },
+                ]}
+              >
+                <Text style={styles.rerollBtnText}>
+                  {hasRerolledThisTurn ? '✓ Đã đổi' : `🔄 Đổi thẻ (${REROLL_STAR_COST}⭐)`}
+                </Text>
+              </Pressable>
             )}
 
             {/* Completion celebratory state */}
@@ -1023,9 +1324,9 @@ export const GameTable: React.FC<GameTableProps> = ({
         onCancel={() => setShowSwapDialog(false)}
       />
 
-      {/* Summary Modal */}
+      {/* Task 5: Summary Modal — uses external show/terminal from game.tsx for terminal events */}
       <SummaryModal
-        visible={showSummaryModal}
+        visible={showSummaryModal || (externalShowSummary ?? false)}
         player1={player1}
         player2={player2}
         totalRounds={currentRound}
@@ -1034,16 +1335,44 @@ export const GameTable: React.FC<GameTableProps> = ({
         intimacyPercent={intimacyPercent}
         journeyPhase={journeyPhase}
         positionSessionStats={positionSessionStats}
+        endReason={externalSummaryEndReason ?? undefined}
+        terminal={externalSummaryTerminal ?? false}
         onRestart={() => {
           setShowSummaryModal(false);
-          onFinishGame('manual');
+          if (onSummaryRestart) {
+            onSummaryRestart();
+          } else {
+            onFinishGame('manual');
+          }
         }}
-        onClose={() => setShowSummaryModal(false)}
+        onClose={() => {
+          if (externalSummaryTerminal) return; // terminal can't close
+          setShowSummaryModal(false);
+          if (onSummaryClose) onSummaryClose();
+        }}
         onHome={() => {
           setShowSummaryModal(false);
-          onFinishGame('manual');
+          if (onSummaryHome) {
+            onSummaryHome();
+          } else {
+            onFinishGame('manual');
+          }
         }}
       />
+
+      {/* Task 7: Confetti cannon — fires on card completion */}
+      <ConfettiCannon
+        ref={confettiRef}
+        count={60}
+        origin={{ x: 0, y: 0 }}
+        autoStart={false}
+        fadeOut
+        fallSpeed={2500}
+        colors={['#D4AF37', '#FF6B9D', '#fff', '#a78bfa', '#34d399']}
+      />
+
+      {/* Task 7: Completion toast */}
+      <CompletionToast data={toastData} onDismiss={() => setToastData(null)} />
     </ScrollView>
   );
 };
@@ -1076,6 +1405,26 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bodyRegular,
     fontSize: 11,
     color: COLORS.neutral400,
+  },
+  // Task 2
+  starBalance: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 11,
+    color: COLORS.gold,
+    marginTop: 2,
+  },
+  // Task 2 + 3 dock items
+  dockStarBalance: {
+    fontFamily: FONTS.bodyMedium,
+    fontSize: 9,
+    color: COLORS.gold,
+    marginTop: 2,
+  },
+  boostIndicator: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 9,
+    color: '#fb923c',
+    marginTop: 2,
   },
   headerButtons: {
     flexDirection: 'row',
@@ -1397,5 +1746,56 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bodyMedium,
     fontSize: 11,
     color: COLORS.neutral400,
+  },
+  // Task 2: Reroll button
+  rerollBtn: {
+    alignSelf: 'center',
+    marginTop: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: 'rgba(167, 139, 250, 0.35)',
+    backgroundColor: 'rgba(124, 58, 237, 0.12)',
+  },
+  rerollBtnText: {
+    fontFamily: FONTS.bodyMedium,
+    fontSize: 12,
+    color: '#c4b5fd',
+  },
+  // Task 3: Boost button
+  boostBtn: {
+    alignSelf: 'center',
+    marginTop: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 7,
+    borderRadius: 9999,
+    borderWidth: 1,
+    borderColor: 'rgba(251, 146, 60, 0.35)',
+    backgroundColor: 'rgba(251, 146, 60, 0.1)',
+  },
+  boostBtnText: {
+    fontFamily: FONTS.bodyMedium,
+    fontSize: 12,
+    color: '#fb923c',
+  },
+  // Task 5: Have Sex button
+  haveSexBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 9999,
+    backgroundColor: '#db2777',
+    shadowColor: '#db2777',
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 8,
+  },
+  haveSexBtnText: {
+    fontFamily: FONTS.bodyBold,
+    fontSize: 15,
+    color: '#fff',
   },
 });

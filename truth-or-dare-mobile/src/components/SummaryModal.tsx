@@ -26,6 +26,8 @@ export interface SummaryModalProps {
   onClose: () => void;
   onHome?: () => void;
   endReason?: GameEndReason | null;
+  /** When true, hides the close (×) button — user must pick Home or New Game */
+  terminal?: boolean;
 }
 
 export const SummaryModal: React.FC<SummaryModalProps> = ({
@@ -41,6 +43,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   onClose,
   onHome,
   endReason,
+  terminal = false,
 }) => {
   if (!visible) return null;
 
@@ -195,9 +198,12 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
               </Pressable>
             )}
 
-            <Pressable onPress={onClose} style={styles.closeTextBtn}>
-              <Text style={styles.closeText}>Đóng</Text>
-            </Pressable>
+            {/* Task 5: hide close button in terminal mode */}
+            {!terminal && (
+              <Pressable onPress={onClose} style={styles.closeTextBtn}>
+                <Text style={styles.closeText}>Đóng</Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </View>
