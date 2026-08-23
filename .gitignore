@@ -1,0 +1,14 @@
+# Secrets and editor state
+**/.env
+**/.env.*
+!.env.example
+**/.idea/
+
+# Dependencies and generated output
+**/node_modules/
+**/dist/
+**/.expo/
+**/.wrangler/
+**/.playwright-cli/
+**/output/
+**/tmp/

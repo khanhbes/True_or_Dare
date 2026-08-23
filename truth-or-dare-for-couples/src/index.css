@@ -1,0 +1,852 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, .font-serif-romantic, .serif-title {
+    font-family: 'Playfair Display', 'Georgia', serif;
+  }
+
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid rgba(255, 107, 157, 0.9);
+    outline-offset: 3px;
+  }
+
+  /* ===== INPUT & TEXTAREA PLACEHOLDER EFFECTS ===== */
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+    font-style: italic;
+    font-weight: 300;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.02em;
+  }
+
+  input:focus::placeholder,
+  textarea:focus::placeholder {
+    color: rgba(255, 107, 157, 0.4);
+    transform: translateX(4px);
+    letter-spacing: 0.06em;
+  }
+
+  /* ===== GLOBAL INPUT & TEXTAREA FOCUS EFFECTS ===== */
+  input[type="text"],
+  textarea {
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    caret-color: #FF6B9D;
+  }
+
+  input[type="text"]:focus,
+  textarea:focus {
+    box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.15), 0 0 20px rgba(255, 107, 157, 0.08);
+    transform: translateY(-1px);
+  }
+
+  /* ===== CUSTOM SELECT / DROPDOWN STYLING ===== */
+  select {
+    font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px !important;
+  }
+
+  select:hover {
+    border-color: rgba(212, 175, 55, 0.6) !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.12), 0 2px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+  }
+
+  select:focus {
+    outline: none;
+    border-color: rgba(255, 107, 157, 0.6) !important;
+    box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.15), 0 0 25px rgba(255, 107, 157, 0.1), 0 4px 12px rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px);
+  }
+
+  select option {
+    font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+    background-color: #1a1015;
+    color: #f5f5f5;
+    padding: 8px 12px;
+  }
+
+  select option:hover,
+  select option:checked {
+    background-color: #2d0c13;
+    color: #D4AF37;
+  }
+}
+
+/* Custom Utilities for Elegant Dark Theme */
+.serif-title {
+  font-family: 'Playfair Display', 'Georgia', serif;
+}
+
+.gold-glow {
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.3);
+}
+
+.pink-glow {
+  text-shadow: 0 0 12px rgba(255, 107, 157, 0.6);
+}
+
+.wine-gradient {
+  background: radial-gradient(circle at center, #4a121a 0%, #1a1a1a 100%);
+}
+
+.card-pattern {
+  background-image: radial-gradient(#d4af37 0.6px, transparent 0.6px);
+  background-size: 20px 20px;
+}
+
+.bokeh {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.18;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.transparency-grid {
+  background-color: #111;
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.07) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.07) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.07) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.07) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+/* Custom Utilities for Romantic Seductive Theme */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Metallic Gold Text and Borders */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FBF5B7 0%, #D4AF37 50%, #AA771C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #DFBA67 0%, #C59B27 50%, #9E7412 100%);
+}
+
+.border-gold-gradient {
+  border-image: linear-gradient(135deg, #EAD087, #B88E28) 1;
+}
+
+/* Glassmorphism Dark Wine Panels */
+.glass-wine {
+  background: rgba(45, 12, 19, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.glass-dark {
+  background: rgba(22, 18, 20, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 107, 157, 0.15);
+}
+
+/* Candle Glow Animations */
+@keyframes candlePulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+    filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.35));
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 40px rgba(255, 107, 157, 0.5));
+  }
+}
+
+.animate-candle-glow {
+  animation: candlePulse 4s ease-in-out infinite;
+}
+
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-120px) translateX(20px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+.animate-float-slow {
+  animation: floatParticle 8s ease-in-out infinite;
+}
+
+/* ===== ANIMATED PLACEHOLDER SHIMMER ===== */
+@keyframes placeholderShimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.input-shimmer::placeholder {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 107, 157, 0.35) 50%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: placeholderShimmer 3s linear infinite;
+}
+
+.input-shimmer:focus::placeholder {
+  animation: none;
+  background: none;
+  -webkit-text-fill-color: rgba(255, 107, 157, 0.4);
+}
+
+/* ===== PREMIUM SELECT WRAPPER ===== */
+.select-premium {
+  position: relative;
+  overflow: visible;
+}
+
+.select-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(255, 107, 157, 0.2), rgba(212, 175, 55, 0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.select-premium:hover::before {
+  opacity: 1;
+}
+
+/* ===== ANIMATED FOCUS RING ===== */
+@keyframes focusRingPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.15), 0 0 15px rgba(255, 107, 157, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.25), 0 0 25px rgba(255, 107, 157, 0.12);
+  }
+}
+
+.input-focus-glow:focus {
+  animation: focusRingPulse 2s ease-in-out infinite;
+}
+
+/* ========================================
+   CARD DESIGN SYSTEM - 3 LEVELS
+   ======================================== */
+
+/* Base card container */
+.game-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 2px solid transparent;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+}
+
+.game-card:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Always-on, slow prismatic border. It is independent from hover state. */
+.game-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  padding: 2px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--card-rainbow-angle),
+    #ff6b9d,
+    #ffd6e5 12%,
+    #ffd166 27%,
+    #8ce8d5 43%,
+    #83c5ff 58%,
+    #c6a7ff 74%,
+    #ffffff 86%,
+    #ff6b9d
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.35));
+  animation: card-rainbow-drift 16s linear infinite;
+}
+
+/* Each level keeps its own visual identity. */
+.game-card.card-gentle::after {
+  background: linear-gradient(135deg, #ff4f8b, #ffd0df 48%, #ff6b9d);
+  animation: card-border-breathe 4.8s ease-in-out infinite;
+}
+
+.game-card.card-intimate::after {
+  background: linear-gradient(135deg, #3b82f6, #bde3ff 48%, #60a5fa);
+  animation: card-border-breathe 4.8s ease-in-out infinite;
+}
+
+/* --- GENTLE: Black card, pink border --- */
+.card-gentle {
+  background: linear-gradient(180deg, #1a0810 0%, #0d0407 50%, #0a0305 100%);
+  box-shadow: 0 4px 20px rgba(255, 107, 157, 0.15), inset 0 1px 0 rgba(255, 107, 157, 0.1);
+}
+
+.card-gentle:hover {
+  box-shadow: 0 8px 35px rgba(255, 107, 157, 0.25), inset 0 1px 0 rgba(255, 107, 157, 0.15);
+}
+
+.card-gentle .card-icon-color {
+  color: #FF6B9D;
+}
+
+/* --- INTIMATE: Deep purple, pink icon --- */
+.card-intimate {
+  background: linear-gradient(180deg, #2d1854 0%, #1e1045 50%, #150a35 100%);
+  box-shadow: 0 4px 20px rgba(130, 80, 220, 0.15), inset 0 1px 0 rgba(180, 120, 255, 0.1);
+}
+
+.card-intimate:hover {
+  box-shadow: 0 8px 35px rgba(130, 80, 220, 0.3), inset 0 1px 0 rgba(180, 120, 255, 0.15);
+}
+
+.card-intimate .card-icon-color {
+  color: #FF6B9D;
+}
+
+/* Wave pattern overlay for intimate/passionate */
+.card-wave-pattern::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cpath d='M0 200 Q100 180 200 200 Q300 220 400 200' fill='none' stroke='rgba(150,100,255,0.06)' stroke-width='2'/%3E%3Cpath d='M0 220 Q100 200 200 220 Q300 240 400 220' fill='none' stroke='rgba(150,100,255,0.04)' stroke-width='2'/%3E%3Cpath d='M0 240 Q100 220 200 240 Q300 260 400 240' fill='none' stroke='rgba(150,100,255,0.03)' stroke-width='2'/%3E%3C/svg%3E");
+  background-size: 400px 400px;
+  opacity: 1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- PASSIONATE: Warm golden background --- */
+.card-passionate {
+  background: linear-gradient(180deg, #3d2a0a 0%, #2a1d08 40%, #1f1606 100%);
+  box-shadow: 0 4px 25px rgba(212, 175, 55, 0.15);
+}
+
+.card-passionate .card-icon-color {
+  color: #FF6B9D;
+}
+
+/* --- POSITION DECK: midnight sapphire + champagne foil --- */
+.card-position {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(31, 79, 142, 0.34), transparent 36%),
+    linear-gradient(160deg, #111d37 0%, #070b18 52%, #03050c 100%);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(226, 194, 117, 0.12),
+    inset 0 1px 0 rgba(255, 244, 214, 0.12);
+}
+
+.game-card.card-position::after {
+  background: conic-gradient(
+    from var(--card-rainbow-angle),
+    #725c2d,
+    #f7e7b0,
+    #b98a38,
+    #fff4d6,
+    #725c2d
+  );
+  filter: drop-shadow(0 0 4px rgba(226, 194, 117, 0.42));
+  animation: position-foil-drift 12s linear infinite;
+}
+
+.card-position .card-icon-color {
+  color: #e2c275;
+  filter: drop-shadow(0 0 14px rgba(226, 194, 117, 0.28));
+}
+
+/* Ceremonial position draw: sapphire lacquer, champagne edge, restrained foil. */
+.luxury-deck {
+  isolation: isolate;
+  border: 0;
+  background: transparent;
+}
+
+.luxury-deck__card,
+.luxury-deck__face,
+.luxury-shuffle__card,
+.luxury-card-back {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(74, 112, 177, .28), transparent 32%),
+    linear-gradient(155deg, #17294c 0%, #080d20 52%, #03050d 100%);
+  border: 2px solid rgba(226, 194, 117, .72);
+  box-shadow:
+    0 24px 65px rgba(0, 0, 0, .52),
+    0 0 24px rgba(226, 194, 117, .12),
+    inset 0 0 0 1px rgba(255, 244, 214, .12);
+}
+
+.luxury-deck__card,
+.luxury-deck__face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: 1.4rem;
+}
+
+.luxury-deck__card--left {
+  z-index: -2;
+  opacity: .42;
+  transform: translate(-8px, 8px) rotate(-4deg);
+}
+
+.luxury-deck__card--right {
+  z-index: -1;
+  opacity: .58;
+  transform: translate(7px, 4px) rotate(2.5deg);
+}
+
+.luxury-deck__face {
+  overflow: hidden;
+  padding: 13px;
+}
+
+.luxury-deck__face::after,
+.luxury-shuffle__card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(112deg, transparent 28%, rgba(255, 244, 214, .2) 46%, transparent 63%);
+  transform: translateX(-145%);
+  animation: luxury-deck-foil 4.8s ease-in-out infinite;
+}
+
+.luxury-deck__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(247, 231, 176, .38);
+  border-radius: 1rem;
+  padding: 18px 12px;
+  background:
+    radial-gradient(circle at center, rgba(226, 194, 117, .08), transparent 34%),
+    repeating-radial-gradient(circle at center, transparent 0 26px, rgba(247, 231, 176, .055) 27px 28px);
+}
+
+.luxury-deck__seal {
+  display: grid;
+  width: 70px;
+  height: 70px;
+  place-items: center;
+  border: 1px solid rgba(247, 231, 176, .72);
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(226, 194, 117, .2), rgba(7, 11, 24, .3) 68%);
+  color: #fff4d6;
+  font-size: 1.7rem;
+  box-shadow: 0 0 24px rgba(226, 194, 117, .18), inset 0 0 16px rgba(226, 194, 117, .1);
+}
+
+.luxury-shuffle__card {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 1.35rem;
+  padding: 12px;
+  transform-origin: 50% 85%;
+}
+
+.luxury-card-back {
+  overflow: hidden;
+}
+
+.luxury-unseal-button {
+  border-color: rgba(247, 231, 176, .62);
+  background: linear-gradient(135deg, rgba(226, 194, 117, .2), rgba(31, 79, 142, .2));
+  color: #fff4d6;
+  box-shadow: 0 0 22px rgba(226, 194, 117, .12);
+}
+
+.luxury-unseal-button:hover {
+  border-color: rgba(255, 244, 214, .9);
+  background: linear-gradient(135deg, rgba(226, 194, 117, .27), rgba(31, 79, 142, .28));
+}
+
+.position-content-reveal {
+  position: relative;
+  isolation: isolate;
+}
+
+.position-content-reveal::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(108deg, transparent 24%, rgba(255, 244, 214, .32) 48%, transparent 68%);
+  transform: translateX(-135%);
+  animation: position-content-unseal .9s cubic-bezier(.22, 1, .36, 1) 1 forwards;
+}
+
+@keyframes luxury-deck-foil {
+  0%, 58% { transform: translateX(-145%); opacity: 0; }
+  68% { opacity: .8; }
+  100% { transform: translateX(145%); opacity: 0; }
+}
+
+@keyframes position-content-unseal {
+  0% { transform: translateX(-135%); opacity: 0; }
+  22% { opacity: .8; }
+  100% { transform: translateX(135%); opacity: 0; }
+}
+
+/* --- RAREST CARD: obsidian, imperial violet, platinum and rose gold --- */
+.card-position-rare {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(115, 55, 141, 0.38), transparent 34%),
+    radial-gradient(circle at 20% 80%, rgba(232, 164, 140, 0.12), transparent 35%),
+    linear-gradient(150deg, #35124b 0%, #120717 44%, #050507 100%);
+  background-size: 145% 145%, 155% 155%, 180% 180%;
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.62),
+    0 0 42px rgba(244, 232, 255, 0.16),
+    inset 0 0 0 1px rgba(232, 164, 140, 0.22);
+  animation: rare-card-color-drift 12s ease-in-out infinite;
+}
+
+.card-position-rare::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  z-index: 1;
+  border-radius: 13px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(244, 232, 255, 0.23), transparent 23%),
+    radial-gradient(circle at 82% 72%, rgba(232, 164, 140, 0.2), transparent 26%),
+    linear-gradient(118deg, transparent 20%, rgba(215, 177, 255, 0.1) 35%, rgba(255, 246, 223, 0.12) 46%, rgba(232, 164, 140, 0.09) 56%, transparent 70%);
+  background-size: 145% 145%, 150% 150%, 220% 100%;
+  box-shadow:
+    inset 0 0 0 1px rgba(244, 232, 255, 0.1),
+    inset 0 0 28px rgba(115, 55, 141, 0.1);
+  opacity: 0.72;
+  animation: rare-card-ambience 9s ease-in-out infinite;
+}
+
+.game-card.card-position-rare::after {
+  padding: 3px;
+  background: conic-gradient(
+    from var(--card-rainbow-angle),
+    #6e3c67,
+    #f4e8ff,
+    #e8a48c,
+    #fff6df,
+    #a97499,
+    #f4e8ff,
+    #6e3c67
+  );
+  filter: drop-shadow(0 0 7px rgba(244, 232, 255, 0.5));
+  animation: rare-card-foil 8s linear infinite;
+}
+
+.card-position-rare .card-icon-color {
+  color: #f4e8ff;
+  filter: drop-shadow(0 0 18px rgba(232, 164, 140, 0.48));
+}
+
+.card-position-rare .mythic-icon-aura {
+  position: relative;
+  z-index: 1;
+  transition: filter 180ms ease;
+}
+
+.card-position-rare .mythic-icon-aura::before {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(244, 232, 255, 0.22), rgba(232, 164, 140, 0.08) 48%, transparent 72%);
+  filter: blur(7px);
+  opacity: 0.42;
+  transform: scale(0.98);
+}
+
+.card-position-rare .mythic-icon-aura svg {
+  color: #f4e8ff;
+  filter: drop-shadow(0 0 12px rgba(215, 177, 255, 0.34));
+}
+
+.card-position-rare .mythic-icon-aura .card-custom-icon {
+  filter: brightness(1.02) saturate(0.96);
+}
+
+@media (hover: hover) {
+  .game-card:hover .mythic-icon-aura {
+    filter: brightness(1.04);
+  }
+}
+
+@keyframes position-foil-drift {
+  to { --card-rainbow-angle: 360deg; }
+}
+
+@keyframes rare-card-foil {
+  0% { --card-rainbow-angle: 0deg; opacity: 0.78; }
+  50% { opacity: 1; }
+  100% { --card-rainbow-angle: 360deg; opacity: 0.78; }
+}
+
+@keyframes rare-card-ambience {
+  0%, 100% {
+    background-position: 0% 0%, 100% 100%, 130% 0;
+    opacity: 0.62;
+  }
+  50% {
+    background-position: 22% 14%, 78% 82%, -120% 0;
+    opacity: 0.88;
+  }
+}
+
+@keyframes rare-card-color-drift {
+  0%, 100% {
+    background-position: 50% 0%, 0% 100%, 0% 50%;
+    box-shadow:
+      0 28px 90px rgba(0, 0, 0, 0.62),
+      0 0 36px rgba(215, 177, 255, 0.14),
+      inset 0 0 0 1px rgba(232, 164, 140, 0.2);
+  }
+  50% {
+    background-position: 42% 18%, 24% 76%, 100% 50%;
+    box-shadow:
+      0 28px 90px rgba(0, 0, 0, 0.62),
+      0 0 52px rgba(232, 164, 140, 0.22),
+      inset 0 0 0 1px rgba(244, 232, 255, 0.3);
+  }
+}
+
+.luxury-heart-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,.55) 45%, transparent 70%);
+  transform: translateX(-140%);
+  animation: luxury-heart-foil 3.8s ease-in-out infinite;
+}
+
+@keyframes luxury-heart-foil {
+  0%, 55% { transform: translateX(-140%); }
+  100% { transform: translateX(150%); }
+}
+
+@property --card-rainbow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes card-rainbow-drift {
+  to { --card-rainbow-angle: 360deg; }
+}
+
+@keyframes card-border-breathe {
+  0%, 100% { opacity: 0.78; filter: drop-shadow(0 0 2px currentColor); }
+  50% { opacity: 1; filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.38)); }
+}
+
+/* Shared restrained hover treatment for setup surfaces. */
+.interactive-box {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), border-color 260ms ease, box-shadow 260ms ease, background-color 260ms ease;
+}
+
+.interactive-box:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 107, 157, 0.42);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.24), 0 0 18px rgba(255, 107, 157, 0.07);
+}
+
+.avatar-menu {
+  transform-origin: top left;
+  animation: avatar-menu-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes avatar-menu-in {
+  from { opacity: 0; transform: translateY(-5px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .luxury-heart-fill::after {
+    animation: none !important;
+    opacity: .18;
+  }
+  .game-card::after,
+  .luxury-deck__face::after,
+  .luxury-shuffle__card::after,
+  .position-content-reveal::after,
+  .card-position-rare,
+  .card-position-rare::before,
+  .card-position-rare .mythic-icon-aura,
+  .card-position-rare .mythic-icon-aura::before,
+  .card-position-rare .mythic-icon-aura svg,
+  .card-position-rare .mythic-icon-aura .card-custom-icon,
+  .avatar-menu { animation: none; }
+  .interactive-box:hover { transform: none; }
+}
+
+/* Card corner decorations (suit symbols) for intimate/passionate */
+.card-corner-deco {
+  position: absolute;
+  font-size: 10px;
+  color: rgba(180, 120, 255, 0.35);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Card content area - always above overlays */
+.card-content-layer {
+  position: relative;
+  z-index: 3;
+}
+
+/* Card icon wrapper */
+.card-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.card-icon-wrapper-lg {
+  width: 96px;
+  height: 96px;
+}
+
+.card-icon-wrapper-sm {
+  width: 48px;
+  height: 48px;
+}
+
+/* Uploaded bitmap icons need more presence than line-based SVGs. */
+.card-custom-icon-wrapper {
+  width: 92px;
+  height: 92px;
+  max-width: 42%;
+  filter: none;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.card-icon-wrapper-sm.card-custom-icon-wrapper {
+  width: 68px;
+  height: 68px;
+  max-width: 48%;
+}
+
+.card-icon-wrapper-lg.card-custom-icon-wrapper {
+  width: 124px;
+  height: 124px;
+  max-width: 46%;
+}
+
+.card-custom-icon {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  mix-blend-mode: screen;
+}
+
+.generated-couple-icon {
+  width: 142%;
+  height: 142%;
+  max-width: none;
+  max-height: none;
+  margin: -21%;
+  border: 0;
+  background: transparent;
+  filter: none;
+  mix-blend-mode: screen;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 10, 12, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 107, 157, 0.5);
+}

@@ -1,0 +1,63 @@
+# Dependencies and package-manager caches
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/
+
+# Keep npm as the single package manager for this project
+bun.lock
+
+# Build and test output
+build/
+dist/
+coverage/
+__pycache__/
+*.py[cod]
+playwright-report/
+test-results/
+output/
+tmp/
+.playwright-cli/
+.wrangler/
+
+# Local recovery and backup bundles (may contain private card data/images)
+recovery/
+recovery-*/
+*.todbackup
+*.todbackup.zip
+*.todbackup.json
+*.recovery.json
+
+# AI Studio local artifacts
+assets/.aistudio/
+
+# Local environment files (keep the documented template)
+.env*
+.dev.vars
+!.env.example
+!.dev.vars.example
+
+# Credentials and private keys
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials.*.json
+secrets/
+*.secret
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

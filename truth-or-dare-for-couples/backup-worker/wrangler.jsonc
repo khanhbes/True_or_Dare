@@ -1,0 +1,22 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "true-or-dare-catalog-backup",
+  "main": "./index.ts",
+  "workers_dev": false,
+  "compatibility_date": "2026-08-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["0 17 * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "true-or-dare-catalog",
+      "database_id": "e8c8d6df-5bee-4944-acc1-7b3a71823896"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "CARD_ASSETS", "bucket_name": "true-or-dare-card-assets" },
+    { "binding": "CARD_BACKUPS", "bucket_name": "true-or-dare-card-backups" }
+  ]
+}

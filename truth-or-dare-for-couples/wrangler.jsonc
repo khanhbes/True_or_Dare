@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "true-or-dare-couples",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-08-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "ENVIRONMENT": "development"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "true-or-dare-catalog-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "CARD_ASSETS", "bucket_name": "true-or-dare-card-assets-local" },
+    { "binding": "CARD_BACKUPS", "bucket_name": "true-or-dare-card-backups-local" }
+  ],
+  "env": {
+    "preview": {
+      "vars": {
+        "ENVIRONMENT": "preview",
+        "ACCESS_TEAM_DOMAIN": "nameless-pine-f046.cloudflareaccess.com",
+        "ACCESS_AUD": "579da828c5861ffca1b4e15a77be9e07d0c2c2e831afe4da84076e3f4e90d7ed"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "true-or-dare-catalog-preview",
+          "database_id": "592eb6b3-de52-469a-941c-5d25c8a48678",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [
+        { "binding": "CARD_ASSETS", "bucket_name": "true-or-dare-card-assets-preview" },
+        { "binding": "CARD_BACKUPS", "bucket_name": "true-or-dare-card-backups-preview" }
+      ]
+    },
+    "production": {
+      "vars": {
+        "ENVIRONMENT": "production",
+        "ACCESS_TEAM_DOMAIN": "nameless-pine-f046.cloudflareaccess.com",
+        "ACCESS_AUD": "579da828c5861ffca1b4e15a77be9e07d0c2c2e831afe4da84076e3f4e90d7ed"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "true-or-dare-catalog",
+          "database_id": "e8c8d6df-5bee-4944-acc1-7b3a71823896",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [
+        { "binding": "CARD_ASSETS", "bucket_name": "true-or-dare-card-assets" },
+        { "binding": "CARD_BACKUPS", "bucket_name": "true-or-dare-card-backups" }
+      ]
+    }
+  }
+}
