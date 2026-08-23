@@ -5,6 +5,7 @@ import { SetupScreen } from '@/screens/SetupScreen';
 import { RulesModal } from '@/components/RulesModal';
 import { DEFAULT_PLAYER_1, DEFAULT_PLAYER_2 } from '@/shared/utils/playerStorage';
 import { hydrateGameSettings } from '@/shared/utils/wardrobe';
+import type { GameSettings, Player } from '@/shared/types';
 
 export default function SetupRoute() {
   const router = useRouter();
@@ -19,14 +20,13 @@ export default function SetupRoute() {
         initialSettings={defaultSettings}
         onBack={() => router.back()}
         onOpenRules={() => setShowRules(true)}
-        onStartGame={(p1, p2, settings) => {
+        onStartGame={(p1: Player, p2: Player, settings: GameSettings) => {
           router.push({
             pathname: '/game',
             params: {
-              p1Name: p1.name,
-              p1Avatar: p1.avatar,
-              p2Name: p2.name,
-              p2Avatar: p2.avatar,
+              settingsJson: JSON.stringify(settings),
+              p1Json: JSON.stringify(p1),
+              p2Json: JSON.stringify(p2),
             },
           });
         }}
