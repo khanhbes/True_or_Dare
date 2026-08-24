@@ -76,7 +76,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ visible, onClose }) => {
                 <Text style={styles.ruleTitle}>3. Luật Phạt Trang Phục</Text>
               </View>
               <Text style={styles.ruleBody}>
-                Nếu một người chơi chọn "Bỏ qua" thử thách hoặc không muốn trả lời sự thật, họ có thể chọn cởi 1 món đồ đang mặc (nếu tính năng phạt đang bật trong thiết lập).
+                Nếu một người chơi chọn &quot;Bỏ qua&quot; thử thách hoặc không muốn trả lời sự thật, họ có thể chọn cởi 1 món đồ đang mặc (nếu tính năng phạt đang bật trong thiết lập).
               </Text>
             </View>
 
@@ -111,13 +111,13 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: 440,
-    maxHeight: '85%',
+    maxWidth: 600,
+    maxHeight: '90%',
     backgroundColor: '#190a12',
     borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 107, 157, 0.3)',
-    padding: 20,
+    padding: 16,
   },
   header: {
     flexDirection: 'row',
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 14,
-    padding: 12,
+    padding: 10,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },

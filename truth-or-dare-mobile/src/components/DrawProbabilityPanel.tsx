@@ -37,6 +37,8 @@ interface DrawProbabilityPanelProps {
   intimacyPercent: number;
   config: ProgressionConfig;
   pendingDifficultyBoost: boolean;
+  recentCards?: readonly CardItem[];
+  clothingTurnsWithoutChange?: number;
   preferredType?: CardType | null;
   // Frozen snapshot (drawn state)
   snapshot: JourneyDrawProbabilities | LuxuryDrawProbabilities | null;
@@ -45,6 +47,7 @@ interface DrawProbabilityPanelProps {
 const TRUTH_COLOR = '#60a5fa';
 const DARE_COLOR = '#f87171';
 const STAR_COLORS = ['#a3a3a3', '#86efac', '#fcd34d', '#fb923c', '#f472b6'];
+const displayPercent = (value: number): number => Math.round(value * 100);
 
 export const DrawProbabilityPanel: React.FC<DrawProbabilityPanelProps> = ({
   cardState,
@@ -57,6 +60,8 @@ export const DrawProbabilityPanel: React.FC<DrawProbabilityPanelProps> = ({
   intimacyPercent,
   config,
   pendingDifficultyBoost,
+  recentCards,
+  clothingTurnsWithoutChange,
   preferredType,
   snapshot,
 }) => {
@@ -81,6 +86,8 @@ export const DrawProbabilityPanel: React.FC<DrawProbabilityPanelProps> = ({
         intimacyPercent,
         config,
         difficultyBoost: pendingDifficultyBoost,
+        recentCards,
+        clothingTurnsWithoutChange,
       });
     } catch {}
   }
@@ -119,12 +126,12 @@ export const DrawProbabilityPanel: React.FC<DrawProbabilityPanelProps> = ({
                   <View
                     style={[
                       styles.miniBarFill,
-                      { width: `${journeyProbs.types.truth}%` as unknown as number, backgroundColor: TRUTH_COLOR },
+                      { width: `${displayPercent(journeyProbs.types.truth)}%` as unknown as number, backgroundColor: TRUTH_COLOR },
                     ]}
                   />
                 </View>
                 <Text style={[styles.pct, { color: TRUTH_COLOR }]}>
-                  {Math.round(journeyProbs.types.truth)}%
+                  {displayPercent(journeyProbs.types.truth)}%
                 </Text>
               </View>
               <View style={styles.typeItem}>
@@ -135,12 +142,12 @@ export const DrawProbabilityPanel: React.FC<DrawProbabilityPanelProps> = ({
                   <View
                     style={[
                       styles.miniBarFill,
-                      { width: `${journeyProbs.types.dare}%` as unknown as number, backgroundColor: DARE_COLOR },
+                      { width: `${displayPercent(journeyProbs.types.dare)}%` as unknown as number, backgroundColor: DARE_COLOR },
                     ]}
                   />
                 </View>
                 <Text style={[styles.pct, { color: DARE_COLOR }]}>
-                  {Math.round(journeyProbs.types.dare)}%
+                  {displayPercent(journeyProbs.types.dare)}%
                 </Text>
               </View>
             </View>
@@ -150,7 +157,7 @@ export const DrawProbabilityPanel: React.FC<DrawProbabilityPanelProps> = ({
           {journeyProbs && (
             <View style={styles.starsGrid}>
               {([1, 2, 3, 4, 5] as const).map((star, idx) => {
-                const pct = Math.round(journeyProbs.stars[star]);
+                const pct = displayPercent(journeyProbs.stars[star]);
                 if (pct === 0) return null;
                 return (
                   <View key={star} style={styles.starRow}>
@@ -174,7 +181,7 @@ export const DrawProbabilityPanel: React.FC<DrawProbabilityPanelProps> = ({
           {isPositionPhase && luxuryProbs && (
             <View style={styles.starsGrid}>
               {([1,2,3,4,5,6,7,8,9,10] as const).map((star) => {
-                const pct = Math.round(luxuryProbs.stars[star] ?? 0);
+                const pct = displayPercent(luxuryProbs.stars[star] ?? 0);
                 if (pct === 0) return null;
                 return (
                   <View key={star} style={styles.starRow}>
@@ -191,6 +198,11 @@ export const DrawProbabilityPanel: React.FC<DrawProbabilityPanelProps> = ({
                   </View>
                 );
               })}
+              {luxuryProbs.finalCardChance > 0 && (
+                <Text style={styles.finalChanceText}>
+                  ◆ Finale: {displayPercent(luxuryProbs.finalCardChance)}%
+                </Text>
+              )}
             </View>
           )}
 
@@ -216,8 +228,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   headerText: {
     fontFamily: FONTS.bodyMedium,
@@ -236,8 +248,8 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   body: {
-    paddingHorizontal: 14,
-    paddingBottom: 12,
+    paddingHorizontal: 10,
+    paddingBottom: 8,
     gap: 10,
   },
   typeRow: {
@@ -298,5 +310,10 @@ const styles = StyleSheet.create({
     color: COLORS.neutral400,
     textAlign: 'center',
     paddingVertical: 6,
+  },
+  finalChanceText: {
+    fontFamily: FONTS.bodyMedium,
+    fontSize: 10,
+    color: '#f0abfc',
   },
 });

@@ -34,9 +34,9 @@ export const GarmentRemovalDialog: React.FC<GarmentRemovalDialogProps> = ({
   onCancel,
   onContinueWithoutRemoval,
 }) => {
-  if (!visible) return null;
-
   const [selectedSlot, setSelectedSlot] = useState<GarmentSlot | null>(null);
+
+  if (!visible) return null;
 
   const eligibleSlots = getRemovableGarmentSlots(outfitState);
   const presentSlots = getPresentGarmentSlots(outfitState);
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   dialogCard: {
     width: '100%',
-    maxWidth: 420,
+    maxWidth: 600,
     backgroundColor: '#190a12',
     borderWidth: 1,
     borderColor: 'rgba(255, 107, 157, 0.3)',

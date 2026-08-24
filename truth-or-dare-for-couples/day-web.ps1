@@ -6,7 +6,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$repoRoot = $PSScriptRoot
+$projectRoot = $PSScriptRoot
+$repoRoot = (& git -C $projectRoot rev-parse --show-toplevel).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($repoRoot)) {
+    throw "Khong tim thay Git repository cha cua: $projectRoot"
+}
+$projectPath = [System.IO.Path]::GetRelativePath($repoRoot, $projectRoot).Replace("\", "/")
 $actionsUrl = "https://github.com/khanhbes/True_or_Dare/actions/workflows/deploy-staging.yml"
 $stagingUrl = "https://staging.true-or-dare-couples.pages.dev"
 
@@ -43,9 +48,14 @@ function Get-BranchDistance {
 }
 
 function Assert-NoSensitiveFilesAreStaged {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Pathspec
+    )
+
     $sensitivePattern = '(^|/)(\.env($|\.)|\.dev\.vars$|credentials(\..+)?\.json$|secrets?(/|$))|(\.pem|\.key|\.p12|\.pfx|\.secret)$'
     $allowedExamples = @('.env.example', '.dev.vars.example')
-    $stagedFiles = @(& git diff --cached --name-only)
+    $stagedFiles = @(& git diff --cached --name-only -- $Pathspec)
 
     if ($LASTEXITCODE -ne 0) {
         throw "Khong the kiem tra danh sach file da stage."
@@ -142,9 +152,9 @@ function Wait-GitHubDeployment {
     }
 }
 
-Push-Location $repoRoot
+Push-Location $projectRoot
 try {
-    if (-not (Test-Path -LiteralPath ".git")) {
+    if (-not (Test-Path -LiteralPath (Join-Path $repoRoot ".git"))) {
         throw "Thu muc nay khong phai Git repository: $repoRoot"
     }
 
@@ -154,7 +164,8 @@ try {
     }
 
     Write-Host "=== DAY CODE LEN GITHUB VA CAP NHAT WEB ===" -ForegroundColor Magenta
-    Write-Host "Repo: $repoRoot"
+    Write-Host "Git repo: $repoRoot"
+    Write-Host "Web app: $projectRoot"
 
     if ($DryRun) {
         Write-Host "Che do DryRun: khong stage, commit hoac push." -ForegroundColor Yellow
@@ -182,7 +193,7 @@ try {
         Write-Host "[2-4/5] Da bo qua lint, test va build theo yeu cau." -ForegroundColor Yellow
     }
 
-    $changes = @(& git status --short)
+    $changes = @(& git status --short -- $projectPath)
     if ($LASTEXITCODE -ne 0) {
         throw "Khong the doc git status."
     }
@@ -202,10 +213,10 @@ try {
 
     if ($changes.Count -gt 0) {
         Write-Host "[5/5] Stage va commit thay doi..." -ForegroundColor Cyan
-        Invoke-NativeCommand git add --all
-        Assert-NoSensitiveFilesAreStaged
+        Invoke-NativeCommand git add --all -- $projectPath
+        Assert-NoSensitiveFilesAreStaged -Pathspec $projectPath
 
-        & git diff --cached --quiet
+        & git diff --cached --quiet -- $projectPath
         $hasStagedChanges = $LASTEXITCODE -eq 1
         if ($LASTEXITCODE -notin @(0, 1)) {
             throw "Khong the kiem tra thay doi da stage."
@@ -215,7 +226,7 @@ try {
             if ([string]::IsNullOrWhiteSpace($Message)) {
                 $Message = "update web $((Get-Date).ToString('yyyy-MM-dd HH:mm'))"
             }
-            Invoke-NativeCommand git commit -m $Message
+            Invoke-NativeCommand git commit -m $Message -- $projectPath
         }
     }
     else {
@@ -248,4 +259,3 @@ catch {
 finally {
     Pop-Location
 }
-

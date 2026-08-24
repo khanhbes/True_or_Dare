@@ -4,7 +4,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$repoRoot = $PSScriptRoot
+$projectRoot = $PSScriptRoot
+$repoRoot = (& git -C $projectRoot rev-parse --show-toplevel).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($repoRoot)) {
+    throw "Khong tim thay Git repository cha cua: $projectRoot"
+}
+$projectPath = [System.IO.Path]::GetRelativePath($repoRoot, $projectRoot).Replace("\", "/")
 
 function Invoke-NativeCommand {
     param(
@@ -39,7 +44,7 @@ function Get-BranchDistance {
 }
 
 function Get-LockFileRevision {
-    $value = & git rev-parse "HEAD:package-lock.json" 2>$null
+    $value = & git rev-parse "HEAD:$projectPath/package-lock.json" 2>$null
     if ($LASTEXITCODE -ne 0) {
         return ""
     }
@@ -47,9 +52,9 @@ function Get-LockFileRevision {
     return $value.Trim()
 }
 
-Push-Location $repoRoot
+Push-Location $projectRoot
 try {
-    if (-not (Test-Path -LiteralPath ".git")) {
+    if (-not (Test-Path -LiteralPath (Join-Path $repoRoot ".git"))) {
         throw "Thu muc nay khong phai Git repository: $repoRoot"
     }
 
@@ -59,7 +64,8 @@ try {
     }
 
     Write-Host "=== KEO CODE MOI NHAT TU GITHUB VE MAY ===" -ForegroundColor Magenta
-    Write-Host "Repo: $repoRoot"
+    Write-Host "Git repo: $repoRoot"
+    Write-Host "Web app: $projectRoot"
 
     $changes = @(& git status --short)
     if ($LASTEXITCODE -ne 0) {
@@ -125,4 +131,3 @@ catch {
 finally {
     Pop-Location
 }
-

@@ -593,6 +593,29 @@ test('Luxury config hydration preserves absolute zero rows and clamps gains', ()
   assert.equal(hydrated.starGains[10], 100);
 });
 
+test('Luxury selection falls back to the nearest available star when the band has no usable weights', () => {
+  const zeroWeightConfig = {
+    ...DEFAULT_LUXURY_PROGRESSION_CONFIG,
+    bands: DEFAULT_LUXURY_PROGRESSION_CONFIG.bands.map((band) => ({
+      ...band,
+      starWeights: Object.fromEntries(
+        Object.keys(band.starWeights).map((star) => [star, 0]),
+      ) as Record<PositionDifficultyStars, number>,
+    })),
+  };
+  const result = selectLuxuryPositionCard({
+    cards: [makePositionCard('fallback-five', 5)],
+    actorIndex: 0,
+    outfits,
+    usedCardIds: [],
+    luxuryPercent: 0,
+    config: zeroWeightConfig,
+    random: () => 0,
+  });
+  assert.equal(result.card?.id, 'fallback-five');
+  assert.equal(result.errorCode, undefined);
+});
+
 test('zero weights and zero gains return coded errors instead of selecting undefined cards', () => {
   const card = makeCard('only', 'truth', 1);
   const zeroWeights = {

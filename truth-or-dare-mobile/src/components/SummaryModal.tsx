@@ -5,7 +5,7 @@
  * Synced with PLAN.md: positionSessionStats, end reason display.
  */
 import React from 'react';
-import { View, Text, Modal, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Modal, Pressable, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { Trophy, Heart, RotateCcw, Home, Sparkles, Sword } from 'lucide-react-native';
 import type { ClothingRemovalEvent, GameEndReason, JourneyPhase, OutfitState, Player, PositionSessionStats } from '@/shared/types';
 import { getPresentGarmentSlots } from '@/shared/utils/wardrobe';
@@ -45,6 +45,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
   endReason,
   terminal = false,
 }) => {
+  const { height } = useWindowDimensions();
   if (!visible) return null;
 
   const totalCompleted = player1.completedCount + player2.completedCount;
@@ -90,7 +91,7 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
             </View>
           </View>
 
-          <ScrollView style={{ maxHeight: 340 }}>
+          <ScrollView style={{ maxHeight: height * 0.7 }}>
             {/* Intimacy Score Circle/Card */}
             <View style={styles.scoreBox}>
               <Text style={styles.scoreNumber}>{Math.round(intimacyPercent)}%</Text>
@@ -221,12 +222,12 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: 420,
+    maxWidth: 600,
     backgroundColor: '#190a12',
     borderWidth: 1,
     borderColor: 'rgba(255, 107, 157, 0.3)',
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 18,
+    padding: 16,
     shadowColor: COLORS.gold,
     shadowOpacity: 0.2,
     shadowRadius: 25,

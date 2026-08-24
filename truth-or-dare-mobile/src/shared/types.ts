@@ -14,7 +14,8 @@ export type PositionRarity = 'luxury' | 'mythic';
 export type PlayerPresentation = 'male' | 'female';
 export type GarmentSlot = 'shirt' | 'pants' | 'bra' | 'underwear';
 export type OutfitStage = 'dressed' | 'underwear_only' | 'empty';
-export type StandardRemovalTarget = 'self' | 'opponent';
+/** `choice` asks the couple to select one eligible target after the card is completed. */
+export type StandardRemovalTarget = 'self' | 'opponent' | 'both' | 'choice';
 export type PositionRemovalTarget = 'male' | 'female' | 'both';
 export type GameEndReason = 'pink_complete' | 'have_sex' | 'no_cards' | 'manual';
 
@@ -56,6 +57,8 @@ export interface CardProgressionMetadata {
   intimacyGain?: number;
   actorStages?: OutfitStage[];
   partnerStages?: OutfitStage[];
+  /** Cooldown group used by the adaptive selector to avoid repetitive turns. */
+  actionFamily?: string;
 }
 
 export interface PositionMetadata {

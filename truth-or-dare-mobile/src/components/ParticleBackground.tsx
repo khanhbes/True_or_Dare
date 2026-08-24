@@ -7,7 +7,7 @@
  * a wine radial center gradient.
  */
 import React, { useMemo } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -20,8 +20,6 @@ import Animated, {
 import { useEffect } from 'react';
 import { COLORS } from '@/theme';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 interface Particle {
   id: number;
   x: number;
@@ -32,11 +30,11 @@ interface Particle {
   color: string;
 }
 
-const generateParticles = (count: number): Particle[] =>
+const generateParticles = (count: number, width: number, height: number): Particle[] =>
   Array.from({ length: count }, (_, i) => ({
     id: i,
-    x: Math.random() * SCREEN_WIDTH,
-    y: Math.random() * SCREEN_HEIGHT,
+    x: Math.random() * width,
+    y: Math.random() * height,
     size: Math.random() * 5 + 2,
     duration: (Math.random() * 10 + 6) * 1000,
     delay: Math.random() * 5000,
@@ -138,7 +136,8 @@ const AnimatedParticle: React.FC<{ particle: Particle }> = ({ particle }) => {
 };
 
 export const ParticleBackground: React.FC = React.memo(() => {
-  const particles = useMemo(() => generateParticles(28), []);
+  const { width, height } = useWindowDimensions();
+  const particles = useMemo(() => generateParticles(28, width, height), [width, height]);
 
   return (
     <View style={styles.container} pointerEvents="none">

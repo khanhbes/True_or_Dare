@@ -928,15 +928,52 @@ const STAR_BY_ID = new Map<string, DifficultyStars>(
   ),
 );
 
+/**
+ * Wardrobe effects are intentionally concentrated from Intimate onward. Every
+ * instruction remains opt-in: declining the suggested removal is always a
+ * valid way to skip the card.
+ */
+const CLOTHING_CARD_OVERRIDES: Record<string, Pick<CardItem, 'content' | 'clothingEffect' | 'progression'>> = {
+  'g-d-6': {
+    content: 'Cùng đồng ý cởi một món đồ ngoài có thể tháo của mỗi người, rồi khiêu vũ nhẹ nhàng trong 1 phút.',
+    clothingEffect: { kind: 'remove_garment', target: 'both' },
+    progression: { difficultyStars: 2, audience: 'both', actorStages: ['dressed'], partnerStages: ['dressed'], actionFamily: 'clothing-gentle' },
+  },
+  'g-d-7': {
+    content: 'Nếu cả hai đồng ý, cùng chọn một món đồ ngoài có thể tháo của mỗi người rồi trao một cái ôm thật lâu.',
+    clothingEffect: { kind: 'remove_garment', target: 'both' },
+    progression: { difficultyStars: 2, audience: 'both', actorStages: ['dressed'], partnerStages: ['dressed'], actionFamily: 'clothing-gentle' },
+  },
+  'i-d-7': { content: 'Hôn nhẹ lên cổ đối phương; nếu cả hai đồng ý, đối phương chọn thêm một món đang mặc để cởi bỏ.', clothingEffect: { kind: 'remove_garment', target: 'opponent' }, progression: { difficultyStars: 3, audience: 'both', actionFamily: 'clothing' } },
+  'i-d-9': { content: 'Người đang lượt tự chọn một món có thể tháo trên người mình, cởi bỏ chậm rãi rồi mỉm cười với đối phương.', clothingEffect: { kind: 'remove_garment', target: 'self' }, progression: { difficultyStars: 2, audience: 'both', actionFamily: 'clothing' } },
+  'i-d-10': { content: 'Cùng đồng ý chọn người sẽ cởi một món đang mặc có thể tháo, sau đó nắm tay nhìn vào mắt nhau.', clothingEffect: { kind: 'remove_garment', target: 'choice' }, progression: { difficultyStars: 3, audience: 'both', actionFamily: 'clothing' } },
+  'i-d-13': { content: 'Người nam chọn một cử chỉ âu yếm; nếu thoải mái, anh tự cởi một món có thể tháo trước khi thực hiện.', clothingEffect: { kind: 'remove_garment', target: 'self' }, progression: { difficultyStars: 3, audience: 'male', actionFamily: 'clothing' } },
+  'i-d-14': { content: 'Người nữ kéo đối phương lại gần và thì thầm điều mình muốn; nếu cùng đồng ý, đối phương cởi một món có thể tháo.', clothingEffect: { kind: 'remove_garment', target: 'opponent' }, progression: { difficultyStars: 3, audience: 'female', actionFamily: 'clothing' } },
+  'i-d-15': { content: 'Cùng thống nhất rồi mỗi người cởi một món có thể tháo; sau đó trao ba nụ hôn chậm ở những vị trí an toàn.', clothingEffect: { kind: 'remove_garment', target: 'both' }, progression: { difficultyStars: 4, audience: 'both', actionFamily: 'clothing' } },
+  'i-d-16': { content: 'Mát-xa lưng đối phương trong 1 phút; nếu cả hai đồng ý, đối phương cởi một món có thể tháo để thấy thoải mái hơn.', clothingEffect: { kind: 'remove_garment', target: 'opponent' }, progression: { difficultyStars: 3, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-1': { content: 'Người đang lượt tự cởi một món có thể tháo, rồi đặt ba nụ hôn nồng nàn ở những vị trí đã được đồng ý.', clothingEffect: { kind: 'remove_garment', target: 'self' }, progression: { difficultyStars: 4, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-3': { content: 'Nếu cả hai đồng ý, đối phương cởi một món có thể tháo; sau đó vuốt ve dịu dàng lưng họ trong 30 giây.', clothingEffect: { kind: 'remove_garment', target: 'opponent' }, progression: { difficultyStars: 4, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-4': { content: 'Cùng chọn một món có thể tháo để đổi cho nhau, rồi dành 30 giây trao một cử chỉ thân mật mà đôi bên đã đồng ý.', clothingEffect: { kind: 'swap_garments' }, progression: { difficultyStars: 4, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-5': { content: 'Cả hai cùng đồng ý chọn người sẽ cởi một món có thể tháo, sau đó ngồi thật gần và ôm chặt nhau.', clothingEffect: { kind: 'remove_garment', target: 'choice' }, progression: { difficultyStars: 4, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-6': { content: 'Cả hai cùng đồng ý rồi mỗi người cởi một món có thể tháo; sau đó dùng ngón tay ấm lướt nhẹ theo sống lưng đối phương.', clothingEffect: { kind: 'remove_garment', target: 'both' }, progression: { difficultyStars: 4, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-7': { content: 'Người đang lượt tự cởi một món có thể tháo, rồi kéo sát đối phương và thì thầm một lời mời gọi dịu dàng.', clothingEffect: { kind: 'remove_garment', target: 'self' }, progression: { difficultyStars: 5, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-8': { content: 'Nếu cả hai đồng ý, đối phương cởi một món có thể tháo trước khi hai người trao một nụ hôn cháy bỏng trong 30 giây.', clothingEffect: { kind: 'remove_garment', target: 'opponent' }, progression: { difficultyStars: 5, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-11': { content: 'Người đang lượt tự cởi một món có thể tháo, rồi trao chuỗi nụ hôn từ trán xuống cổ theo nhịp chậm trong 45 giây.', clothingEffect: { kind: 'remove_garment', target: 'self' }, progression: { difficultyStars: 5, audience: 'both', actionFamily: 'clothing' } },
+  'p-d-12': { content: 'Cả hai cùng đồng ý để đối phương cởi một món có thể tháo, rồi ôm sát nhau trong tư thế cả hai cùng chọn trong 1 phút.', clothingEffect: { kind: 'remove_garment', target: 'opponent' }, progression: { difficultyStars: 5, audience: 'both', actionFamily: 'clothing' } },
+};
+
 export const INITIAL_CARDS: CardItem[] = BASE_CARDS.map((card) => {
   if (card.deck === 'position') return card;
+  const override = CLOTHING_CARD_OVERRIDES[card.id];
   return {
     ...card,
+    ...override,
     deck: 'standard',
     progression: {
       ...card.progression,
-      difficultyStars: card.progression?.difficultyStars ?? STAR_BY_ID.get(card.id) ?? 1,
-      audience: card.progression?.audience ?? 'both',
+      ...override?.progression,
+      difficultyStars: override?.progression?.difficultyStars ?? card.progression?.difficultyStars ?? STAR_BY_ID.get(card.id) ?? 1,
+      audience: override?.progression?.audience ?? card.progression?.audience ?? 'both',
     },
   };
 });

@@ -66,6 +66,13 @@ import {
 } from '../utils/wardrobe';
 import { resolveCardTimerSeconds } from '../utils/cardTimer';
 import {
+  advanceClothingTurn,
+  clothingEffectFamily,
+  createClothingJourney,
+  getActiveOpportunity,
+  resolveClothingOpportunity,
+} from '../utils/clothingJourney';
+import {
   DIFFICULTY_BOOST_STAR_COST,
   REROLL_STAR_COST,
   awardStars,
@@ -261,6 +268,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   const shouldReduceMotion = useReducedMotion();
   const [showPenaltyPrompt, setShowPenaltyPrompt] = useState(false);
   const [usedCardIds, setUsedCardIds] = useState<string[]>([]);
+  const [clothingJourney, setClothingJourney] = useState(createClothingJourney);
   const [drawError, setDrawError] = useState<string | null>(null);
   const [liveMessage, setLiveMessage] = useState<string>('');
   const [unlockNotice, setUnlockNotice] = useState<string | null>(null);
@@ -296,6 +304,9 @@ export const GameTable: React.FC<GameTableProps> = ({
   const wasTimerRunningBeforeSuspendRef = useRef(false);
 
   const currentPlayer = currentPlayerIndex === 0 ? player1 : player2;
+  // Keep the unrevealed card out of the content-rendering branch entirely.
+  // Metadata such as id/type is still available for resolution and tracking.
+  const revealedCard = isRevealed ? activeCard : null;
   const performingPlayerIndex = activeCard
     ? getStandardCardPerformerIndex(activeCard, currentPlayerIndex)
     : currentPlayerIndex;
@@ -469,6 +480,9 @@ export const GameTable: React.FC<GameTableProps> = ({
       intimacyPercent,
       config: progressionConfig,
       difficultyBoost: Boolean(activeDifficultyBoost),
+      preferredClothingFamily: getActiveOpportunity(clothingJourney, intimacyPercent)?.eventType === 'catch_up'
+        ? 'opponent'
+        : getActiveOpportunity(clothingJourney, intimacyPercent)?.eventType ?? null,
     });
 
     if (!selection.card) {
@@ -581,6 +595,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       levels: settings.levels,
       intimacyPercent,
       config: progressionConfig,
+      preferredClothingFamily: getActiveOpportunity(clothingJourney, intimacyPercent)?.eventType ?? null,
     });
     if (!selection.card) {
       setDrawError('Không còn lá khác phù hợp để đổi. Sao của bạn được giữ nguyên.');
@@ -590,6 +605,10 @@ export const GameTable: React.FC<GameTableProps> = ({
     const previousCardId = activeCard.id;
     const replacement = selection.card;
     onPlayerRewardsChange(nextRewards);
+    setClothingJourney((current) => {
+      const opportunity = getActiveOpportunity(current, intimacyPercent);
+      return opportunity ? resolveClothingOpportunity(current, opportunity.index, 'rerolled') : current;
+    });
     recordResolution(activeCard, 'rerolled');
     onAddRewardEvent({
       kind: 'rerolled_card',
@@ -722,6 +741,15 @@ export const GameTable: React.FC<GameTableProps> = ({
       onPendingDifficultyBoostsChange([]);
     }
     onPlayerRewardsChange(nextRewardStates);
+    const clothingFamily = clothingEffectFamily(activeCard.clothingEffect);
+    if (clothingFamily) {
+      setClothingJourney((current) => {
+        const opportunity = getActiveOpportunity(current, intimacyPercent);
+        return opportunity
+          ? resolveClothingOpportunity(current, opportunity.index, 'completed', clothingFamily, removalRequest?.targetIndex)
+          : { ...current, history: [...current.history, clothingFamily], pityCounter: 0, turnsSinceClothing: 0 };
+      });
+    }
     setIntimacyGainNotice(
       `+${appliedTotal}% thân mật · +${earnedStars}★ cho ${performingPlayer.name}${appliedRemoval > 0 ? ` · gồm +${appliedRemoval}% bỏ đồ` : ''}`,
     );
@@ -736,7 +764,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         completedCount: player2.completedCount + 1,
       });
     }
-    if (nextIntimacy >= 100) {
+    if (nextIntimacy >= 100 && outfitStates.every((outfit) => getOutfitStage(outfit) !== 'dressed')) {
       soundEngine.stopTimerAlarm();
       setIsTimerRunning(false);
       setTimerSeconds(null);
@@ -746,6 +774,9 @@ export const GameTable: React.FC<GameTableProps> = ({
       setIsRevealed(true);
       onJourneyPhaseChange('position_consent');
       return;
+    }
+    if (nextIntimacy >= 100) {
+      setLiveMessage('Tim hồng đã đầy. Tiếp tục Standard để cả hai đạt trạng thái phù hợp cho Bộ Tư thế.');
     }
     advanceNextTurn();
   };
@@ -788,6 +819,12 @@ export const GameTable: React.FC<GameTableProps> = ({
     if (completionCommittedRef.current) return;
     completionCommittedRef.current = true;
     if (activeCard) recordResolution(activeCard, 'skipped');
+    setClothingJourney((current) => {
+      const opportunity = activeCard ? getActiveOpportunity(current, intimacyPercent) : null;
+      return opportunity
+        ? resolveClothingOpportunity(current, opportunity.index, 'skipped')
+        : { ...current, pityCounter: Math.min(5, current.pityCounter + 1) };
+    });
     setShowPenaltyPrompt(false);
     if (performingPlayerIndex === 0) {
       onUpdatePlayers(
@@ -993,6 +1030,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   };
 
   const advanceNextTurn = () => {
+    setClothingJourney((current) => advanceClothingTurn(current));
     soundEngine.stopTimerAlarm();
     didPlayTimerAlarmRef.current = false;
     setLiveMessage('');
@@ -1066,8 +1104,8 @@ export const GameTable: React.FC<GameTableProps> = ({
   };
 
   const handleEnterPositionJourney = () => {
-    if (outfitStates.some((outfit) => getPresentGarmentSlots(outfit).length > 0)) {
-      setLiveMessage('Cả hai cần hoàn tất bước chuẩn bị trang phục trước khi vào Bộ Tư thế.');
+    if (outfitStates.some((outfit) => getOutfitStage(outfit) === 'dressed')) {
+      setLiveMessage('Cả hai cần ít nhất đạt trạng thái chỉ còn đồ lót trước khi vào Bộ Tư thế.');
       return;
     }
     soundEngine.stopTimerAlarm();
@@ -1256,7 +1294,7 @@ export const GameTable: React.FC<GameTableProps> = ({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={intimacyPercent}
-            className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#fb7185,#f9a8d4,#e2c275)] shadow-[0_0_18px_rgba(251,113,133,.35)]"
+            className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#f9a8d4,#fecdd3)] shadow-[0_0_10px_rgba(249,168,212,.25)]"
           />
           {journeyPhase !== 'standard' && (
             <motion.div
@@ -1751,7 +1789,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
                     {/* Card Content with Icon */}
                     <div className="my-auto min-h-0 overflow-y-auto overscroll-contain py-4 flex flex-col items-center justify-center text-center">
-                      {!isRevealed ? (
+                      {!revealedCard ? (
                         <div className="flex flex-col items-center py-6 px-4">
                           <EyeOff className="w-10 h-10 text-amber-400 mb-3 opacity-80" />
                           <p style={{ fontSize: `${12 * activeTextScale}px` }} className="text-neutral-400 mb-4 max-w-xs">

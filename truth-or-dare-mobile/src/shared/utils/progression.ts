@@ -15,7 +15,7 @@ import {
   TurnAudience,
 } from '../types';
 import { isCardEligibleForOutfits } from './cardSelection';
-import { getOutfitStage } from './wardrobe';
+import { getOutfitStage, getWardrobeProgressPair } from './wardrobe';
 
 export const DIFFICULTY_STARS = [1, 2, 3, 4, 5] as const;
 export const POSITION_DIFFICULTY_STARS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -26,36 +26,36 @@ export const DEFAULT_PROGRESSION_CONFIG: Readonly<ProgressionConfig> = {
     {
       minPercent: 0,
       maxPercent: 19,
-      typeWeights: { truth: 65, dare: 35 },
-      starWeights: { 1: 70, 2: 25, 3: 5, 4: 0, 5: 0 },
+      typeWeights: { truth: 70, dare: 30 },
+      starWeights: { 1: 65, 2: 30, 3: 5, 4: 0, 5: 0 },
     },
     {
       minPercent: 20,
       maxPercent: 39,
-      typeWeights: { truth: 55, dare: 45 },
-      starWeights: { 1: 45, 2: 35, 3: 15, 4: 5, 5: 0 },
+      typeWeights: { truth: 60, dare: 40 },
+      starWeights: { 1: 40, 2: 35, 3: 20, 4: 5, 5: 0 },
     },
     {
       minPercent: 40,
       maxPercent: 59,
       typeWeights: { truth: 45, dare: 55 },
-      starWeights: { 1: 20, 2: 30, 3: 30, 4: 15, 5: 5 },
+      starWeights: { 1: 15, 2: 30, 3: 35, 4: 15, 5: 5 },
     },
     {
       minPercent: 60,
       maxPercent: 79,
-      typeWeights: { truth: 35, dare: 65 },
-      starWeights: { 1: 10, 2: 15, 3: 30, 4: 30, 5: 15 },
+      typeWeights: { truth: 30, dare: 70 },
+      starWeights: { 1: 5, 2: 15, 3: 30, 4: 35, 5: 15 },
     },
     {
       minPercent: 80,
       maxPercent: 99,
-      typeWeights: { truth: 25, dare: 75 },
-      starWeights: { 1: 5, 2: 10, 3: 20, 4: 35, 5: 30 },
+      typeWeights: { truth: 20, dare: 80 },
+      starWeights: { 1: 0, 2: 5, 3: 15, 4: 35, 5: 45 },
     },
   ],
-  starGains: { 1: 4, 2: 6, 3: 8, 4: 10, 5: 12 },
-  cardRemovalBonus: 8,
+  starGains: { 1: 3, 2: 4, 3: 5, 4: 6, 5: 7 },
+  cardRemovalBonus: 2,
 };
 
 const positionWeights = (
@@ -394,6 +394,12 @@ export interface SelectJourneyCardOptions {
   excludedCardIds?: readonly string[];
   /** Shifts each available star weight to the next higher available star. */
   difficultyBoost?: boolean;
+  /** Recently resolved cards are cooled down when the no-repeat pool resets. */
+  recentCards?: readonly CardItem[];
+  /** Number of completed turns since a clothing effect last changed an outfit. */
+  clothingTurnsWithoutChange?: number;
+  /** Prefer a different action family when an alternative eligible card exists. */
+  avoidActionFamilies?: readonly string[];
   random?: () => number;
 }
 
@@ -421,7 +427,103 @@ const getJourneyPool = (options: SelectJourneyCardOptions) => {
   let candidates = pool.filter((card) => !used.has(card.id));
   const didResetPool = pool.length > 0 && candidates.length === 0;
   if (didResetPool) candidates = [...pool];
+  const recentIds = new Set((options.recentCards ?? []).slice(-2).map((card) => card.id));
+  const cooledCandidates = candidates.filter((card) => !recentIds.has(card.id));
+  if (cooledCandidates.length > 0) candidates = cooledCandidates;
+  const avoidedFamilies = new Set(options.avoidActionFamilies ?? []);
+  const differentFamilyCandidates = candidates.filter((card) => !avoidedFamilies.has(getCardActionFamily(card)));
+  if (differentFamilyCandidates.length > 0) candidates = differentFamilyCandidates;
+  // A hard pity guard prevents wardrobe progress from stalling once the game
+  // is already warm, while still refusing a third clothing card in a row.
+  const recent = (options.recentCards ?? []).slice(-2);
+  const canForceClothing = recent.length < 2 || !recent.every(isClothingCard);
+  if (options.intimacyPercent >= 40 && (options.clothingTurnsWithoutChange ?? 0) >= 5 && canForceClothing) {
+    const clothingCandidates = candidates.filter(isClothingCard);
+    if (clothingCandidates.length > 0) candidates = clothingCandidates;
+  }
   return { eligible, pool, candidates, didResetPool };
+};
+
+const isClothingCard = (card: CardItem): boolean => card.clothingEffect != null;
+
+export const getCardActionFamily = (card: CardItem): string => {
+  if (isClothingCard(card)) return 'clothing';
+  if (card.position?.family) return `position:${card.position.family}`;
+  return card.progression?.actionFamily ?? card.icon?.replace(/_(art|perfume)$/u, '') ?? card.id.replace(/-\d+$/u, '');
+};
+
+const getClothingTargets = (card: CardItem, actorIndex: PlayerIndex): PlayerIndex[] => {
+  const effect = card.clothingEffect;
+  if (!effect) return [];
+  if (effect.kind === 'swap_garments') return [0, 1];
+  if (card.deck === 'position') {
+    if (effect.target === 'male') return [0];
+    if (effect.target === 'female') return [1];
+    return effect.target === 'both' ? [0, 1] : [];
+  }
+  return effect.target === 'self'
+    ? [actorIndex]
+    : effect.target === 'opponent'
+      ? [actorIndex === 0 ? 1 : 0]
+      : effect.target === 'both'
+        ? [0, 1]
+        : [];
+};
+
+const clothingPriority = (intimacyPercent: number): number => {
+  if (intimacyPercent < 20) return 0.05;
+  if (intimacyPercent < 40) return 0.12;
+  if (intimacyPercent < 60) return 0.22;
+  if (intimacyPercent < 80) return 0.32;
+  return 0.4;
+};
+
+const adaptiveCardWeight = (
+  card: CardItem,
+  options: SelectJourneyCardOptions,
+  candidateClothingShare: number,
+): number => {
+  const recentFamilies = (options.recentCards ?? []).slice(-2).map(getCardActionFamily);
+  let weight = recentFamilies.includes(getCardActionFamily(card)) ? 0.22 : 1;
+  if (!isClothingCard(card)) return weight;
+
+  const desiredShare = clothingPriority(options.intimacyPercent);
+  const pity = options.clothingTurnsWithoutChange ?? 0;
+  const pityBoost = pity >= 5 ? 4 : pity === 4 ? 2.6 : pity === 3 ? 1.6 : 1;
+  const availabilityBoost = candidateClothingShare > 0
+    ? Math.max(0.35, Math.min(4, desiredShare / candidateClothingShare))
+    : 1;
+  const [firstProgress, secondProgress] = getWardrobeProgressPair(options.outfits);
+  const targetProgress = getClothingTargets(card, options.actorIndex)
+    .map((index) => index === 0 ? firstProgress : secondProgress);
+  const otherProgress = getClothingTargets(card, options.actorIndex)
+    .map((index) => index === 0 ? secondProgress : firstProgress);
+  const balanceBoost = targetProgress.length === 0
+    ? 1
+    : Math.max(0.25, Math.min(2.5, 1 + ((otherProgress.reduce((a, b) => a + b, 0) / otherProgress.length) - (targetProgress.reduce((a, b) => a + b, 0) / targetProgress.length)) / 45));
+  return weight * availabilityBoost * pityBoost * balanceBoost;
+};
+
+const chooseAdaptiveCard = (
+  cards: readonly CardItem[],
+  options: SelectJourneyCardOptions,
+  random: () => number,
+): CardItem | null => {
+  if (cards.length === 0) return null;
+  const recent = (options.recentCards ?? []).slice(-2);
+  const hasTwoRecentClothingCards = recent.length === 2 && recent.every(isClothingCard);
+  const nonClothingFallback = hasTwoRecentClothingCards ? cards.filter((card) => !isClothingCard(card)) : [];
+  const selectionPool = nonClothingFallback.length > 0 ? nonClothingFallback : cards;
+  const clothingShare = selectionPool.filter(isClothingCard).length / selectionPool.length;
+  const weights = selectionPool.map((card) => adaptiveCardWeight(card, options, clothingShare));
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  if (total <= 0) return selectionPool[Math.floor(safeRandom(random) * selectionPool.length)] ?? null;
+  let roll = safeRandom(random) * total;
+  for (let index = 0; index < selectionPool.length; index += 1) {
+    roll -= weights[index];
+    if (roll <= 0) return selectionPool[index];
+  }
+  return selectionPool[selectionPool.length - 1] ?? null;
 };
 
 const probabilitiesForCandidates = (
@@ -556,7 +658,17 @@ export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCar
     };
   }
   const finalPool = typeCards.filter((card) => deriveDifficultyStars(card) === selectedStar);
-  const card = finalPool[Math.floor(safeRandom(random) * finalPool.length)];
+  const card = chooseAdaptiveCard(finalPool, options, random);
+  if (!card) {
+    return {
+      card: null,
+      nextUsedCardIds: [...new Set(options.usedCardIds)],
+      availableTypes,
+      didResetPool: false,
+      probabilities,
+      errorCode: 'no_cards',
+    };
+  }
 
   const poolIds = new Set(pool.map((item) => item.id));
   const nextUsedCardIds = didResetPool
@@ -578,6 +690,8 @@ export interface SelectLuxuryPositionCardOptions {
   outfits: readonly [OutfitState, OutfitState];
   usedCardIds: readonly string[];
   luxuryPercent: number;
+  /** Finale is unavailable until the pair has completed four Position cards. */
+  completedPositionCards?: number;
   config: LuxuryProgressionConfig;
   random?: () => number;
 }
@@ -609,9 +723,10 @@ const luxuryProbabilitiesForCandidates = (
   finalCandidates: readonly CardItem[],
   percent: number,
   config: LuxuryProgressionConfig,
+  completedPositionCards = 0,
 ): LuxuryDrawProbabilities => {
   const raw = positionWeights({});
-  if (percent >= 100) {
+  if (percent >= 100 && completedPositionCards >= 4) {
     return {
       stars: raw,
       finalCardChance: finalCandidates.length > 0 ? 1 : 0,
@@ -627,9 +742,12 @@ const luxuryProbabilitiesForCandidates = (
   const finalHasPositiveWeight = finalCandidates.some(
     (card) => band.starWeights[derivePositionDifficultyStars(card)] > 0,
   );
-  const finalCardChance = percent >= 80 && finalHasPositiveWeight
-    ? config.finalCardChance / 100
-    : 0;
+  const finalCardChance = completedPositionCards < 4 || !finalHasPositiveWeight
+    ? 0
+    : percent >= 95 ? 0.1
+      : percent >= 90 ? 0.05
+        : percent >= 80 ? 0.02
+          : 0;
   return { stars, finalCardChance };
 };
 
@@ -652,7 +770,7 @@ export const selectLuxuryPositionCard = (
   options: SelectLuxuryPositionCardOptions,
 ): LuxuryPositionSelectionResult => {
   const random = options.random ?? Math.random;
-  const outfitsReady = options.outfits.every((outfit) => getOutfitStage(outfit) === 'empty');
+  const outfitsReady = options.outfits.every((outfit) => getOutfitStage(outfit) !== 'dressed');
   const positionCards = options.cards.filter((card) =>
     outfitsReady &&
     getCardDeck(card) === 'position' &&
@@ -663,8 +781,8 @@ export const selectLuxuryPositionCard = (
   const finals = positionCards.filter((card) => card.position?.family === 'have_sex');
   const nonFinalEligible = positionCards.filter((card) => card.position?.family !== 'have_sex');
   const finalBand = getLuxuryProgressionBand(99, options.config);
-  if (options.luxuryPercent >= 100) {
-    const probabilities = luxuryProbabilitiesForCandidates([], finals, 100, options.config);
+  if (options.luxuryPercent >= 100 && (options.completedPositionCards ?? 0) >= 4) {
+    const probabilities = luxuryProbabilitiesForCandidates([], finals, 100, options.config, options.completedPositionCards);
     const finalCard = choosePositionCardByStarWeight(finals, finalBand, random);
     return {
       card: finalCard,
@@ -684,6 +802,7 @@ export const selectLuxuryPositionCard = (
     finals,
     options.luxuryPercent,
     options.config,
+    options.completedPositionCards,
   );
   if (!isLuxuryProgressionConfigPlayable(options.config)) {
     return {

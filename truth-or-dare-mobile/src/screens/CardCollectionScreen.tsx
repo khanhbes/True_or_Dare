@@ -29,8 +29,6 @@ import { GameCard } from '@/components/GameCard';
 import { compareCollectionCards } from '@/shared/utils/cardOrdering';
 import { COLORS, FONTS, FONT_SIZES } from '@/theme';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 type CollectionTab = 'all' | 'truth' | 'dare' | 'favorites' | CardLevel;
 
 export interface CardCollectionScreenProps {
@@ -155,11 +153,11 @@ export const CardCollectionScreen: React.FC<CardCollectionScreenProps> = ({
         )}
       </View>
 
+      <View style={styles.collectionBody}>
       {/* Tabs */}
       <View style={styles.tabsWrapper}>
         <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
           data={TABS}
           keyExtractor={(t) => t.id}
           contentContainerStyle={styles.tabsContainer}
@@ -192,7 +190,7 @@ export const CardCollectionScreen: React.FC<CardCollectionScreenProps> = ({
         data={filteredCards}
         keyExtractor={(item) => item.id}
         renderItem={renderCardItem}
-        numColumns={2}
+        numColumns={4}
         columnWrapperStyle={styles.cardsRow}
         contentContainerStyle={styles.cardsList}
         showsVerticalScrollIndicator={false}
@@ -204,6 +202,7 @@ export const CardCollectionScreen: React.FC<CardCollectionScreenProps> = ({
           </View>
         }
       />
+      </View>
 
       {/* Detail Preview Modal */}
       {selectedCard && (
@@ -283,7 +282,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
     paddingHorizontal: 12,
-    height: 42,
+    height: 38,
     marginBottom: 12,
   },
   searchInput: {
@@ -294,18 +293,20 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   tabsWrapper: {
-    marginBottom: 12,
+    width: 126,
+    marginRight: 12,
   },
   tabsContainer: {
-    gap: 8,
+    gap: 6,
+    paddingBottom: 8,
   },
   tabBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
     paddingVertical: 8,
-    borderRadius: 9999,
+    borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -327,21 +328,22 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bodySemiBold,
   },
   cardsList: {
+    flex: 1,
     paddingBottom: 40,
   },
   cardsRow: {
     justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 12,
+    gap: 8,
+    marginBottom: 8,
   },
   cardWrapper: {
     flex: 1,
-    maxWidth: (SCREEN_WIDTH - 44) / 2,
+    maxWidth: '24%' as unknown as number,
   },
   lockedCard: {
     flex: 1,
-    maxWidth: (SCREEN_WIDTH - 44) / 2,
-    minHeight: 180,
+    maxWidth: '24%' as unknown as number,
+    minHeight: 130,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 107, 157, 0.15)',
@@ -389,8 +391,13 @@ const styles = StyleSheet.create({
   },
   previewCardBox: {
     width: '100%',
-    maxWidth: 340,
+    maxWidth: 560,
     alignItems: 'center',
+  },
+  collectionBody: {
+    flex: 1,
+    flexDirection: 'row',
+    minHeight: 0,
   },
   closePreviewBtn: {
     marginTop: 16,

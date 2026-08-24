@@ -16,6 +16,7 @@ import {
 } from '../types';
 import { isCardEligibleForOutfits } from './cardSelection';
 import { getOutfitStage } from './wardrobe';
+import { ClothingEventType, clothingEffectFamily } from './clothingJourney';
 
 export const DIFFICULTY_STARS = [1, 2, 3, 4, 5] as const;
 export const POSITION_DIFFICULTY_STARS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -449,6 +450,8 @@ export interface SelectJourneyCardOptions {
   excludedCardIds?: readonly string[];
   /** Shifts each available star weight to the next higher available star. */
   difficultyBoost?: boolean;
+  /** Soft preference supplied by the clothing journey; falls back to the full eligible pool. */
+  preferredClothingFamily?: ClothingEventType | null;
   random?: () => number;
 }
 
@@ -470,9 +473,13 @@ const getJourneyPool = (options: SelectJourneyCardOptions) => {
       && deriveDifficultyStars(card) <= getWardrobeDifficultyProfile(options.outfits).maxStars
       && isStandardJourneyCardEligible(card, options.actorIndex, options.outfits),
   );
-  const pool = options.preferredType
-    ? eligible.filter((card) => card.type === options.preferredType)
+  const familyPool = options.preferredClothingFamily
+    ? eligible.filter((card) => clothingEffectFamily(card.clothingEffect) === options.preferredClothingFamily)
     : eligible;
+  const familyCandidates = familyPool.length > 0 ? familyPool : eligible;
+  const pool = options.preferredType
+    ? familyCandidates.filter((card) => card.type === options.preferredType)
+    : familyCandidates;
   const used = new Set(options.usedCardIds);
   let candidates = pool.filter((card) => !used.has(card.id));
   const didResetPool = pool.length > 0 && candidates.length === 0;
@@ -713,6 +720,20 @@ export const selectLuxuryPositionCard = (
   options: SelectLuxuryPositionCardOptions,
 ): LuxuryPositionSelectionResult => {
   const random = options.random ?? Math.random;
+  const chooseNearestAvailableCard = (
+    cards: readonly CardItem[],
+    band: LuxuryProgressionBand,
+  ): CardItem | null => {
+    if (cards.length === 0) return null;
+    const available = [...new Set(cards.map(derivePositionDifficultyStars))].sort((a, b) => a - b);
+    const weightedTarget = available.reduce((best, star) =>
+      (band.starWeights[star] > band.starWeights[best] ? star : best), available[0]);
+    const target = available.find((star) => star >= weightedTarget) ?? available[available.length - 1];
+    const nearest = available.reduce((best, star) =>
+      Math.abs(star - target) < Math.abs(best - target) ? star : best, available[0]);
+    const pool = cards.filter((card) => derivePositionDifficultyStars(card) === nearest);
+    return pool[Math.floor(safeRandom(random) * pool.length)] ?? null;
+  };
   const outfitsReady = options.outfits.every((outfit) => getOutfitStage(outfit) === 'empty');
   const positionCards = options.cards.filter((card) =>
     outfitsReady &&
@@ -726,7 +747,8 @@ export const selectLuxuryPositionCard = (
   const finalBand = getLuxuryProgressionBand(99, options.config);
   if (options.luxuryPercent >= 100) {
     const probabilities = luxuryProbabilitiesForCandidates([], finals, 100, options.config);
-    const finalCard = choosePositionCardByStarWeight(finals, finalBand, random);
+    const finalCard = choosePositionCardByStarWeight(finals, finalBand, random)
+      ?? chooseNearestAvailableCard(finals, finalBand);
     return {
       card: finalCard,
       nextUsedCardIds: [...new Set(options.usedCardIds)],
@@ -757,7 +779,9 @@ export const selectLuxuryPositionCard = (
     };
   }
   if (options.luxuryPercent >= 80 && finals.length > 0 && safeRandom(random) < probabilities.finalCardChance) {
-    const finalCard = choosePositionCardByStarWeight(finals, getLuxuryProgressionBand(options.luxuryPercent, options.config), random);
+    const finalBandForRoll = getLuxuryProgressionBand(options.luxuryPercent, options.config);
+    const finalCard = choosePositionCardByStarWeight(finals, finalBandForRoll, random)
+      ?? chooseNearestAvailableCard(finals, finalBandForRoll);
     if (!finalCard) {
       return {
         card: null,
@@ -776,7 +800,7 @@ export const selectLuxuryPositionCard = (
       missingFinalCard: false,
     };
   }
-  const availableStars = POSITION_DIFFICULTY_STARS.filter(
+  const weightedStars = POSITION_DIFFICULTY_STARS.filter(
     (star) => probabilities.stars[star] > 0,
   );
   if (candidates.length === 0) {
@@ -789,20 +813,25 @@ export const selectLuxuryPositionCard = (
       errorCode: 'no_cards',
     };
   }
-  if (availableStars.length === 0) {
+  const candidateStars = POSITION_DIFFICULTY_STARS.filter((star) =>
+    candidates.some((card) => derivePositionDifficultyStars(card) === star),
+  );
+  if (candidateStars.length === 0) {
     return {
       card: null,
       nextUsedCardIds: [...new Set(options.usedCardIds)],
       didResetPool: false,
       probabilities,
       missingFinalCard: false,
-      errorCode: 'no_positive_weight',
+      errorCode: 'no_cards',
     };
   }
+  const availableStars = weightedStars.length > 0 ? weightedStars : candidateStars;
   const conditionalWeights = normalize(availableStars, Object.fromEntries(
-    availableStars.map((star) => [star, probabilities.stars[star]]),
+    availableStars.map((star) => [star, probabilities.stars[star] || 1]),
   ) as Record<PositionDifficultyStars, number>);
-  const selectedStar = chooseWeighted(availableStars, conditionalWeights, random);
+  const selectedStar = chooseWeighted(availableStars, conditionalWeights, random)
+    ?? derivePositionDifficultyStars(chooseNearestAvailableCard(candidates, getLuxuryProgressionBand(options.luxuryPercent, options.config))!);
   if (!selectedStar) {
     return {
       card: null,
@@ -810,7 +839,7 @@ export const selectLuxuryPositionCard = (
       didResetPool: false,
       probabilities,
       missingFinalCard: false,
-      errorCode: 'no_positive_weight',
+      errorCode: 'no_cards',
     };
   }
   const starPool = candidates.filter((card) => derivePositionDifficultyStars(card) === selectedStar);

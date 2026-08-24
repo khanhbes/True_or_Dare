@@ -134,7 +134,7 @@ export const DEFAULT_GAME_SETTINGS: GameSettings = {
   privacyDefault: true,
   drawMode: 'random',
   outfits: [cloneOutfit(MALE_DEFAULT), cloneOutfit(FEMALE_DEFAULT)],
-  penaltyClothingEnabled: true,
+  penaltyClothingEnabled: false,
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -286,6 +286,37 @@ export const getOutfitStage = (state: OutfitState): OutfitStage => {
     ? 'dressed'
     : 'underwear_only';
 };
+
+/**
+ * Normalized clothing progress for gameplay decisions. Outer garments account
+ * for half of an outfit for both presentations, so removing shirt + pants is
+ * comparable for players starting with three or four layers.
+ */
+export const getWardrobeProgress = (state: OutfitState): number => {
+  const initialSlots = GARMENT_SLOT_ORDER[state.initial.presentation].filter(
+    (slot) => state.initial.garments[slot],
+  );
+  if (initialSlots.length === 0) return 100;
+  const weights: Partial<Record<GarmentSlot, number>> = state.initial.presentation === 'male'
+    ? { shirt: 0.25, pants: 0.25, underwear: 0.5 }
+    : { shirt: 0.25, pants: 0.25, bra: 0.25, underwear: 0.25 };
+  const total = initialSlots.reduce((sum, slot) => sum + (weights[slot] ?? 0), 0);
+  const present = new Set(getPresentGarmentSlots(state));
+  const remaining = initialSlots.reduce(
+    (sum, slot) => sum + (present.has(slot) ? weights[slot] ?? 0 : 0),
+    0,
+  );
+  return Math.round(Math.max(0, Math.min(100, (1 - remaining / total) * 100)));
+};
+
+export const getWardrobeProgressPair = (
+  outfits: readonly [OutfitState, OutfitState],
+): [number, number] => [getWardrobeProgress(outfits[0]), getWardrobeProgress(outfits[1])];
+
+/** Position becomes available once neither player is still in outer clothes. */
+export const areOutfitsReadyForPosition = (
+  outfits: readonly [OutfitState, OutfitState],
+): boolean => outfits.every((outfit) => getOutfitStage(outfit) !== 'dressed');
 
 export const getRemovableGarmentSlots = (state: OutfitState): GarmentSlot[] => {
   const present = getPresentGarmentSlots(state);

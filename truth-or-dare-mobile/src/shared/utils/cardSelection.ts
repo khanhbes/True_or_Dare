@@ -133,8 +133,8 @@ export const isClothingEffect = (value: unknown): value is ClothingEffect => {
   const candidate = value as Partial<ClothingEffect>;
   if (candidate.kind === 'swap_garments') return true;
   return candidate.kind === 'remove_garment' &&
-    (candidate.target === 'self' || candidate.target === 'opponent' ||
-      candidate.target === 'male' || candidate.target === 'female' || candidate.target === 'both');
+    (candidate.target === 'self' || candidate.target === 'opponent' || candidate.target === 'both' || candidate.target === 'choice' ||
+      candidate.target === 'male' || candidate.target === 'female');
 };
 
 export const normalizeCardClothingEffect = (card: CardItem): CardItem => {
@@ -166,7 +166,7 @@ export const normalizeCardClothingEffect = (card: CardItem): CardItem => {
     }
     return card;
   }
-  if (effect.target === 'male' || effect.target === 'female' || effect.target === 'both') {
+  if (effect.target === 'male' || effect.target === 'female') {
     const next = { ...card };
     delete next.clothingEffect;
     return next;
@@ -194,6 +194,8 @@ export const getRemovalTargetIndices = (
   }
   if (effect.target === 'self') return [actorIndex];
   if (effect.target === 'opponent') return [actorIndex === 0 ? 1 : 0];
+  if (effect.target === 'both') return [0, 1];
+  if (effect.target === 'choice') return [0, 1];
   return [];
 };
 
@@ -207,6 +209,9 @@ export const isCardEligibleForOutfits = (
   if (card.deck === 'position' && card.position?.family === 'have_sex') return false;
   if (card.clothingEffect.kind === 'swap_garments') {
     return outfits.every((outfit) => getRemovableGarments(outfit).length > 0);
+  }
+  if (card.clothingEffect.target === 'choice') {
+    return outfits.some((outfit) => getRemovableGarments(outfit).length > 0);
   }
   const targetIndices = getRemovalTargetIndices(card, actorIndex);
   return targetIndices.length > 0 && targetIndices.every(

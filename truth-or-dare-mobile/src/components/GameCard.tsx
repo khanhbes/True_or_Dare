@@ -67,9 +67,9 @@ const BORDER_COLORS: Record<string, string> = {
 };
 
 const SIZE_CONFIG = {
-  sm: { padding: 12, minHeight: 180, iconSize: 36, contentSize: 11, badgeSize: 8, timerSize: 10 },
-  md: { padding: 16, minHeight: 260, iconSize: 56, contentSize: 12, badgeSize: 9, timerSize: 10 },
-  lg: { padding: 24, minHeight: 380, iconSize: 72, contentSize: 16, badgeSize: 12, timerSize: 12 },
+  sm: { padding: 10, minHeight: 130, iconSize: 30, contentSize: 11, badgeSize: 8, timerSize: 10 },
+  md: { padding: 12, minHeight: 180, iconSize: 42, contentSize: 12, badgeSize: 9, timerSize: 10 },
+  lg: { padding: 16, minHeight: 240, iconSize: 48, contentSize: 15, badgeSize: 11, timerSize: 12 },
 };
 
 export const GameCard: React.FC<GameCardProps> = ({
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   contentText: {
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
-    maxWidth: '90%' as unknown as number,
+    maxWidth: '95%' as unknown as number,
   },
   hintText: {
     color: 'rgba(255, 107, 157, 0.7)',

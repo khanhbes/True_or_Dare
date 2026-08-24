@@ -77,15 +77,16 @@ export const CompletionToast: React.FC<CompletionToastProps> = ({ data, onDismis
 const styles = StyleSheet.create({
   toast: {
     position: 'absolute',
-    top: 8,
+    top: 4,
     alignSelf: 'center',
     zIndex: 999,
     backgroundColor: 'rgba(20, 10, 18, 0.92)',
     borderWidth: 1,
     borderColor: 'rgba(255, 107, 157, 0.4)',
     borderRadius: 24,
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
     paddingVertical: 10,
+    maxWidth: '70%' as unknown as number,
     shadowColor: '#FF6B9D',
     shadowOpacity: 0.3,
     shadowRadius: 12,

@@ -16,7 +16,7 @@
  * - Clothing effect on position cards
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import Animated, {
   useSharedValue,
@@ -70,6 +70,7 @@ import {
   GarmentRemovalDialog,
   DualGarmentRemovalDialog,
   GarmentSwapDialog,
+  GarmentTargetDialog,
 } from '@/components/dialogs';
 import { SummaryModal } from '@/components/SummaryModal';
 import { COLORS, FONTS, FONT_SIZES } from '@/theme';
@@ -83,6 +84,7 @@ import {
   isStandardJourneyCardEligible,
   getStandardCardPerformerIndex,
   getCardTurnAudience,
+  getCardActionFamily,
   type JourneyDrawProbabilities,
   type LuxuryDrawProbabilities,
 } from '@/shared/utils/progression';
@@ -99,6 +101,7 @@ import {
   getOutfitStage,
   getPresentGarmentSlots,
   getRemovableGarments,
+  areOutfitsReadyForPosition,
   removeGarment,
   swapGarments,
 } from '@/shared/utils/wardrobe';
@@ -181,6 +184,17 @@ const OUTFIT_STAGE_COPY = {
   empty: 'Hết đồ',
 } as const;
 
+let resolutionEventSequence = 0;
+
+const createResolutionEventMetadata = (cardId: string, round: number, outcome: string) => {
+  const timestamp = Date.now();
+  resolutionEventSequence += 1;
+  return {
+    id: `${cardId}_${round}_${outcome}_${timestamp}_${resolutionEventSequence}`,
+    timestamp,
+  };
+};
+
 export const GameTable: React.FC<GameTableProps> = ({
   player1,
   player2,
@@ -232,6 +246,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   onSummaryRestart,
   onSummaryClose,
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
   const players = [player1, player2] as const;
   const currentPlayer = players[currentPlayerIndex];
   const opponentIndex = (currentPlayerIndex === 0 ? 1 : 0) as PlayerIndex;
@@ -255,6 +270,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   // Dialog States
   const [showPenaltyPrompt, setShowPenaltyPrompt] = useState(false);
   const [showGarmentDialog, setShowGarmentDialog] = useState(false);
+  const [showGarmentTargetDialog, setShowGarmentTargetDialog] = useState(false);
   const [garmentDialogTarget, setGarmentDialogTarget] = useState<0 | 1>(currentPlayerIndex);
   const [garmentDialogSource, setGarmentDialogSource] = useState<'card' | 'penalty' | 'preparation'>('card');
   const [showDualGarmentDialog, setShowDualGarmentDialog] = useState(false);
@@ -268,6 +284,8 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   // Used card IDs for standard cards
   const [usedStandardCardIds, setUsedStandardCardIds] = useState<string[]>([]);
+  const [recentStandardCards, setRecentStandardCards] = useState<CardItem[]>([]);
+  const [clothingTurnsWithoutChange, setClothingTurnsWithoutChange] = useState(0);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -291,15 +309,16 @@ export const GameTable: React.FC<GameTableProps> = ({
     width: `${Math.min(100, luxuryProgressWidth.value)}%` as unknown as number,
   }));
 
-  // Check if both players are fully undressed → trigger preparation if entering position
+  // Position requires a mutual opt-in and both players to be out of outer clothes.
   useEffect(() => {
     if (
-      journeyPhase === 'position_consent' &&
-      outfitStates.every((o) => getOutfitStage(o) === 'empty')
+      journeyPhase === 'standard' &&
+      intimacyPercent >= 85 &&
+      areOutfitsReadyForPosition(outfitStates)
     ) {
-      onJourneyPhaseChange('position');
+      onJourneyPhaseChange('position_consent');
     }
-  }, [journeyPhase, outfitStates]);
+  }, [journeyPhase, intimacyPercent, outfitStates, onJourneyPhaseChange]);
 
   // Task 9: 3D Flip animated style
   const flipAnimatedStyle = useAnimatedStyle(() => ({
@@ -336,6 +355,8 @@ export const GameTable: React.FC<GameTableProps> = ({
         intimacyPercent,
         config: progressionConfig,
         difficultyBoost: isBoostActive,
+        recentCards: recentStandardCards,
+        clothingTurnsWithoutChange,
       });
 
       // Task 3: clear pending boost after draw
@@ -366,6 +387,8 @@ export const GameTable: React.FC<GameTableProps> = ({
       settings.levels,
       usedStandardCardIds,
       pendingDifficultyBoost,
+      recentStandardCards,
+      clothingTurnsWithoutChange,
       onDrawProbabilitySnapshotChange,
       onPendingDifficultyBoostChange,
     ],
@@ -382,6 +405,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       usedCardIds: sessionPositionCardIds,
       luxuryPercent: luxuryIntimacyPercent,
       config: luxuryProgressionConfig,
+      completedPositionCards: positionSessionStats.completed,
     });
 
     onDrawProbabilitySnapshotChange(result.probabilities);
@@ -480,6 +504,12 @@ export const GameTable: React.FC<GameTableProps> = ({
         return true;
       }
     } else if (card.clothingEffect?.kind === 'remove_garment') {
+      if (card.clothingEffect.target === 'choice') {
+        if (outfitStates.some((outfit) => getRemovableGarments(outfit).length > 0)) {
+          setShowGarmentTargetDialog(true);
+          return true;
+        }
+      }
       if (targetIndices.length === 2) {
         const r0 = getRemovableGarments(outfitStates[targetIndices[0]]);
         const r1 = getRemovableGarments(outfitStates[targetIndices[1]]);
@@ -557,15 +587,19 @@ export const GameTable: React.FC<GameTableProps> = ({
           timestamp: Date.now(),
         },
       ]);
-      // Check if standard intimacy reaches 100% → trigger position phase
-      if (newPercent >= 100 && journeyPhase === 'standard') {
+      if (newPercent >= 85 && journeyPhase === 'standard' && areOutfitsReadyForPosition(outfitStates)) {
         onJourneyPhaseChange('position_consent');
-        // Task 3: refund pending boost if intimacy hits 100
+        // Refund a queued boost once the standard journey is ready to transition.
         if (pendingDifficultyBoost) {
           const refunded = refundPendingDifficultyBoost(playerRewards, pendingDifficultyBoost);
           onPlayerRewardsChange(refunded);
           onPendingDifficultyBoostChange(null);
         }
+      }
+
+      setRecentStandardCards((history) => [...history, selectedCard].slice(-4));
+      if (!selectedCard.clothingEffect) {
+        setClothingTurnsWithoutChange((turns) => turns + 1);
       }
 
       // Task 2: award stars
@@ -626,15 +660,15 @@ export const GameTable: React.FC<GameTableProps> = ({
     haptics.light();
 
     // No star/intimacy gain for pass_turn
-    const resolutionId = `${selectedCard.id}_${currentRound}_passed_${Date.now()}`;
+    const resolution = createResolutionEventMetadata(selectedCard.id, currentRound, 'passed');
     const event: CardResolutionEvent = {
-      id: resolutionId,
+      id: resolution.id,
       cardId: selectedCard.id,
       playerIndex: currentPlayerIndex,
       status: 'passed',
       deck: getCardDeck(selectedCard),
       round: currentRound,
-      timestamp: Date.now(),
+      timestamp: resolution.timestamp,
     };
     onAddResolutionEvent(event);
 
@@ -649,15 +683,15 @@ export const GameTable: React.FC<GameTableProps> = ({
     soundEngine.playSkip();
 
     // ResolutionEvent for skip
-    const resolutionId = `${selectedCard.id}_${currentRound}_skipped_${Date.now()}`;
+    const resolution = createResolutionEventMetadata(selectedCard.id, currentRound, 'skipped');
     const event: CardResolutionEvent = {
-      id: resolutionId,
+      id: resolution.id,
       cardId: selectedCard.id,
       playerIndex: currentPlayerIndex,
       status: 'skipped',
       deck: getCardDeck(selectedCard),
       round: currentRound,
-      timestamp: Date.now(),
+      timestamp: resolution.timestamp,
     };
     onAddResolutionEvent(event);
 
@@ -695,6 +729,8 @@ export const GameTable: React.FC<GameTableProps> = ({
     );
     onUpdateOutfits(nextOutfits);
 
+    if (garmentDialogSource === 'card') setClothingTurnsWithoutChange(0);
+
     onAddClothingRemovalEvent({
       cardId: selectedCard?.id ?? (isInPreparation ? 'preparation' : 'penalty'),
       garmentSlot: slot,
@@ -703,7 +739,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       targetPlayerIndex: garmentDialogTarget,
       source: isInPreparation ? 'preparation' : garmentDialogSource === 'card' ? 'card' : 'penalty',
       round: currentRound,
-      timestamp: Date.now(),
+      timestamp: createResolutionEventMetadata(selectedCard?.id ?? 'garment', currentRound, 'clothing').timestamp,
     });
 
     setShowGarmentDialog(false);
@@ -721,16 +757,18 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   // --- Preparation flow ---
   const startPreparation = () => {
-    // Collect all garments from both players that need removal
+    // Preparation only removes outer layers; underwear is enough for Position.
     const slots: { playerIndex: 0 | 1; slot: GarmentSlot }[] = [];
     for (const playerIdx of [0, 1] as const) {
-      const removable = getPresentGarmentSlots(outfitStates[playerIdx]);
+      const removable = getPresentGarmentSlots(outfitStates[playerIdx]).filter(
+        (slot) => slot === 'shirt' || slot === 'pants',
+      );
       for (const slot of removable) {
         slots.push({ playerIndex: playerIdx, slot });
       }
     }
 
-    if (slots.length === 0) {
+    if (slots.length === 0 && areOutfitsReadyForPosition(outfitStates)) {
       onJourneyPhaseChange('position');
       return;
     }
@@ -817,6 +855,9 @@ export const GameTable: React.FC<GameTableProps> = ({
       levels: settings.levels,
       intimacyPercent,
       config: progressionConfig,
+      recentCards: recentStandardCards,
+      clothingTurnsWithoutChange,
+      avoidActionFamilies: [getCardActionFamily(selectedCard)],
     });
     if (result.card) {
       setSelectedCard(result.card);
@@ -850,21 +891,21 @@ export const GameTable: React.FC<GameTableProps> = ({
   const handleHaveSexViewed = () => {
     if (!selectedCard) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    const resolutionId = `${selectedCard.id}_${currentRound}_final_${Date.now()}`;
+    const resolution = createResolutionEventMetadata(selectedCard.id, currentRound, 'final');
     onAddResolutionEvent({
-      id: resolutionId,
+      id: resolution.id,
       cardId: selectedCard.id,
       playerIndex: currentPlayerIndex,
       status: 'final_viewed',
       deck: getCardDeck(selectedCard),
       round: currentRound,
-      timestamp: Date.now(),
+      timestamp: resolution.timestamp,
     });
     onFinishGame('have_sex');
   };
 
   return (
-    <ScrollView className="flex-1" contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       {/* Top Header: Current player & Actions */}
       <View style={styles.topHeader}>
         <View style={styles.playerInfo}>
@@ -894,6 +935,8 @@ export const GameTable: React.FC<GameTableProps> = ({
         </View>
       </View>
 
+      <View style={styles.gameArea}>
+
       {/* Intimacy Journey Progress */}
       <View style={styles.progressSection}>
         <View style={styles.progressLabels}>
@@ -909,7 +952,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
       {/* Luxury progress bar (position phase) */}
       {isPositionPhase && (
-        <View style={styles.progressSection}>
+        <View style={[styles.progressSection, styles.luxuryProgressSection]}>
           <View style={styles.progressLabels}>
             <Text style={[styles.journeyPhaseText, { color: '#f4e8ff' }]}>
               Tư thế: {positionSessionStats.drawn} rút · {positionSessionStats.opened} mở
@@ -929,7 +972,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         <Animated.View entering={FadeIn.duration(400)} style={styles.consentBox}>
           <Text style={styles.consentTitle}>✨ Sẵn sàng cho pha Tư thế?</Text>
           <Text style={styles.consentDesc}>
-            Để vào pha Tư thế, cả hai người cần cởi hết đồ trước.
+            Để vào pha Tư thế, cả hai chỉ cần sẵn sàng và không còn đồ ngoài.
           </Text>
           <Pressable onPress={startPreparation} style={styles.consentBtn}>
             <Text style={styles.consentBtnText}>Bắt đầu chuẩn bị</Text>
@@ -964,8 +1007,8 @@ export const GameTable: React.FC<GameTableProps> = ({
                 state={outfitStates[idx]}
                 active={isActive}
                 compact
-                width={80}
-                height={140}
+                width={60}
+                height={90}
               />
               <Text style={styles.dockPlayerName} numberOfLines={1}>
                 {player.avatar} {player.name}
@@ -994,20 +1037,24 @@ export const GameTable: React.FC<GameTableProps> = ({
       </View>
 
       {/* Task 6: Draw Probability Panel */}
-      {!isPositionPhase && (
-        <DrawProbabilityPanel
-          cardState={cardState}
-          journeyPhase={journeyPhase}
-          availableCards={availableCards}
-          actorIndex={currentPlayerIndex}
-          outfits={outfitStates}
-          usedCardIds={usedStandardCardIds}
-          levels={settings.levels}
-          intimacyPercent={intimacyPercent}
-          config={progressionConfig}
-          pendingDifficultyBoost={!!pendingDifficultyBoost}
-          snapshot={drawProbabilitySnapshot}
-        />
+      {!isPositionPhase && journeyPhase !== 'position_consent' && (
+        <View style={styles.probabilityPanel}>
+          <DrawProbabilityPanel
+            cardState={cardState}
+            journeyPhase={journeyPhase}
+            availableCards={availableCards}
+            actorIndex={currentPlayerIndex}
+            outfits={outfitStates}
+            usedCardIds={usedStandardCardIds}
+            levels={settings.levels}
+            intimacyPercent={intimacyPercent}
+            config={progressionConfig}
+            pendingDifficultyBoost={!!pendingDifficultyBoost}
+            recentCards={recentStandardCards}
+            clothingTurnsWithoutChange={clothingTurnsWithoutChange}
+            snapshot={drawProbabilitySnapshot}
+          />
+        </View>
       )}
 
       {/* Main Card Area */}
@@ -1243,6 +1290,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       >
         <Text style={styles.endGameBtnText}>Kết thúc ván chơi</Text>
       </Pressable>
+      </View>
 
       {/* Penalty Prompt Dialog */}
       <PenaltyPrompt
@@ -1288,6 +1336,23 @@ export const GameTable: React.FC<GameTableProps> = ({
         }}
       />
 
+      <GarmentTargetDialog
+        visible={showGarmentTargetDialog}
+        players={[player1, player2]}
+        outfits={outfitStates}
+        onSelect={(targetIndex) => {
+          setShowGarmentTargetDialog(false);
+          setGarmentDialogTarget(targetIndex);
+          setGarmentDialogSource('card');
+          setShowGarmentDialog(true);
+        }}
+        onCancel={() => {
+          setShowGarmentTargetDialog(false);
+          setCardState('completed');
+          setTimeout(advanceTurn, 800);
+        }}
+      />
+
       {/* Dual Garment Removal Dialog */}
       <DualGarmentRemovalDialog
         visible={showDualGarmentDialog}
@@ -1298,6 +1363,7 @@ export const GameTable: React.FC<GameTableProps> = ({
           next[0] = removeGarment(next[0], slot1);
           next[1] = removeGarment(next[1], slot2);
           onUpdateOutfits(next);
+          setClothingTurnsWithoutChange(0);
           setShowDualGarmentDialog(false);
           setCardState('completed');
           setTimeout(advanceTurn, 800);
@@ -1317,6 +1383,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         onConfirm={(slot1, slot2) => {
           const res = swapGarments(outfitStates, slot1, slot2);
           if (res) onUpdateOutfits(res.outfits);
+          if (res) setClothingTurnsWithoutChange(0);
           setShowSwapDialog(false);
           setCardState('completed');
           setTimeout(advanceTurn, 800);
@@ -1364,7 +1431,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       <ConfettiCannon
         ref={confettiRef}
         count={60}
-        origin={{ x: 0, y: 0 }}
+        origin={{ x: screenWidth / 2, y: 0 }}
         autoStart={false}
         fadeOut
         fallSpeed={2500}
@@ -1373,20 +1440,20 @@ export const GameTable: React.FC<GameTableProps> = ({
 
       {/* Task 7: Completion toast */}
       <CompletionToast data={toastData} onDismiss={() => setToastData(null)} />
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    paddingBottom: 40,
+    flex: 1,
+    padding: 10,
   },
   topHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   playerInfo: {
     flexDirection: 'row',
@@ -1441,7 +1508,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   progressSection: {
-    marginBottom: 14,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: '27%' as unknown as number,
+    marginBottom: 0,
   },
   progressLabels: {
     flexDirection: 'row',
@@ -1470,11 +1541,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.rose,
   },
   consentBox: {
+    position: 'absolute',
+    right: 0,
+    top: 112,
+    width: '27%' as unknown as number,
     backgroundColor: 'rgba(124, 58, 237, 0.12)',
     borderWidth: 1,
     borderColor: 'rgba(124, 58, 237, 0.35)',
     borderRadius: 16,
-    padding: 20,
+    padding: 10,
     alignItems: 'center',
     marginBottom: 16,
     gap: 10,
@@ -1513,9 +1588,14 @@ const styles = StyleSheet.create({
     color: COLORS.neutral400,
   },
   figuresDock: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '19%' as unknown as number,
+    flexDirection: 'column',
+    gap: 6,
+    marginBottom: 0,
   },
   figureCard: {
     flex: 1,
@@ -1524,7 +1604,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 14,
-    padding: 8,
+    padding: 4,
   },
   figureCardActive: {
     borderColor: 'rgba(255, 107, 157, 0.5)',
@@ -1542,24 +1622,29 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   cardCenterArea: {
+    position: 'absolute',
+    left: '21%' as unknown as number,
+    top: 0,
+    bottom: 0,
+    width: '50%' as unknown as number,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 280,
-    marginBottom: 20,
+    minHeight: 0,
+    marginBottom: 0,
   },
   deckStackWrapper: {
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
   },
   deckVisualStack: {
-    width: 180,
-    height: 250,
+    width: 150,
+    height: 160,
     position: 'relative',
   },
   deckLayerCard: {
     position: 'absolute',
-    width: 180,
-    height: 250,
+    width: '100%' as unknown as number,
+    height: 160,
     borderRadius: 16,
     borderWidth: 2,
     borderColor: 'rgba(255, 107, 157, 0.25)',
@@ -1734,7 +1819,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   endGameBtn: {
-    alignSelf: 'center',
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: '27%' as unknown as number,
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 9999,
@@ -1797,5 +1886,19 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bodyBold,
     fontSize: 15,
     color: '#fff',
+  },
+  gameArea: {
+    flex: 1,
+    position: 'relative',
+    minHeight: 0,
+  },
+  probabilityPanel: {
+    position: 'absolute',
+    right: 0,
+    top: 112,
+    width: '27%' as unknown as number,
+  },
+  luxuryProgressSection: {
+    top: 50,
   },
 });

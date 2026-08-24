@@ -4,7 +4,7 @@
  * Port of the web IntroScreen.tsx using Reanimated + NativeWind.
  */
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, useWindowDimensions, Image, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -35,6 +35,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   onOpenRules,
 }) => {
   const [isMusicOn, setIsMusicOn] = useState(false);
+  const { height } = useWindowDimensions();
+  const compact = height < 700;
 
   // Candle glow animation
   const candleOpacity = useSharedValue(0.6);
@@ -76,7 +78,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   const sparkleAnimStyle = useAnimatedStyle(() => ({ opacity: sparkleOpacity.value }));
 
   return (
-    <View className="flex-1 items-center justify-between px-4 py-6">
+    <View style={styles.root}>
       {/* Top Header Bar */}
       <View className="w-full px-2 py-1">
         <View className="flex-row items-center justify-between gap-2">
@@ -142,25 +144,32 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
       {/* Main Center */}
       <Animated.View
         entering={FadeIn.duration(800)}
-        className="items-center py-8"
+        style={styles.main}
       >
+        <View style={styles.brandPanel}>
         {/* Candle flame */}
-        <View className="relative mb-6">
+        <View className="relative" style={{ marginBottom: compact ? 12 : 20 }}>
+          <Image
+            source={require('../../assets/images/icon.png')}
+            style={{ width: compact ? 60 : 72, height: compact ? 60 : 72, borderRadius: compact ? 30 : 36, opacity: 0.95 }}
+          />
           <Animated.View
             style={[
               {
-                width: 80,
-                height: 80,
-                borderRadius: 40,
+                width: compact ? 60 : 72,
+                height: compact ? 60 : 72,
+                borderRadius: compact ? 30 : 36,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                position: 'absolute',
+                inset: 0,
               },
               candleAnimStyle,
             ]}
           >
             <Flame
-              size={40}
+              size={compact ? 32 : 38}
               color="#fbbf24"
               style={{
                 shadowColor: 'rgba(212, 175, 55, 0.8)',
@@ -175,12 +184,17 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           </Animated.View>
         </View>
 
+        <Text style={styles.brandKicker}>DÀNH CHO HAI NGƯỜI</Text>
+        </View>
+
+        <View style={styles.contentPanel}>
+
         {/* Title */}
         <Text
-          className="text-center uppercase mb-3"
+          className="text-left"
           style={{
             fontFamily: FONTS.serifBold,
-            fontSize: FONT_SIZES['5xl'],
+            fontSize: compact ? FONT_SIZES['3xl'] : FONT_SIZES['4xl'],
             color: COLORS.gold,
             letterSpacing: 4,
             textShadowColor: 'rgba(212, 175, 55, 0.4)',
@@ -193,11 +207,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
         {/* Subtitle */}
         <Text
-          className="text-center mb-4"
+          className="text-left"
           style={{
             fontFamily: FONTS.serifItalic,
-            fontSize: FONT_SIZES.xl,
+            fontSize: compact ? FONT_SIZES.lg : FONT_SIZES.xl,
             color: COLORS.rose,
+            marginBottom: compact ? 8 : 12,
             textShadowColor: 'rgba(255, 107, 157, 0.6)',
             textShadowOffset: { width: 0, height: 0 },
             textShadowRadius: 12,
@@ -208,11 +223,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
         {/* Description */}
         <Text
-          className="text-center mb-8"
+          className="text-left"
           style={{
             fontFamily: FONTS.bodyLight,
             fontSize: FONT_SIZES.sm,
             color: COLORS.neutral300,
+            marginBottom: compact ? 12 : 18,
             lineHeight: FONT_SIZES.sm * 1.625,
             maxWidth: 320,
           }}
@@ -223,7 +239,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         </Text>
 
         {/* Level badges */}
-        <View className="flex-row flex-wrap justify-center gap-2 mb-10">
+        <View className="flex-row flex-wrap gap-2" style={{ marginBottom: compact ? 10 : 14 }}>
           <View className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/30"
             style={{ backgroundColor: 'rgba(76, 5, 25, 0.5)' }}>
             <Text style={{ fontSize: 13 }}>🌸</Text>
@@ -286,6 +302,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             Cách chơi & luật phạt
           </Text>
         </Pressable>
+        </View>
       </Animated.View>
 
       {/* Footer */}
@@ -301,3 +318,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  root: { flex: 1, paddingHorizontal: 18, paddingVertical: 10, justifyContent: 'space-between' },
+  main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 24, minHeight: 0 },
+  brandPanel: { width: '34%', alignItems: 'center', justifyContent: 'center', borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.08)', paddingRight: 20 },
+  contentPanel: { flex: 1, alignItems: 'flex-start', justifyContent: 'center', minWidth: 0 },
+  brandKicker: { fontFamily: FONTS.bodyMedium, fontSize: 10, color: COLORS.neutral400, letterSpacing: 1.5, marginTop: 8 },
+});

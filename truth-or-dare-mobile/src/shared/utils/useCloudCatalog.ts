@@ -114,7 +114,13 @@ export function useCloudCatalog() {
 
   // Initial sync
   useEffect(() => {
-    sync();
+    // Defer the first sync until after this render commits. The sync routine updates
+    // local state once the cache/network request resolves.
+    const timeoutId = setTimeout(() => {
+      void sync();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [sync]);
 
   // Refresh on foreground

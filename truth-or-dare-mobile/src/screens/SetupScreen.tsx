@@ -61,7 +61,7 @@ const AvatarPicker: React.FC<{ value: string; onChange: (v: string) => void; ton
 
       <Modal visible={isOpen} transparent animationType="fade" onRequestClose={() => setIsOpen(false)}>
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={() => setIsOpen(false)}>
-          <View style={{ marginTop: 120, marginHorizontal: 60, borderRadius: 16, backgroundColor: '#171014', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', padding: 12 }}>
+          <View style={{ marginTop: 24, marginHorizontal: 32, borderRadius: 16, backgroundColor: '#171014', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', padding: 10 }}>
             <FlatList
               data={AVATAR_OPTIONS}
               numColumns={4}
@@ -304,9 +304,9 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
   };
 
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <View style={{ flex: 1, padding: 12 }}>
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <Pressable onPress={onBack} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <ArrowLeft size={16} color={COLORS.neutral400} />
           <Text style={{ fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.neutral400 }}>Quay lại</Text>
@@ -319,8 +319,11 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
         </Pressable>
       </View>
 
+      <View style={{ flex: 1, flexDirection: 'row', gap: 12, minHeight: 0 }}>
+      <ScrollView style={{ flex: 0.45 }} contentContainerStyle={{ paddingBottom: 8 }} showsVerticalScrollIndicator={false}>
+
       {/* Section 1: Player Names */}
-      <View style={{ borderRadius: 16, borderWidth: 1, borderColor: 'rgba(244,63,94,0.2)', backgroundColor: COLORS.glassDark, padding: 20, marginBottom: 24, zIndex: 20 }}>
+      <View style={{ borderRadius: 16, borderWidth: 1, borderColor: 'rgba(244,63,94,0.2)', backgroundColor: COLORS.glassDark, padding: 14, marginBottom: 16, zIndex: 20 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
           <User size={16} color="#fb7185" />
           <Text style={{ fontFamily: FONTS.bodySemiBold, fontSize: 12, color: '#fda4af', textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -405,20 +408,23 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
         />
       </View>
 
+      </ScrollView>
+      <ScrollView style={{ flex: 0.55 }} contentContainerStyle={{ paddingBottom: 8 }} showsVerticalScrollIndicator={false}>
+
       {/* Section 3: Level Selection */}
-      <View style={{ marginBottom: 24 }}>
+      <View style={{ marginBottom: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <Heart size={16} color="#fb7185" />
           <Text style={{ fontFamily: FONTS.bodySemiBold, fontSize: 12, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1 }}>Chọn Cấp Độ</Text>
         </View>
-        <View style={{ gap: 12 }}>
+        <View style={{ gap: 8 }}>
           {(['gentle', 'intimate', 'passionate'] as CardLevel[]).map((lvl) => {
             const info = LEVEL_INFO[lvl];
             const isSelected = selectedLevels.includes(lvl);
             const lvlStyle = LEVEL_STYLES[lvl];
             return (
               <Pressable key={lvl} onPress={() => toggleLevel(lvl)} style={{
-                borderRadius: 16, padding: 16, borderWidth: 1, minHeight: 100,
+                borderRadius: 14, padding: 12, borderWidth: 1,
                 borderColor: isSelected ? lvlStyle.checkColor + '99' : 'rgba(38,38,38,1)',
                 backgroundColor: isSelected ? lvlStyle.selectedBg : 'rgba(23,23,23,0.4)',
                 opacity: isSelected ? 1 : 0.6,
@@ -428,9 +434,13 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
                     <Check size={12} color="#171717" strokeWidth={3} />
                   </View>
                 )}
-                <Text style={{ fontSize: 24, marginBottom: 4 }}>{info.icon}</Text>
-                <Text style={{ fontFamily: FONTS.serifBold, fontSize: 18, color: '#fff', marginBottom: 4 }}>{info.name}</Text>
-                <Text style={{ fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.neutral300, lineHeight: 18 }}>{info.description}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={{ fontSize: 20 }}>{info.icon}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: FONTS.serifBold, fontSize: 15, color: '#fff' }}>{info.name}</Text>
+                    <Text numberOfLines={1} style={{ fontFamily: FONTS.bodyRegular, fontSize: 11, color: COLORS.neutral300 }}>{info.description}</Text>
+                  </View>
+                </View>
               </Pressable>
             );
           })}
@@ -438,7 +448,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
       </View>
 
       {/* Section 4: Options */}
-      <View style={{ borderRadius: 16, borderWidth: 1, borderColor: 'rgba(244,63,94,0.2)', backgroundColor: COLORS.glassDark, padding: 20, marginBottom: 24, gap: 20 }}>
+      <View style={{ borderRadius: 16, borderWidth: 1, borderColor: 'rgba(244,63,94,0.2)', backgroundColor: COLORS.glassDark, padding: 14, marginBottom: 16, gap: 14 }}>
         <Text style={{ fontFamily: FONTS.bodySemiBold, fontSize: 12, color: '#fde68a', textTransform: 'uppercase', letterSpacing: 1 }}>
           Tùy Chỉnh
         </Text>
@@ -532,12 +542,15 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
         </View>
       </Pressable>
 
+      </ScrollView>
+      </View>
+
       {/* Start button */}
       <Pressable
         onPress={handleSubmit}
         disabled={!consentConfirmed}
         style={({ pressed }) => ({
-          height: 56, borderRadius: 9999, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 12,
+          height: 48, borderRadius: 9999, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 12,
           backgroundColor: consentConfirmed ? (pressed ? COLORS.goldGradientEnd : COLORS.goldGradientMid) : COLORS.neutral700,
           opacity: consentConfirmed ? 1 : 0.4,
           shadowColor: COLORS.gold, shadowOffset: { width: 0, height: 0 },
@@ -548,6 +561,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
         <Play size={20} color="#171717" fill="#171717" />
         <Text style={{ fontFamily: FONTS.bodySemiBold, fontSize: 18, color: '#171717' }}>Vào Bàn Chơi Ngay</Text>
       </Pressable>
-    </ScrollView>
+    </View>
   );
 };
