@@ -228,7 +228,10 @@ export const deriveDifficultyStars = (card: CardItem): DifficultyStars => {
 
 export const derivePositionDifficultyStars = (card: CardItem): PositionDifficultyStars => {
   const explicit = card.position?.difficultyStars;
-  if (explicit && POSITION_DIFFICULTY_STARS.includes(explicit as 6 | 7 | 8 | 9 | 10)) return explicit as PositionDifficultyStars;
+  if (explicit) {
+    const normalized = explicit <= 5 ? (explicit + 5) : explicit;
+    if (normalized >= 6 && normalized <= 10) return normalized as PositionDifficultyStars;
+  }
   if (card.position?.family === 'have_sex') return 10;
   if (card.position?.family === 'handjob') return 8;
   if (card.position?.family === 'blowjob') return 7;
