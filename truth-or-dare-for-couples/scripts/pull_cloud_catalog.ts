@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { compareCollectionCards } from '../src/utils/cardOrdering';
 import { INITIAL_CARDS } from '../src/data/cards';
 import { mergeEditedSystemCard } from '../src/utils/cardSelection';
 import { parseCatalogPayload } from '../src/utils/cardSchema';
@@ -16,13 +17,40 @@ const extensionFor = (mimeType: string): string => {
   return mimeType.split('/')[1] || 'bin';
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** Converts the pre-migration Luxury config (stars 1–5) into its 6–10 ladder. */
+const migrateLegacyLuxuryConfig = (value: unknown): unknown => {
+  if (!isRecord(value) || !Array.isArray(value.bands)) return value;
+  return {
+    ...value,
+    bands: value.bands.map((band) => {
+      if (!isRecord(band) || !isRecord(band.starWeights)) return band;
+      const weights = band.starWeights;
+      const legacyHasWeights = [1, 2, 3, 4, 5].some((star) => Number(weights[String(star)]) > 0);
+      if (!legacyHasWeights) return band;
+      return {
+        ...band,
+        starWeights: Object.fromEntries([6, 7, 8, 9, 10].map((star) => [
+          star,
+          weights[String(star - 5)] ?? 0,
+        ])),
+      };
+    }),
+  };
+};
+
 const sourceOrigin = new URL(process.argv[2] || DEFAULT_ORIGIN).origin;
 const outputRoot = path.resolve(process.argv[3] || 'data/catalog');
 const catalogUrl = new URL('/api/catalog', sourceOrigin);
 const response = await fetch(catalogUrl, { headers: { accept: 'application/json' } });
 if (!response.ok) throw new Error(`Không tải được catalog cloud: HTTP ${response.status}`);
 
-const payload = parseCatalogPayload(await response.json());
+const rawPayload = await response.json();
+const payload = parseCatalogPayload(isRecord(rawPayload)
+  ? { ...rawPayload, luxuryProgressionConfig: migrateLegacyLuxuryConfig(rawPayload.luxuryProgressionConfig) }
+  : rawPayload);
 if (!payload) throw new Error('Catalog cloud không đúng schema; giữ nguyên snapshot local hiện tại.');
 
 const overrides = new Map(payload.editedCards.map((card) => [card.id, card]));
@@ -31,7 +59,9 @@ const cards = [
   ...INITIAL_CARDS.filter((card) => !deleted.has(card.id)).map((card) =>
     mergeEditedSystemCard(card, overrides.get(card.id))),
   ...payload.customCards,
-];
+].sort(compareCollectionCards);
+payload.customCards.sort(compareCollectionCards);
+payload.editedCards.sort(compareCollectionCards);
 if (INITIAL_CARDS.length !== 108) throw new Error('Số thẻ hệ thống canonical không còn là 108.');
 if (new Set(cards.map((card) => card.id)).size !== cards.length) {
   throw new Error('Catalog sau merge có ID thẻ trùng; giữ nguyên snapshot local hiện tại.');
