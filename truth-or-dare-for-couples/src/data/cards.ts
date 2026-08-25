@@ -932,14 +932,20 @@ const STAR_BY_ID = new Map<string, DifficultyStars>(
 );
 
 export const INITIAL_CARDS: CardItem[] = migratePositionCards(BASE_CARDS).map((card) => {
-  if (card.deck === 'position') return card;
+  const phaseTag = card.phaseTag ?? card.progression?.phaseTag ?? card.level;
+  const heat = card.heat ?? card.progression?.heat ?? (phaseTag === 'gentle' ? 2 : phaseTag === 'intimate' ? 5 : 8) + (card.clothingEffect ? 1 : 0);
+  if (card.deck === 'position') return { ...card, phaseTag, heat: Math.min(10, heat) };
   return {
     ...card,
     deck: 'standard',
+    phaseTag,
+    heat: Math.min(10, heat),
     progression: {
       ...card.progression,
       difficultyStars: card.progression?.difficultyStars ?? STAR_BY_ID.get(card.id) ?? 1,
       audience: card.progression?.audience ?? 'both',
+      phaseTag,
+      heat: Math.min(10, heat),
     },
   };
 });

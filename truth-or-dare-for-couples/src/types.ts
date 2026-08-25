@@ -19,6 +19,7 @@ export type StandardRemovalTarget = 'self' | 'opponent';
 export type PositionRemovalTarget = 'male' | 'female' | 'both';
 export type ClothingFamily = 'self' | 'opponent' | 'both' | 'choice' | 'challenge' | 'catch_up' | 'special';
 export type ClothingIntensity = 'C1' | 'C2' | 'C3' | 'C4' | 'C5';
+export type CardPhaseTag = 'gentle' | 'intimate' | 'passionate';
 export type GameEndReason = 'pink_complete' | 'have_sex' | 'no_cards' | 'manual';
 
 export interface GarmentConfig {
@@ -63,6 +64,10 @@ export interface CardProgressionMetadata {
   clothingFamily?: ClothingFamily;
   clothingIntensity?: ClothingIntensity;
   clothingCooldownFamily?: ClothingFamily;
+  /** Content heat is independent from difficulty stars (1 = gentle, 10 = hottest). */
+  heat?: number;
+  /** Director pacing phase; can intentionally differ from the display level. */
+  phaseTag?: CardPhaseTag;
 }
 
 export interface PositionMetadata {
@@ -212,6 +217,9 @@ export interface CardItem {
   gameplayEffect?: CardGameplayEffect | null;
   /** Missing means a legacy/custom standard card. */
   deck?: CardDeck;
+  /** Director metadata is stored on the card so every deck can participate. */
+  heat?: number;
+  phaseTag?: CardPhaseTag;
   progression?: CardProgressionMetadata | null;
   position?: PositionMetadata | null;
 }

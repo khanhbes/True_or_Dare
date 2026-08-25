@@ -17,7 +17,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Cả 2 cùng nói ngày mình yêu nhau là ngày bao nhiêu?",
@@ -31,7 +33,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Cảm giác lần đầu bạn hôn đối phương như nào?",
@@ -45,7 +49,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Ai là người tỏ tình?",
@@ -59,7 +65,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Bạn cảm thấy như nào khi nghe lời tỏ tình của đối phương?",
@@ -73,7 +81,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Đối phương có điểm mạnh gì mà bạn thích?",
@@ -87,7 +97,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Hãy kể tên một việc bạn chỉ làm khi ở một mình?",
@@ -101,7 +113,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Nỗi sợ lớn nhất của bạn là gì?",
@@ -115,7 +129,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Ngôn ngữ tình yêu của bạn là gì?",
@@ -129,7 +145,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Bạn đã bao giờ mơ về đối phương chưa?",
@@ -143,7 +161,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Đối phương có phải người hài hước không?",
@@ -157,7 +177,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Ai có nhiều mập mờ hơn?",
@@ -171,7 +193,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Ai có nhiều người yêu cũ hơn?",
@@ -185,7 +209,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Khi nào bạn nhận ra đối phương thích bạn?",
@@ -199,7 +225,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Cả hai cùng nói sinh nhật của nhau",
@@ -213,7 +241,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Đâu là địa điểm hẹn hò hai bạn thích nhất?",
@@ -227,7 +257,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Kể tên ca sĩ bạn thích",
@@ -241,7 +273,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Kể tên bài hát bạn thích",
@@ -255,7 +289,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Bạn sợ nhất điều gì trong tình yêu?",
@@ -269,7 +305,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Bạn thích nhất điều gì trong tình yêu?",
@@ -283,7 +321,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Bạn thích xem thể loại phim gì?",
@@ -297,7 +337,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "type": "truth"
+      "type": "truth",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-1",
@@ -310,7 +352,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-2",
@@ -323,7 +367,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-4",
@@ -335,7 +381,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-5",
@@ -347,7 +395,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-6",
@@ -360,7 +410,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-9",
@@ -372,7 +424,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-10",
@@ -385,7 +439,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-11",
@@ -398,7 +454,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-12",
@@ -410,7 +468,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-1",
@@ -423,7 +483,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-4",
@@ -436,7 +498,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-5",
@@ -448,7 +512,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-10",
@@ -460,7 +526,9 @@
       "progression": {
         "difficultyStars": 1,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-11",
@@ -473,7 +541,9 @@
         "turnAudience": "both"
       },
       "deck": "standard",
-      "timerSeconds": 20
+      "timerSeconds": 20,
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-16",
@@ -485,7 +555,9 @@
         "difficultyStars": 1,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-3",
@@ -497,7 +569,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-7",
@@ -509,7 +583,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-8",
@@ -521,7 +597,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-13",
@@ -533,7 +611,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-14",
@@ -545,7 +625,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-15",
@@ -558,7 +640,9 @@
         "turnAudience": "both"
       },
       "deck": "standard",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-t-16",
@@ -570,7 +654,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-2",
@@ -583,7 +669,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "timerSeconds": 19
+      "timerSeconds": 19,
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-3",
@@ -596,7 +684,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "timerSeconds": 20
+      "timerSeconds": 20,
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-6",
@@ -609,7 +699,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-7",
@@ -623,7 +715,9 @@
         "turnAudience": "both"
       },
       "illustrationOverride": true,
-      "timerSeconds": 20
+      "timerSeconds": 20,
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-8",
@@ -635,7 +729,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-9",
@@ -648,7 +744,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-12",
@@ -661,7 +759,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-13",
@@ -674,7 +774,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-15",
@@ -686,7 +788,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "g-d-14",
@@ -703,7 +807,9 @@
       "timerSeconds": null,
       "gameplayEffect": {
         "kind": "pass_turn"
-      }
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "id": "i-t-1",
@@ -715,7 +821,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-3",
@@ -727,7 +835,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-6",
@@ -740,7 +850,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-8",
@@ -752,7 +864,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-10",
@@ -764,7 +878,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-11",
@@ -776,7 +892,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-16",
@@ -788,7 +906,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-13",
@@ -800,7 +920,9 @@
         "difficultyStars": 2,
         "turnAudience": "male"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-1",
@@ -812,7 +934,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-8",
@@ -824,7 +948,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-9",
@@ -836,7 +962,9 @@
       "progression": {
         "difficultyStars": 2,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-11",
@@ -849,7 +977,9 @@
         "difficultyStars": 2,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-2",
@@ -861,7 +991,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-4",
@@ -873,7 +1005,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-5",
@@ -885,7 +1019,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-7",
@@ -897,7 +1033,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-9",
@@ -909,7 +1047,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-12",
@@ -922,7 +1062,9 @@
         "difficultyStars": 3,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-15",
@@ -934,7 +1076,9 @@
         "difficultyStars": 3,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-t-14",
@@ -946,7 +1090,9 @@
         "difficultyStars": 3,
         "turnAudience": "female"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-2",
@@ -959,7 +1105,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-3",
@@ -971,7 +1119,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-4",
@@ -984,7 +1134,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-7",
@@ -996,7 +1148,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-10",
@@ -1008,7 +1162,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-12",
@@ -1020,7 +1176,9 @@
         "difficultyStars": 3,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-16",
@@ -1033,7 +1191,9 @@
         "difficultyStars": 3,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-13",
@@ -1046,7 +1206,9 @@
         "difficultyStars": 3,
         "turnAudience": "male"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-14",
@@ -1058,7 +1220,9 @@
         "difficultyStars": 3,
         "turnAudience": "female"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-5",
@@ -1071,7 +1235,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "i-d-6",
@@ -1087,7 +1253,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "intimate",
+      "heat": 6
     },
     {
       "id": "i-d-15",
@@ -1099,7 +1267,9 @@
         "difficultyStars": 4,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "intimate",
+      "heat": 5
     },
     {
       "id": "p-t-3",
@@ -1111,7 +1281,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-5",
@@ -1123,7 +1295,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-6",
@@ -1135,7 +1309,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-9",
@@ -1147,7 +1323,9 @@
         "difficultyStars": 3,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-14",
@@ -1159,7 +1337,9 @@
         "difficultyStars": 3,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-2",
@@ -1171,7 +1351,9 @@
       "progression": {
         "difficultyStars": 3,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-1",
@@ -1183,7 +1365,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-2",
@@ -1195,7 +1379,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-4",
@@ -1207,7 +1393,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-7",
@@ -1219,7 +1407,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-8",
@@ -1231,7 +1421,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-10",
@@ -1243,7 +1435,9 @@
         "difficultyStars": 4,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-11",
@@ -1255,7 +1449,9 @@
         "difficultyStars": 4,
         "turnAudience": "male"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-12",
@@ -1267,7 +1463,9 @@
         "difficultyStars": 4,
         "turnAudience": "female"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-1",
@@ -1279,7 +1477,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-3",
@@ -1292,7 +1492,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-4",
@@ -1305,7 +1507,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-5",
@@ -1317,7 +1521,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-6",
@@ -1329,7 +1535,9 @@
       "progression": {
         "difficultyStars": 4,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-9",
@@ -1345,7 +1553,9 @@
         "difficultyStars": 4,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 9
     },
     {
       "id": "p-d-10",
@@ -1362,7 +1572,9 @@
         "difficultyStars": 4,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 9
     },
     {
       "id": "p-d-13",
@@ -1374,7 +1586,9 @@
         "difficultyStars": 4,
         "turnAudience": "male"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-t-13",
@@ -1387,7 +1601,9 @@
         "difficultyStars": 5,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-7",
@@ -1399,7 +1615,9 @@
       "progression": {
         "difficultyStars": 5,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-8",
@@ -1412,7 +1630,9 @@
       "progression": {
         "difficultyStars": 5,
         "turnAudience": "both"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-11",
@@ -1425,7 +1645,9 @@
         "difficultyStars": 5,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-12",
@@ -1438,7 +1660,9 @@
         "difficultyStars": 5,
         "turnAudience": "both"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "p-d-14",
@@ -1455,7 +1679,9 @@
         "difficultyStars": 5,
         "turnAudience": "female"
       },
-      "deck": "standard"
+      "deck": "standard",
+      "phaseTag": "passionate",
+      "heat": 9
     },
     {
       "id": "pos-oral-male",
@@ -1487,7 +1713,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-oral-male",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-close-embrace-2",
@@ -1520,7 +1748,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-close-embrace-2",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-oral-female",
@@ -1541,7 +1771,9 @@
         "rarity": "luxury",
         "difficultyStars": 8,
         "turnAudience": "male"
-      }
+      },
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-connection-1",
@@ -1573,7 +1805,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-connection-1",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -1605,7 +1839,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-blowjob-both",
@@ -1637,7 +1873,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-blowjob-both",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -1669,7 +1907,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -1701,7 +1941,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -1733,7 +1975,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-guided-touch-4",
@@ -1765,7 +2009,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-guided-touch-4",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-blowjob-male",
@@ -1797,7 +2043,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-blowjob-male",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -1829,7 +2077,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-blowjob-female",
@@ -1861,7 +2111,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-blowjob-female",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -1893,7 +2145,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -1925,7 +2179,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -1957,7 +2213,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-handjob-female",
@@ -1989,7 +2247,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-handjob-female",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-handjob-male",
@@ -2021,7 +2281,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-handjob-male",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2053,7 +2315,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-handjob-both",
@@ -2080,7 +2344,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-handjob-both",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-massage-6",
@@ -2113,7 +2379,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-massage-6",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2145,7 +2413,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-oral-both",
@@ -2177,7 +2447,9 @@
         "textScale": 0.9
       },
       "customImageId": "card-image:pos-oral-both",
-      "illustrationOverride": true
+      "illustrationOverride": true,
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2209,7 +2481,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2241,7 +2515,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2273,7 +2549,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2305,7 +2583,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2337,7 +2617,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2369,7 +2651,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2401,7 +2685,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2433,7 +2719,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2465,7 +2753,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2497,7 +2787,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2529,7 +2821,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2561,7 +2855,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2593,7 +2889,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2625,7 +2923,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2657,7 +2957,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2689,7 +2991,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2721,7 +3025,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2753,7 +3059,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2779,7 +3087,9 @@
         "difficultyStars": 5,
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "appearance": {
@@ -2811,7 +3121,9 @@
         ],
         "turnAudience": "both"
       },
-      "type": "dare"
+      "type": "dare",
+      "phaseTag": "passionate",
+      "heat": 8
     },
     {
       "id": "pos-have-sex",
@@ -2844,7 +3156,9 @@
       },
       "customImageId": "card-image:pos-have-sex",
       "illustrationOverride": true,
-      "timerSeconds": null
+      "timerSeconds": null,
+      "phaseTag": "passionate",
+      "heat": 8
     }
   ],
   "luxuryProgressionConfig": {

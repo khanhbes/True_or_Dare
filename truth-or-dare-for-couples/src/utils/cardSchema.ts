@@ -30,6 +30,11 @@ export const isStoredCard = (value: unknown): value is CardItem => {
   const hasValidTimer = value.timerSeconds === undefined || value.timerSeconds === null || (
     typeof value.timerSeconds === 'number' && Number.isFinite(value.timerSeconds)
   );
+  const hasValidDirectorMetadata = (value.heat === undefined || (
+    typeof value.heat === 'number' && Number.isInteger(value.heat) && value.heat >= 1 && value.heat <= 10
+  )) && (value.phaseTag === undefined || (
+    typeof value.phaseTag === 'string' && CARD_LEVELS.has(value.phaseTag)
+  ));
   const validStages = (stages: unknown) => stages === undefined || (
     Array.isArray(stages) && stages.every((stage) =>
       typeof stage === 'string' && OUTFIT_STAGES.has(stage))
@@ -99,7 +104,7 @@ export const isStoredCard = (value: unknown): value is CardItem => {
     typeof value.type === 'string' && CARD_TYPES.has(value.type) &&
     typeof value.level === 'string' && CARD_LEVELS.has(value.level) &&
     typeof value.content === 'string' && isOptionalString(value.hint) &&
-    hasValidTimer &&
+    hasValidTimer && hasValidDirectorMetadata &&
     (value.deck === undefined || (typeof value.deck === 'string' && CARD_DECKS.has(value.deck))) &&
     hasValidProgression && hasValidPosition &&
     (value.isCustom === undefined || typeof value.isCustom === 'boolean') &&

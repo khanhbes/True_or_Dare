@@ -73,6 +73,11 @@ import {
   resolveClothingOpportunity,
 } from '../utils/clothingJourney';
 import {
+  createCardDirectorState,
+  recordDirectedCard,
+  recordDirectorStarsSpent,
+} from '../utils/cardDirector';
+import {
   DIFFICULTY_BOOST_STAR_COST,
   REROLL_STAR_COST,
   awardStars,
@@ -269,6 +274,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   const [showPenaltyPrompt, setShowPenaltyPrompt] = useState(false);
   const [usedCardIds, setUsedCardIds] = useState<string[]>([]);
   const [clothingJourney, setClothingJourney] = useState(createClothingJourney);
+  const [cardDirectorState, setCardDirectorState] = useState(createCardDirectorState);
   const [drawError, setDrawError] = useState<string | null>(null);
   const [liveMessage, setLiveMessage] = useState<string>('');
   const [unlockNotice, setUnlockNotice] = useState<string | null>(null);
@@ -323,6 +329,7 @@ export const GameTable: React.FC<GameTableProps> = ({
     intimacyPercent,
     config: progressionConfig,
     difficultyBoost: Boolean(activeDifficultyBoost),
+    directorState: cardDirectorState,
   } as const;
   const availableDrawTypes = getJourneyAvailableTypes(journeySelectionOptions);
   const drawProbabilities = drawProbabilitySnapshot?.deck === 'standard'
@@ -485,6 +492,7 @@ export const GameTable: React.FC<GameTableProps> = ({
         : getActiveOpportunity(clothingJourney, intimacyPercent)?.eventType ?? null,
       clothingHistory: clothingJourney.history,
       firstRemoval: clothingJourney.firstRemoval,
+      directorState: cardDirectorState,
     });
 
     if (!selection.card) {
@@ -502,6 +510,7 @@ export const GameTable: React.FC<GameTableProps> = ({
 
     const randomCard = selection.card;
     completionCommittedRef.current = false;
+    setCardDirectorState((current) => recordDirectedCard(current, randomCard));
     setActiveCardWasRerolled(false);
     setUsedCardIds(selection.nextUsedCardIds);
     setDrawProbabilitySnapshot({ deck: 'standard', probabilities: selection.probabilities });
@@ -568,6 +577,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       queuedRound: currentRound,
     };
     onPlayerRewardsChange(nextRewards);
+    setCardDirectorState((current) => recordDirectorStarsSpent(current, DIFFICULTY_BOOST_STAR_COST));
     onPendingDifficultyBoostsChange([...pendingDifficultyBoosts, pending]);
     onAddRewardEvent({
       kind: 'queued_difficulty_boost',
@@ -600,6 +610,7 @@ export const GameTable: React.FC<GameTableProps> = ({
       preferredClothingFamily: getActiveOpportunity(clothingJourney, intimacyPercent)?.eventType ?? null,
       clothingHistory: clothingJourney.history,
       firstRemoval: clothingJourney.firstRemoval,
+      directorState: cardDirectorState,
     });
     if (!selection.card) {
       setDrawError('Không còn lá khác phù hợp để đổi. Sao của bạn được giữ nguyên.');
@@ -609,6 +620,10 @@ export const GameTable: React.FC<GameTableProps> = ({
     const previousCardId = activeCard.id;
     const replacement = selection.card;
     onPlayerRewardsChange(nextRewards);
+    setCardDirectorState((current) => recordDirectorStarsSpent(
+      recordDirectedCard(current, replacement),
+      REROLL_STAR_COST,
+    ));
     setClothingJourney((current) => {
       const opportunity = getActiveOpportunity(current, intimacyPercent);
       return opportunity ? resolveClothingOpportunity(current, opportunity.index, 'rerolled') : current;

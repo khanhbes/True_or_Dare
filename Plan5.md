@@ -1,955 +1,125 @@
-# IMPLEMENTATION PLAN  
-## Fix Position Star Migration & 10 Failing Tests
+# Plan: Nâng cấp Card Director Engine
+
+> Mục tiêu: bỏ cơ chế "random đều trong danh sách hợp lệ", thay bằng một engine có "trí nhớ" và chủ đích đạo diễn nhịp chơi, nhưng vẫn giữ đủ ngẫu nhiên để mỗi ván khác nhau.
 
 ---
 
-# 1. Mục tiêu
+## 1. Vấn đề của mô hình hiện tại
 
-Sau migration hệ sao mới:
-
-- **Standard Deck:** ⭐1–⭐5
-- **Position Deck:** ⭐6–⭐10
-
-runtime hiện đã bắt đầu sử dụng Position ⭐6–⭐10, nhưng một số phần của hệ thống vẫn còn giả định legacy ⭐1–⭐5 hoặc ⭐1–⭐10.
-
-Kết quả hiện tại:
-
-- 84 tests tổng cộng
-- 74 pass
-- 10 fail
-
-Mục tiêu của phase này:
-
-1. Không rollback migration ⭐6–⭐10.
-2. Chuẩn hóa catalog, schema, selector, Luxury config và tests về cùng một star model.
-3. Không phá Standard Deck.
-4. Không phá Clothing Journey.
-5. Không phá Luxury progression.
-6. Không phá finale logic.
-7. Không làm thay đổi canonical card order chỉ vì đổi metadata.
-8. Đưa toàn bộ test suite trở lại trạng thái pass.
+- Band % (mục 7.1 trong manual) chỉ quyết định *tỉ lệ sao / truth-dare*, nhưng bên trong 1 band, việc chọn card cụ thể vẫn random đều → không có "trí nhớ" về những gì vừa xảy ra. Hệ quả: có thể ra 2 câu ⭐4 liên tiếp ngay đầu band 60–79%, hoặc một người cởi đồ dồn dập trong khi người kia còn nguyên.
+- Card cởi đồ và card nội dung "nóng" hiện dùng chung một hệ số sao → không phân biệt được **độ nóng nội dung (heat)** với **độ khó/cam kết (star)**. Một câu Truth ⭐4 riêng tư khác hẳn một Dare ⭐4 cởi đồ.
+- Chưa có cơ chế đảm bảo 2 người không lệch trạng thái trang phục quá xa.
+- Chưa có giới hạn "không quá 2 card cùng loại liên tiếp" → nhịp game có thể giật cục.
 
 ---
 
-# 2. Kết luận kỹ thuật hiện tại
+## 2. Kiến trúc đề xuất: 3 lớp thay vì 1 lớp
 
-Migration utility cơ bản đang hoạt động đúng.
+```
+State Layer  →  Weight Layer (Director)  →  Sampling Layer (Randomness)
+```
 
-Các test sau đã pass:
+### 2.1. State Layer — dữ liệu cần theo dõi thêm mỗi lượt
 
-- Position legacy stars map sang 6–10;
-- migration idempotent;
-- Standard cards không bị thay đổi;
-- invalid Position stars bị reject.
+Ngoài `intimacy%`, `wardrobeState(P1/P2)` đã có, bổ sung:
 
-Vì vậy:
+| Trường | Ý nghĩa |
+| :--- | :--- |
+| `heatHistory` | Mảng heat-score của N card gần nhất, dùng để tính đà tăng nhiệt, tránh tăng vọt. |
+| `typeHistory` | Loại của 3 card gần nhất (truth/dare, gentle/intimate/passionate) để áp luật chống lặp. |
+| `wardrobeGapScore` | Chênh lệch số món đồ đã cởi giữa P1 và P2. |
+| `cardsCompletedCount`, `starsSpentThisSession` | Ước lượng đang ở lượt thứ mấy trên tổng 20–24. |
 
-> **Không sửa hoặc rollback migration utility trước.**
+### 2.2. Weight Layer — "bộ não đạo diễn"
 
-Phần cần sửa nằm chủ yếu ở:
+Thay vì lọc cứng theo band rồi random đều, mỗi card ứng viên nhận một **điểm trọng số tổng hợp**:
 
-- catalog migration;
-- canonical ordering;
-- schema;
-- Luxury probability/config;
-- Position selector;
-- fixtures;
-- test expectations.
+```
+weight(card) = baseBandWeight(card.star, currentIntimacy%)
+             × wardrobeEligibility(card, P1, P2)      // 0 nếu không hợp lệ, ramp nếu vừa đủ điều kiện
+             × pacingPenalty(card, typeHistory)         // giảm nếu vừa mới ra loại này
+             × heatSmoothing(card.heat, heatHistory)    // chặn spike nhiệt sớm
+             × wardrobeBalanceFactor(card, wardrobeGapScore)
+             × noveltyBoost(card, seenCards)            // ưu tiên card chưa ra trong ván này
+```
 
----
+**a) `baseBandWeight`**
+Giữ ý tưởng bảng % ở mục 7.1 manual, nhưng chuyển từ "tỉ lệ rời rạc theo band cứng" sang **hàm nội suy tuyến tính liên tục** theo intimacy% giữa các mốc đã có. Band cứng tạo bước nhảy đột ngột đúng lúc chuyển band (ví dụ 39%→40%, tỉ lệ ⭐3 nhảy từ 15%→30%). Nội suy giúp nhịp mượt hơn, đúng tinh thần "không nóng đột ngột".
 
-# 3. Quyết định kiến trúc cần chốt trước
+**b) `wardrobeEligibility`** — điểm mới quan trọng nhất
+Card không chỉ ON/OFF theo đủ điều kiện, mà có **vùng đệm ưu tiên**:
+- Card yêu cầu wardrobe state X → weight = 0 nếu chưa đạt X (như hiện tại).
+- Ngay khi vừa đạt X, card đó được **boost weight tạm thời** (×1.5 trong 2–3 lượt kế) để engine "tận dụng" trạng thái mới thay vì để nó rơi vào im lặng rồi mãi mới random trúng. Đây là cách tạo cảm giác game biết trang phục vừa thay đổi.
 
-Trước khi sửa test, phải chốt ý nghĩa của ⭐10.
+**c) `pacingPenalty`**
+Nếu 2 card gần nhất đã là Dare, giảm nhẹ weight Dare cho lượt kế để tăng cơ hội Truth xen kẽ, và ngược lại. Tương tự với star: nếu vừa ra ⭐4, giảm weight ⭐4/⭐5 cho lượt kế → tránh 2 cú nóng liên tiếp sớm. Đây là cơ chế "mượt hoá" mà random đơn thuần không có.
 
-## Đề xuất
+**d) `heatSmoothing`**
+`heat` là thuộc tính riêng của card (không trùng star), đo mức độ táo bạo nội dung, độc lập với việc nó khó hay dễ thực hiện. Giới hạn **heat được phép tăng tối đa mỗi lượt** (ví dụ +1 cấp heat/lượt, tính trung bình trượt trên 3 lượt gần nhất). Nếu random tự nhiên chọn trúng card có heat vượt giới hạn cho phép ở thời điểm đó → weight bị nén mạnh (không cấm tuyệt đối, chỉ giảm xác suất), để occasional spike vẫn có thể xảy ra (giữ tính ngẫu nhiên) nhưng hiếm.
 
-Sử dụng:
+**e) `wardrobeBalanceFactor`**
+Nếu P1 đã cởi nhiều hơn P2 quá X món, tăng weight cho card nhắm vào P2 (`target: self` khi đến lượt P2, hoặc `target: opponent` nhắm P2 khi đến lượt P1) và giảm nhẹ weight card khiến P1 cởi thêm. Đảm bảo hai người không lệch trạng thái quá xa.
 
-### Standard
+**f) `noveltyBoost`**
+Tăng nhẹ weight cho card chưa từng xuất hiện trong ván, tránh cảm giác lặp lại trong một ván 20–24 câu.
 
-⭐1–⭐5
+### 2.3. Sampling Layer — vẫn có ngẫu nhiên thật
 
-### Normal Position Cards
-
-⭐6–⭐9
-
-### Finale / Mythic
-
-👑 ⭐10
-
-Đây là phương án khuyên dùng.
-
-Lý do:
-
-- progression dễ hiểu;
-- ⭐10 trở thành mức cao nhất thật sự;
-- không có card normal ⭐10 cạnh card finale ⭐10;
-- finale rõ ràng hơn về UX;
-- dễ kiểm soát probability.
+Sau khi có weight cuối cùng cho toàn bộ danh sách ứng viên hợp lệ (weight > 0), dùng **weighted random sampling** (roulette wheel / cumulative distribution), **không phải argmax**. Giữ được tính ngẫu nhiên mỗi ván khác nhau, nhưng xác suất đã được đạo diễn nắn theo đúng nhịp mong muốn — khác hẳn random đều.
 
 ---
 
-# 4. Rule cuối cùng về star range
+## 3. Bổ sung dữ liệu cho từng card (schema mở rộng)
 
-Sau migration hoàn tất:
+Mỗi card cần thêm 2 field mới, ngoài các field hiện có (`star`, `type`, `level`, `turnAudience`, `clothingEffect`):
 
-| Deck | Star hợp lệ |
-|---|---|
-| Standard | ⭐1–⭐5 |
-| Position Normal | ⭐6–⭐9 |
-| Position Finale | ⭐10 |
+| Field mới | Kiểu | Ý nghĩa |
+| :--- | :--- | :--- |
+| `heat` | number (1–10) | Độc lập với `star`. |
+| `phaseTag` | `'gentle' \| 'intimate' \| 'passionate'` | Tách khỏi `level` — 1 card có thể "level Intimate nhưng heat thấp" hoặc ngược lại. |
 
-Nếu game quyết định cho phép normal Position ⭐10 thì phải sửa lại plan này, nhưng không nên để trạng thái hiện tại mơ hồ.
-
----
-
-# 5. P0 — Fix Canonical Catalog Order
-
-Một test hiện fail vì migration metadata làm thay đổi thứ tự canonical của card.
-
-Đây là lỗi code thật, không chỉ là test outdated.
-
-## Yêu cầu
-
-Migration phải:
-
-- giữ nguyên card ID;
-- giữ nguyên array order;
-- chỉ thay metadata cần migrate;
-- không sort lại catalog sau migration.
-
-Không sort theo:
-
-- stars;
-- Position family;
-- audience;
-- difficulty.
-
-Nếu UI cần sort:
-
-> sort ở presentation layer bằng một copy mới.
-
-Không mutate canonical catalog.
+Việc tách `heat` khỏi `phaseTag` giải quyết đúng yêu cầu: **mọi mốc đều có tỉ lệ xuất hiện cả 3 loại thẻ (nhẹ nhàng / thân mật / cởi đồ)** — vì ta có thể luôn giữ một tỉ lệ nhỏ card gentle xen giữa các card nóng, và ngược lại vẫn có card cởi đồ nhẹ (heat thấp) xuất hiện sớm.
 
 ---
 
-# 6. Acceptance Criteria cho canonical order
+## 4. Ràng buộc để đạt mục tiêu Standard Journey (20–24 card, 10–12 lượt/người)
 
-Trước migration:
-
-`cardIdsBefore`
-
-Sau migration:
-
-`cardIdsAfter`
-
-Phải:
-
-> giống nhau hoàn toàn theo đúng thứ tự.
-
-Không chỉ giống set ID.
+- Đặt `targetSessionLength ≈ 22` card làm tham số điều chỉnh **tốc độ tăng intimacy%/lượt**, thay vì mức gain cố định (+4% đến +12%) như hiện tại:
+  ```
+  intimacyGain = baseGainByStar × sessionLengthAdjustFactor
+  ```
+  Dù người chơi rơi vào nhánh nhiều Truth (gain thấp) hay nhiều Dare (gain cao), tổng số lượt vẫn hội tụ quanh 20–24.
+- Thêm **"pity timer" nhẹ**: nếu đã hơn N lượt (ví dụ 6) mà intimacy% chưa nhích đủ do toàn bốc Truth ⭐1, tăng nhẹ `baseBandWeight` cho star cao hơn — tránh ván chơi bị "mắc kẹt" ở đầu quá lâu. Đối xứng với cơ chế "mythic 5%" đã có ở cuối cho Have Sex.
 
 ---
 
-# 7. P1 — Audit Position Catalog
+## 5. Mô phỏng & kiểm thử (bắt buộc trước khi đổi engine thật)
 
-Tạo report cho toàn bộ Position Cards.
+Trước khi đụng vào engine chính, viết một script simulator (Node/Python) chạy N = 1000 ván ảo với model trên, xuất ra:
 
-Với mỗi card ghi:
+- Phân phối số card/ván (kỳ vọng tập trung 20–24).
+- Đường cong heat theo thời gian (phải mượt, không có bậc thang).
+- % ván có 2 card ⭐4–⭐5 liên tiếp trước lượt thứ 8 (mục tiêu: gần 0%).
+- Max wardrobe gap giữa 2 người trong suốt ván (mục tiêu: hiếm khi > 2 món).
 
-- ID;
-- old star;
-- migrated star;
-- finale hay non-final;
-- family;
-- audience;
-- target;
-- Luxury gain;
-- enabled;
-- outfit requirement.
+Đây là bước quan trọng để tinh chỉnh các hệ số (pacing penalty %, boost %, decay rate) bằng số liệu thay vì đoán mò.
 
 ---
 
-# 8. Phân nhóm Position Cards
+## 6. Lộ trình triển khai đề xuất
 
-Chia thành:
-
-### Group A — Legacy normal
-
-⭐1–⭐4
-
-Map:
-
-- 1 → 6
-- 2 → 7
-- 3 → 8
-- 4 → 9
-
-### Group B — Legacy ⭐5 nhưng non-final
-
-Không tự động mặc định coi là ⭐10.
-
-Phải review.
-
-Nếu ⭐10 dành riêng cho finale:
-
-legacy ⭐5 normal cần được phân loại lại hợp lý, thường thành ⭐9 hoặc theo intensity thực tế.
-
-### Group C — Finale
-
-Map thành:
-
-👑 ⭐10
-
-### Group D — Already migrated
-
-Giữ nguyên.
-
-### Group E — Invalid
-
-Fix thủ công.
+1. **Data**: thêm field `heat`, tách `phaseTag` khỏi `level` cho toàn bộ 108 card.
+2. **Core**: viết module `weightEngine` thuần hàm (input: state + card list → output: weight map), test độc lập không đụng UI.
+3. **Sampling**: thay lời gọi `pickRandomFromValidList()` hiện tại bằng `weightedSample(weightMap)`.
+4. **State tracking**: thêm `heatHistory`, `typeHistory`, `wardrobeGapScore` vào game state store.
+5. **Simulator**: script offline chạy hàng loạt ván để tune số.
+6. **Wardrobe balance & pity timer**: thêm sau khi 5 bước trên ổn định — đây là lớp tinh chỉnh, dễ gây rối nếu làm sớm.
+7. **QA thủ công**: chơi thử 5–10 ván thật để cảm nhận nhịp trước khi release.
 
 ---
 
-# 9. Không dùng blind `+5`
-
-Không dùng rule:
-
-> mọi Position star cũ +5.
-
-Nếu ⭐10 là finale-only thì cách đó sẽ khiến toàn bộ legacy ⭐5 normal trở thành ⭐10.
-
-Đây có thể chính là lý do non-final pool hiện đang chứa ⭐10. Test hiện cho thấy actual non-final range đang là `[6,7,8,9,10]`.
-
----
-
-# 10. P2 — Fix `cardSchema`
-
-Một test schema hiện mong giá trị Position star mới nhưng nhận `undefined`.
-
-Điều này cho thấy schema/normalizer chưa thống nhất với model mới.
-
-## Rule schema cuối
-
-### Standard
-
-Chỉ accept:
-
-1–5.
-
-### Position Normal
-
-Chỉ accept:
-
-6–9.
-
-### Position Finale
-
-Accept:
-
-10.
-
----
-
-# 11. Audit toàn bộ schema path
-
-Kiểm tra:
-
-- card validator;
-- catalog validator;
-- cloud payload validator;
-- recovery bundle validator;
-- local catalog parser;
-- migration parser;
-- runtime hydration.
-
-Tìm mọi chỗ đang:
-
-- clamp `stars` về 1–5;
-- strip stars >5;
-- normalize Position về legacy range;
-- dùng type chung cho Standard và Position mà không phân deck.
-
----
-
-# 12. Không dùng một validator giống nhau cho Standard và Position
-
-Validation phải biết:
-
-> card thuộc deck nào.
-
-Không dùng đơn giản:
-
-> stars must be between 1 and 5
-
-cho mọi card.
-
----
-
-# 13. P3 — Fix Position Catalog Fixtures
-
-Một số fixtures vẫn mong legacy stars.
-
-Ví dụ `pos-handjob-female` hiện actual là star 6 nhưng test vẫn mong star 1.
-
-## Cần update
-
-Tất cả approved metadata fixtures của Position:
-
-- star;
-- expected distribution;
-- expected ranges.
-
-Nhưng:
-
-> chỉ update fixture sau khi star mapping cuối đã được chốt.
-
-Không sửa test trước để “ép pass” khi model còn chưa ổn định.
-
----
-
-# 14. P4 — Fix Position Catalog Coverage Tests
-
-Test hiện đang kỳ vọng non-final Position pool cover ⭐1–⭐9.
-
-Đây là expectation legacy.
-
-## Nếu dùng model khuyên dùng
-
-Expectation mới:
-
-### Non-final Position
-
-⭐6, ⭐7, ⭐8, ⭐9
-
-### Finale
-
-⭐10
-
-Không còn test:
-
-> Position covers 1–9.
-
----
-
-# 15. P5 — Fix `progression.test.ts` assumptions
-
-Có nhiều test progression vẫn dựa trên hệ cũ.
-
-Ví dụ test deck coverage hiện vẫn mong Position có các card star 3 thay vì star 8.
-
-Các test này cần migrate sang absolute Position stars.
-
----
-
-# 16. Audit toàn bộ Position star constants
-
-Tìm mọi config dạng:
-
-- 1;
-- 2;
-- 3;
-- 4;
-- 5;
-
-trong Position progression.
-
-Xác định chúng là:
-
-- relative difficulty legacy;
-- absolute star;
-- Luxury band;
-- UI level.
-
-Không thay tất cả một cách máy móc.
-
----
-
-# 17. P6 — Chuẩn hóa Luxury probability table
-
-Luxury probability tests đang fail vì runtime và expectation không còn cùng star keys.
-
-## Position probability config mới
-
-Chỉ dùng absolute keys:
-
-- 6
-- 7
-- 8
-- 9
-- 10
-
-Nếu ⭐10 là finale-only:
-
-normal weighted Position draw dùng chủ yếu:
-
-- 6
-- 7
-- 8
-- 9
-
-⭐10 được xử lý bằng finale logic riêng.
-
----
-
-# 18. Đề xuất Luxury bands
-
-Ví dụ:
-
-### Luxury 0–19%
-
-Ưu tiên:
-
-⭐6
-
-sau đó ⭐7.
-
-### Luxury 20–39%
-
-⭐6–⭐7 chủ đạo.
-
-Bắt đầu ⭐8.
-
-### Luxury 40–59%
-
-⭐7–⭐8 chủ đạo.
-
-Có ⭐9 thấp.
-
-### Luxury 60–79%
-
-⭐8–⭐9 chủ đạo.
-
-### Luxury 80–99%
-
-⭐9 chủ đạo.
-
-⭐10 chỉ thông qua finale gate.
-
-### Luxury 100%
-
-Finale ⭐10 guaranteed nếu các điều kiện khác đã đủ.
-
----
-
-# 19. Không trộn Finale probability vào normal star weight
-
-Hiện luật có Have Sex/finale độc lập.
-
-Giữ nguyên nguyên tắc:
-
-> finale chance là một roll riêng.
-
-Không biến ⭐10 thành normal weighted card chỉ vì star table có key 10.
-
----
-
-# 20. P7 — Fix Luxury Selection
-
-Test selection đang lấy star legacy và nhận `undefined`.
-
-## Selector mới phải
-
-- dùng Position stars 6–9 cho normal cards;
-- dùng finale logic riêng cho ⭐10;
-- tránh repeat;
-- nearest-star fallback vẫn hoạt động;
-- không fallback sang legacy star 1–5.
-
----
-
-# 21. Nearest-star fallback mới
-
-Ví dụ selector muốn ⭐8 nhưng không có:
-
-ưu tiên:
-
-⭐7 hoặc ⭐9.
-
-Không fallback:
-
-⭐3
-
-chỉ vì đó từng là relative level cũ.
-
----
-
-# 22. P8 — Fix Luxury Config Hydration
-
-Hydration test hiện vẫn mong zero-row có keys 1–10, trong khi runtime chỉ còn 6–10.
-
-## Model mới
-
-Luxury star weight config chỉ cần:
-
-- 6;
-- 7;
-- 8;
-- 9;
-- nếu cần 10.
-
-Không còn 1–5.
-
----
-
-# 23. Preserve absolute zero rows
-
-Nếu user/config đặt toàn bộ Position weights bằng 0:
-
-hydration phải giữ:
-
-- 6 = 0
-- 7 = 0
-- 8 = 0
-- 9 = 0
-- 10 = 0 nếu config có finale key.
-
-Không tự thêm legacy keys.
-
----
-
-# 24. Oversized Weight Clamp
-
-Một test khác đang đọc legacy key nên nhận `undefined` thay vì `100`.
-
-Update test và implementation để clamp đúng trên key mới:
-
-- 6–10.
-
----
-
-# 25. P9 — Fix Recovery Bundle
-
-Recovery bundle đang trả `null`.
-
-Không sửa recovery layer đầu tiên.
-
-Khả năng cao nguyên nhân là catalog validation fail sau migration.
-
-## Thứ tự
-
-1. Fix schema.
-2. Fix catalog validation.
-3. Fix Position data.
-4. Chạy recovery test lại.
-
-Chỉ sửa recovery code nếu vẫn fail sau đó.
-
----
-
-# 26. P10 — Fix Catalog Payload Validation
-
-Test payload cũng đang fail cùng khu vực schema/catalog.
-
-Sau khi schema hiểu 6–10:
-
-- declared counts phải khớp;
-- Position star metadata phải được preserve;
-- recovery bundle phải validate trở lại.
-
----
-
-# 27. P11 — Update Migration Tests
-
-Giữ các test migration hiện đã pass.
-
-Không xóa:
-
-- legacy → new;
-- idempotency;
-- Standard unchanged;
-- invalid Position rejection.
-
-Bổ sung test:
-
-### Legacy normal
-
-1 → 6  
-2 → 7  
-3 → 8  
-4 → 9
-
-### Legacy finale
-
-5 → 10 nếu finale.
-
-### Legacy non-final 5
-
-Phải theo mapping đã chốt riêng.
-
----
-
-# 28. Test idempotency
-
-Migration chạy lần 2:
-
-- ⭐6 vẫn ⭐6;
-- ⭐7 vẫn ⭐7;
-- ⭐8 vẫn ⭐8;
-- ⭐9 vẫn ⭐9;
-- ⭐10 vẫn ⭐10.
-
-Không được:
-
-⭐6 → ⭐11.
-
----
-
-# 29. P12 — Catalog Validation mới
-
-Thêm invariant test:
-
-### Standard
-
-100% cards:
-
-⭐1–⭐5.
-
-### Position non-final
-
-100%:
-
-⭐6–⭐9.
-
-### Position final
-
-100%:
-
-⭐10.
-
----
-
-# 30. Không cho legacy data quay lại
-
-Sau migration:
-
-Position star:
-
-1–5
-
-phải fail catalog validation.
-
-Ngoại lệ duy nhất:
-
-legacy save migration input.
-
-Không cho live catalog chứa legacy star.
-
----
-
-# 31. P13 — Save/Persisted Data Compatibility
-
-Nếu game lưu card snapshot trong:
-
-- localStorage;
-- IndexedDB;
-- saved sessions;
-- history;
-- favorite cards;
-
-cần migrate legacy Position star khi load.
-
----
-
-# 32. Chỉ migrate object được xác định là Position
-
-Không làm:
-
-> mọi card star 3 → 8.
-
-Chỉ migrate khi:
-
-`deck = position`
-
-hoặc có identifier tương đương chắc chắn.
-
-Standard ⭐3 phải giữ ⭐3.
-
----
-
-# 33. Save migration không được reorder history
-
-Tương tự catalog:
-
-migration chỉ thay metadata.
-
-Không đổi thứ tự:
-
-- history;
-- favorites;
-- session card history.
-
----
-
-# 34. P14 — UI Audit
-
-Sau data/runtime ổn mới kiểm tra UI.
-
-Tất cả Position UI phải hiển thị trực tiếp:
-
-⭐6–⭐10.
-
-Không dùng render hack:
-
-> star + 5.
-
----
-
-# 35. Các màn cần audit
-
-- Position Card;
-- reveal modal;
-- Position Deck;
-- rules;
-- card collection;
-- history;
-- favorites;
-- summary;
-- stats;
-- debug;
-- result modal.
-
----
-
-# 36. P15 — Statistical Tests
-
-Sau khi selector ổn:
-
-chạy nhiều Position draws tại:
-
-- 10% Luxury;
-- 30%;
-- 50%;
-- 70%;
-- 90%.
-
----
-
-# 37. Expected distribution
-
-### Low Luxury
-
-⭐6–⭐7 chiếm ưu thế.
-
-### Mid Luxury
-
-⭐7–⭐8.
-
-### High Luxury
-
-⭐8–⭐9.
-
-### Very High
-
-⭐9 nhiều.
-
-⭐10 chỉ theo finale chance.
-
----
-
-# 38. Finale tests
-
-Giữ hoặc bổ sung:
-
-- <80% → finale 0%;
-- 80–99% → theo configured chance;
-- 100% → guaranteed;
-- minimum Position card requirement nếu đang có;
-- finale độc lập với normal pool exhaustion.
-
----
-
-# 39. Không sửa các subsystem đang pass
-
-Các phần sau đang pass và không nên refactor trong fix này nếu không cần:
-
-- Clothing Journey;
-- wardrobe;
-- dual removal;
-- player hydration;
-- rewards;
-- card timer;
-- resolution;
-- Standard star migration.
-
-Scope fix phải tập trung vào Position migration.
-
----
-
-# 40. Thứ tự fix cụ thể
-
-## Step 1
-
-Chốt:
-
-**Position normal ⭐6–⭐9, finale ⭐10.**
-
----
-
-## Step 2
-
-Fix catalog migration:
-
-- preserve order;
-- không blind +5 cho legacy ⭐5 normal.
-
----
-
-## Step 3
-
-Fix `cardSchema`.
-
----
-
-## Step 4
-
-Fix Position catalog data.
-
----
-
-## Step 5
-
-Fix Luxury weight/config model thành absolute ⭐6–⭐10.
-
----
-
-## Step 6
-
-Fix Position selector.
-
----
-
-## Step 7
-
-Fix hydration.
-
----
-
-## Step 8
-
-Update `localCatalog.test.ts`.
-
----
-
-## Step 9
-
-Update `progression.test.ts`.
-
----
-
-## Step 10
-
-Update `cardSchema.test.ts`.
-
----
-
-## Step 11
-
-Run:
-
-`npx tsc --noEmit`
-
----
-
-## Step 12
-
-Run:
-
-`npm test`
-
----
-
-## Step 13
-
-Nếu recovery bundle vẫn fail:
-
-debug riêng recovery.
-
-Không làm trước.
-
----
-
-# 41. Expected fail resolution
-
-Sau các bước trên, các fail hiện tại nên được xử lý như sau:
-
-| Fail hiện tại | Hướng xử lý |
-|---|---|
-| Recovery bundle null | Có khả năng tự hết sau schema/catalog fix |
-| Canonical order changed | Fix migration code |
-| Non-final pool expects 1–9 | Update star model/test |
-| Approved Position stars mismatch | Update fixtures |
-| Catalog payload star undefined | Fix schema |
-| Position coverage test legacy | Update progression tests |
-| Luxury probabilities | Migrate config |
-| Luxury selection undefined | Migrate selector |
-| Zero-row hydration mismatch | Update hydration/config |
-| Oversized weight undefined | Update new star keys |
-
----
-
-# 42. Definition of Done
-
-Phase fix chỉ hoàn thành khi:
-
-- canonical card order không đổi;
-- Position catalog không còn legacy ⭐1–⭐5;
-- Standard vẫn chỉ ⭐1–⭐5;
-- Position normal dùng ⭐6–⭐9;
-- finale dùng ⭐10;
-- schema hiểu đúng star range;
-- Luxury config dùng absolute Position stars;
-- selector không dùng legacy stars;
-- hydration không tạo keys 1–5 cho Position;
-- recovery bundle valid;
-- old migration tests vẫn pass;
-- catalog fixtures mới pass;
-- statistical Position tests pass;
-- `npx tsc --noEmit` pass;
-- `npm test` pass 100%.
-
----
-
-# 43. Không được làm để “chữa cháy”
-
-Không:
-
-- rollback Position về ⭐1–⭐5;
-- sửa mỗi expected value để test xanh mà không fix model;
-- cộng +5 lúc render UI;
-- giữ live catalog 1–5 rồi normalize khắp nơi;
-- sort lại catalog chỉ để test mới pass;
-- biến mọi legacy ⭐5 thành finale;
-- thay đổi Standard cards;
-- sửa Clothing Journey không liên quan.
-
----
-
-# 44. Kết quả cuối cùng
-
-Data model phải trở thành:
-
-## 💗 Standard
-
-⭐1 → ⭐2 → ⭐3 → ⭐4 → ⭐5
-
-## 💎 Position
-
-⭐6 → ⭐7 → ⭐8 → ⭐9
-
-## 👑 Finale
-
-⭐10
-
-Và toàn bộ:
-
-**catalog → schema → migration → selector → Luxury config → hydration → tests → UI**
-
-phải sử dụng cùng một star model duy nhất.
-
-Không còn trạng thái:
-
-> data dùng 6–10 nhưng tests/config vẫn dùng 1–5.
-
-Đây là mục tiêu chính của lần sửa lỗi này.
+## 7. Bước tiếp theo
+
+Hai hướng có thể triển khai chi tiết tiếp:
+- Viết pseudocode/công thức cụ thể cho từng hàm trong `weightEngine`.
+- Thiết kế lại bảng dữ liệu 108 card với field `heat` mới (đề xuất giá trị heat cho từng nhóm card hiện có).

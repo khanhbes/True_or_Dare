@@ -15,6 +15,7 @@ import {
   TurnAudience,
 } from '../types';
 import { isCardEligibleForOutfits } from './cardSelection';
+import { chooseDirectedCard, getDirectorWeights, type CardDirectorState } from './cardDirector';
 import { getOutfitStage } from './wardrobe';
 import { ClothingEventType, clothingEffectFamily, getCardClothingFamily, getWardrobeCatchUpTarget, isClothingIntensityAllowed } from './clothingJourney';
 
@@ -94,7 +95,8 @@ export const DEFAULT_PROGRESSION_CONFIG: Readonly<ProgressionConfig> = {
       starWeights: { 1: 5, 2: 10, 3: 20, 4: 35, 5: 30 },
     },
   ],
-  starGains: { 1: 4, 2: 6, 3: 8, 4: 10, 5: 12 },
+  // A Standard journey is designed to take roughly 20–24 completed cards.
+  starGains: { 1: 3, 2: 4, 3: 5, 4: 6, 5: 7 },
   cardRemovalBonus: 8,
 };
 
@@ -460,6 +462,8 @@ export interface SelectJourneyCardOptions {
   /** Session history used to avoid repeating one clothing family. */
   clothingHistory?: readonly ClothingEventType[];
   firstRemoval?: readonly [boolean, boolean];
+  /** Optional session director. Omit it for legacy deterministic selection. */
+  directorState?: CardDirectorState;
   random?: () => number;
 }
 
@@ -626,6 +630,55 @@ export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCar
       probabilities,
       errorCode: 'no_progress_gain',
     };
+  }
+
+  if (options.directorState) {
+    const band = getProgressionBand(options.intimacyPercent, options.config);
+    const directorWeights = getDirectorWeights(
+      candidates,
+      options.directorState,
+      options.actorIndex,
+      options.outfits,
+    );
+    const starWeightsByType = new Map(STANDARD_CARD_TYPES.map((type) => {
+      const typeCards = candidates.filter((card) => card.type === type);
+      const availableStars = DIFFICULTY_STARS.filter((star) =>
+        typeCards.some((card) => deriveDifficultyStars(card) === star),
+      );
+      return [type, starWeightsForAvailable(
+        availableStars,
+        band,
+        options.outfits,
+        options.intimacyPercent,
+        options.difficultyBoost ?? false,
+      )];
+    }));
+    const combinedWeights = new Map(candidates.map((candidate) => {
+      const starWeights = starWeightsByType.get(candidate.type)!;
+      const baseWeight = probabilities.types[candidate.type] * starWeights[deriveDifficultyStars(candidate)];
+      return [candidate.id, baseWeight * (directorWeights.get(candidate.id) ?? 1)];
+    }));
+    const card = chooseDirectedCard(
+      candidates,
+      combinedWeights,
+      random,
+    );
+    if (!card) {
+      return {
+        card: null,
+        nextUsedCardIds: [...new Set(options.usedCardIds)],
+        availableTypes,
+        didResetPool: false,
+        probabilities,
+        errorCode: 'no_positive_weight',
+      };
+    }
+    const poolIds = new Set(pool.map((item) => item.id));
+    const nextUsedCardIds = didResetPool
+      ? options.usedCardIds.filter((id) => !poolIds.has(id))
+      : [...options.usedCardIds];
+    if (!nextUsedCardIds.includes(card.id)) nextUsedCardIds.push(card.id);
+    return { card, nextUsedCardIds, availableTypes, didResetPool, probabilities };
   }
 
   const typeKeys = STANDARD_CARD_TYPES.filter((type) => probabilities.types[type] > 0);

@@ -365,10 +365,10 @@ test('selection chooses type then stars and avoids repeats until the pool is exh
 test('completion gain clamps at 100 and penalty removals are not part of this reducer', () => {
   const card = makeCard('four-star', 'dare', 4);
   assert.deepEqual(calculateCompletedCardIntimacy(80, card, DEFAULT_PROGRESSION_CONFIG, true), {
-    nextPercent: 98,
-    baseApplied: 10,
+    nextPercent: 94,
+    baseApplied: 6,
     removalApplied: 8,
-    totalApplied: 18,
+    totalApplied: 14,
   });
   assert.deepEqual(calculateCompletedCardIntimacy(96, card, DEFAULT_PROGRESSION_CONFIG, true), {
     nextPercent: 100,
@@ -390,7 +390,7 @@ test('config hydration preserves zero weights and clamps malformed or oversized 
   assert.deepEqual(hydrated.bands[0].typeWeights, { truth: 0, dare: 0 });
   assert.deepEqual(hydrated.bands[0].starWeights, { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
   assert.deepEqual(hydrated.bands[1].typeWeights, { truth: 20, dare: 80 });
-  assert.equal(hydrated.starGains[1], 4);
+  assert.equal(hydrated.starGains[1], 3);
   assert.equal(hydrated.starGains[2], 7);
   assert.equal(hydrated.starGains[5], 100);
   assert.equal(hydrated.cardRemovalBonus, 11);
