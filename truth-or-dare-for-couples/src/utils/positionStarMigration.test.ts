@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { migratePositionCard, migratePositionStar } from './positionStarMigration';
+import { migratePositionCard, migratePositionSnapshot, migratePositionStar, POSITION_STAR_SCHEMA_VERSION } from './positionStarMigration';
 import type { CardItem } from '../types';
 
 const card = (deck: CardItem['deck'], stars: number): CardItem => ({
@@ -20,4 +20,12 @@ test('Standard cards are unchanged and invalid Position stars are rejected', () 
   assert.equal(migratePositionCard(standard), standard);
   assert.throws(() => migratePositionStar(0));
   assert.throws(() => migratePositionStar(11));
+});
+
+test('saved snapshots migrate once and preserve unrelated fields', () => {
+  const migrated = migratePositionSnapshot({ cards: [card('position', 2)], note: 'keep' });
+  assert.equal(migrated?.positionStarSchemaVersion, POSITION_STAR_SCHEMA_VERSION);
+  assert.equal(migrated?.cards[0].position?.difficultyStars, 7);
+  assert.equal(migratePositionSnapshot(migrated)?.cards[0].position?.difficultyStars, 7);
+  assert.equal(migrated?.note, 'keep');
 });

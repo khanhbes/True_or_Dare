@@ -49,6 +49,9 @@ const migrateCard = (card) => {
     delete migrated.position.recipient;
     const update = POSITION_UPDATES.get(migrated.id);
     if (update) Object.assign(migrated.position, update);
+    if (migrated.position.difficultyStars >= 1 && migrated.position.difficultyStars <= 5) {
+      migrated.position.difficultyStars += 5;
+    }
   }
   if (migrated.id === 'g-d-14') {
     migrated.timerSeconds = null;

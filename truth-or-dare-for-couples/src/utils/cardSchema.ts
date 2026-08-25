@@ -163,9 +163,9 @@ export const isLuxuryProgressionConfigValue = (value: unknown): value is LuxuryP
   if (!isRecord(value) || !Array.isArray(value.bands) || value.bands.length !== 5 ||
       !isRecord(value.starGains) ||
       (value.finalCardChance !== undefined && !isWeight(value.finalCardChance))) return false;
-  const stars = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const stars = [6, 7, 8, 9, 10];
   const gains = stars.map((star) => value.starGains[String(star)]);
-  if (!gains.every(isWeight) || !gains.slice(0, 9).some((gain) => gain > 0)) return false;
+  if (!gains.every(isWeight) || !gains.slice(0, 4).some((gain) => gain > 0)) return false;
   return value.bands.every((band) => isRecord(band) && isRecord(band.starWeights) &&
     stars.every((star) => isWeight(band.starWeights[String(star)])) &&
     stars.some((star) => Number(band.starWeights[String(star)]) > 0));

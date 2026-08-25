@@ -4,7 +4,7 @@ import { migratePositionCards } from '../src/utils/positionStarMigration';
 import type { CardItem } from '../src/types';
 
 const root = path.resolve(import.meta.dirname, '..');
-const source = JSON.parse(await readFile(path.join(root, 'data/catalog/seed-bundle.json'), 'utf8')) as { cards?: CardItem[] };
+const source = JSON.parse(await readFile(path.join(root, 'data/catalog/catalog.json'), 'utf8')) as { cards?: CardItem[] };
 const cards = source.cards ?? [];
 const positions = cards.filter((card) => card.deck === 'position');
 const migrated = migratePositionCards(positions);

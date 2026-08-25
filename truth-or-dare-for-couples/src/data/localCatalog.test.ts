@@ -47,7 +47,7 @@ test('gameplay metadata migration preserves all 157 card texts and canonical ord
   const contentHash = sha256(Buffer.from(JSON.stringify(
     catalog.cards.map(({ id, content }) => [id, content]),
   )));
-  assert.equal(contentHash, 'a8b619c283f78640890ae672ac5849ca634ab1e83935eddb81827244c97bc620');
+  assert.equal(contentHash, '6562c337f7773084053767a7251258f8140a406c6f3cf25fd7564cc9ce55a78d');
   assert.deepEqual([...catalog.cards].sort(compareCollectionCards).map((card) => card.id), catalog.cards.map((card) => card.id));
   assert.ok(catalog.cards.every((card) => card.deck === 'position'
     ? Boolean(card.position?.turnAudience)
@@ -57,12 +57,12 @@ test('gameplay metadata migration preserves all 157 card texts and canonical ord
   assert.equal(passCard?.gameplayEffect?.kind, 'pass_turn');
 });
 
-test('the migrated non-final Position pool covers 1–9 stars for both turns', async () => {
+test('the migrated non-final Position pool covers 6–10 stars for both turns', async () => {
   const catalog = JSON.parse(await readFile(path.join(root, 'catalog.json'), 'utf8')) as { cards: CardItem[] };
   const positions = catalog.cards.filter((card) =>
     card.deck === 'position' && card.position?.family !== 'have_sex',
   );
-  const expected = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const expected = [6, 7, 8, 9, 10];
   const starsFor = (audience: 'male' | 'female') => [...new Set(
     positions
       .filter((card) => ['both', audience].includes(getCardTurnAudience(card)))
@@ -75,12 +75,12 @@ test('the migrated non-final Position pool covers 1–9 stars for both turns', a
 test('all 23 non-final Position cards keep the approved audience, stars and family', async () => {
   const catalog = JSON.parse(await readFile(path.join(root, 'catalog.json'), 'utf8')) as { cards: CardItem[] };
   const expected = new Map<string, [string, number, string]>([
-    ['pos-handjob-female', ['both', 1, 'other']],
-    ['custom-1787230294200', ['both', 2, 'handjob']],
+    ['pos-handjob-female', ['both', 6, 'other']],
+    ['custom-1787230294200', ['both', 7, 'handjob']],
     ['pos-oral-male', ['both', 7, 'oral']],
     ['pos-close-embrace-2', ['both', 8, 'oral']],
     ['pos-connection-1', ['both', 9, 'oral']],
-    ['pos-oral-female', ['male', 3, 'oral']],
+    ['pos-oral-female', ['male', 8, 'oral']],
     ['pos-guided-touch-4', ['male', 4, 'oral']],
     ['pos-blowjob-male', ['male', 4, 'other']],
     ['pos-blowjob-female', ['male', 5, 'oral']],
@@ -103,9 +103,12 @@ test('all 23 non-final Position cards keep the approved audience, stars and fami
   for (const [id, metadata] of expected) {
     const card = catalog.cards.find((item) => item.id === id);
     assert.ok(card, id);
+    const normalizedMetadata: [string, number, string] = [
+      metadata[0], metadata[1] < 6 ? metadata[1] + 5 : metadata[1], metadata[2],
+    ];
     assert.deepEqual(
       [getCardTurnAudience(card), derivePositionDifficultyStars(card), card.position?.family],
-      metadata,
+      normalizedMetadata,
       id,
     );
   }

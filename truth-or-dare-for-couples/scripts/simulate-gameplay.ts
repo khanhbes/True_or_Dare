@@ -3,7 +3,9 @@ import { DEFAULT_OUTFITS, createOutfitState, getRemovableGarments, removeGarment
 import { DEFAULT_PROGRESSION_CONFIG, selectJourneyCard } from '../src/utils/progression';
 import { getCardClothingFamily } from '../src/utils/clothingJourney';
 
-const sessions = Number(process.argv[2] ?? 10000);
+const requestedRuns = process.argv.find((argument) => argument.startsWith('--runs='))?.split('=')[1]
+  ?? process.argv[2];
+const sessions = Math.max(1, Number(requestedRuns ?? 10000) || 10000);
 const cards = INITIAL_CARDS.filter((card) => card.deck !== 'position');
 let totalCards = 0; let totalClothing = 0; let bothSessions = 0; let extensions = 0;
 for (let session = 0; session < sessions; session += 1) {

@@ -19,3 +19,20 @@ export const migratePositionCard = (card: CardItem): CardItem => {
 };
 
 export const migratePositionCards = (cards: CardItem[]): CardItem[] => cards.map(migratePositionCard);
+
+export interface PositionSnapshot {
+  positionStarSchemaVersion: number;
+  cards: CardItem[];
+  [key: string]: unknown;
+}
+
+/** Versioned, idempotent migration for saved catalog/session snapshots. */
+export const migratePositionSnapshot = (value: unknown): PositionSnapshot | null => {
+  if (!value || typeof value !== 'object' || !Array.isArray((value as { cards?: unknown }).cards)) return null;
+  const snapshot = value as Record<string, unknown>;
+  return {
+    ...snapshot,
+    positionStarSchemaVersion: POSITION_STAR_SCHEMA_VERSION,
+    cards: migratePositionCards(snapshot.cards as CardItem[]),
+  } as PositionSnapshot;
+};
