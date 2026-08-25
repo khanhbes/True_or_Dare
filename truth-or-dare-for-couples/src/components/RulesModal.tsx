@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface RulesModalProps {
   onClose: () => void;
@@ -14,6 +14,8 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
+/* ─────────────── Shared SVG Icons ─────────────── */
+
 const VectorClose: React.FC = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
     <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
@@ -26,146 +28,702 @@ const VectorCheck: React.FC = () => (
   </svg>
 );
 
+/* ─────────────── Tab Data ─────────────── */
+
+type TabId = 'overview' | 'levels' | 'progression' | 'wardrobe' | 'rewards' | 'consent';
+
+interface TabDef {
+  id: TabId;
+  icon: string;
+  label: string;
+}
+
+const TABS: TabDef[] = [
+  { id: 'overview', icon: '🎴', label: 'Cách chơi' },
+  { id: 'levels', icon: '🌡️', label: '3 Cấp độ' },
+  { id: 'progression', icon: '💗', label: 'Tiến trình' },
+  { id: 'wardrobe', icon: '👗', label: 'Trang phục' },
+  { id: 'rewards', icon: '⭐', label: 'Sao & Kỹ năng' },
+  { id: 'consent', icon: '🛡️', label: 'An toàn' },
+];
+
+/* ─────────────── Reusable Section Components ─────────────── */
+
+const SectionCard: React.FC<{
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  accentColor?: string;
+  children: React.ReactNode;
+}> = ({ eyebrow, title, description, accentColor = '#fb7185', children }) => (
+  <section className="group rounded-3xl border border-white/10 bg-white/[0.025] p-4 transition-colors duration-300 hover:border-white/15 sm:p-5">
+    <div className="mb-3">
+      {eyebrow && (
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: `${accentColor}99` }}>
+          {eyebrow}
+        </p>
+      )}
+      <h3 className="mt-1 text-base font-semibold text-white sm:text-lg">{title}</h3>
+      {description && <p className="mt-1 text-xs leading-relaxed text-neutral-400 sm:text-sm">{description}</p>}
+    </div>
+    <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-black/20 p-3 sm:p-4">{children}</div>
+  </section>
+);
+
+const InfoPill: React.FC<{ icon: string; label: string; value: string; color?: string }> = ({
+  icon,
+  label,
+  value,
+  color = '#fda4af',
+}) => (
+  <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
+    <span className="text-base">{icon}</span>
+    <div className="min-w-0">
+      <p className="text-[10px] uppercase tracking-wider text-neutral-500">{label}</p>
+      <p className="text-xs font-bold" style={{ color }}>
+        {value}
+      </p>
+    </div>
+  </div>
+);
+
+/* ─────────────── SVG Graphics ─────────────── */
+
 const TurnFlowGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 112" className="h-auto w-full" role="img" aria-label="Rút thẻ, hoàn thành, tăng thân mật, đổi lượt">
+  <svg viewBox="0 0 520 100" className="h-auto w-full" role="img" aria-label="Rút thẻ, hoàn thành, tăng thân mật, đổi lượt">
     <defs>
       <linearGradient id="flowGlow" x1="0" x2="1">
         <stop offset="0%" stopColor="#fb7185" />
-        <stop offset="100%" stopColor="#f59e0b" />
+        <stop offset="50%" stopColor="#f59e0b" />
+        <stop offset="100%" stopColor="#fb7185" />
       </linearGradient>
     </defs>
-    <path d="M130 55H180M292 55H342M454 55H486" fill="none" stroke="url(#flowGlow)" strokeWidth="3" strokeLinecap="round" opacity=".6" />
+    {/* Connecting arrows */}
+    <path d="M122 50H148" fill="none" stroke="url(#flowGlow)" strokeWidth="2.5" strokeLinecap="round" opacity=".5" />
+    <path d="M142 44l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".5" />
+    <path d="M252 50H278" fill="none" stroke="url(#flowGlow)" strokeWidth="2.5" strokeLinecap="round" opacity=".5" />
+    <path d="M272 44l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".5" />
+    <path d="M382 50H408" fill="none" stroke="url(#flowGlow)" strokeWidth="2.5" strokeLinecap="round" opacity=".5" />
+    <path d="M402 44l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".5" />
+
+    {/* Step 1: Rút Thẻ */}
     <g>
-      <rect x="18" y="22" width="112" height="66" rx="18" fill="#26131b" stroke="#fb7185" strokeOpacity=".55" />
-      <rect x="41" y="36" width="24" height="32" rx="5" fill="none" stroke="#fda4af" strokeWidth="2" />
-      <rect x="50" y="31" width="24" height="32" rx="5" fill="#2e1720" stroke="#fecdd3" strokeWidth="2" />
-      <text x="99" y="59" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="700">RÚT THẺ</text>
+      <rect x="10" y="16" width="112" height="68" rx="16" fill="#26131b" stroke="#fb7185" strokeOpacity=".45" />
+      <rect x="34" y="30" width="20" height="28" rx="4" fill="none" stroke="#fda4af" strokeWidth="1.8" opacity=".6" />
+      <rect x="42" y="26" width="20" height="28" rx="4" fill="#2e1720" stroke="#fecdd3" strokeWidth="1.8" />
+      <text x="84" y="54" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">RÚT</text>
     </g>
+    {/* Step 2: Hoàn thành */}
     <g>
-      <rect x="180" y="22" width="112" height="66" rx="18" fill="#20180f" stroke="#f59e0b" strokeOpacity=".55" />
-      <circle cx="211" cy="55" r="16" fill="none" stroke="#fcd34d" strokeWidth="2" />
-      <path d="M203 55l6 6 11-13" fill="none" stroke="#fde68a" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="254" y="59" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="700">XONG</text>
+      <rect x="148" y="16" width="104" height="68" rx="16" fill="#20180f" stroke="#f59e0b" strokeOpacity=".45" />
+      <circle cx="177" cy="50" r="14" fill="none" stroke="#fcd34d" strokeWidth="1.8" />
+      <path d="M170 50l5 5 10-12" fill="none" stroke="#fde68a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="218" y="54" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">XONG</text>
     </g>
+    {/* Step 3: Tăng thân mật */}
     <g>
-      <rect x="342" y="22" width="112" height="66" rx="18" fill="#26131b" stroke="#fb7185" strokeOpacity=".55" />
-      <path d="M374 67C355 54 360 37 373 37c8 0 12 6 12 6s4-6 12-6c13 0 18 17-1 30l-11 8-11-8Z" fill="#fb7185" opacity=".9" />
-      <text x="420" y="59" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">+ THÂN MẬT</text>
+      <rect x="278" y="16" width="104" height="68" rx="16" fill="#26131b" stroke="#fb7185" strokeOpacity=".45" />
+      <path d="M306 60C293 51 296 40 305 40c5 0 8 4 8 4s3-4 8-4c9 0 12 11-1 20l-7 5-7-5Z" fill="#fb7185" opacity=".85" />
+      <text x="348" y="54" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">+THÂN</text>
+      <text x="348" y="66" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">MẬT</text>
     </g>
-    <path d="M488 41c18 0 26 11 26 22 0 12-9 22-24 22M500 77l-10 8 9 7" fill="none" stroke="#cbd5e1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    {/* Step 4: Đổi lượt (loop) */}
+    <g>
+      <rect x="408" y="16" width="100" height="68" rx="16" fill="#161b2a" stroke="#60a5fa" strokeOpacity=".45" />
+      <path d="M440 38c12-4 20 2 20 12s-8 16-18 16" fill="none" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
+      <path d="M446 62l-7 6 6 5" fill="none" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="474" y="54" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">ĐỔI</text>
+      <text x="474" y="66" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">LƯỢT</text>
+    </g>
   </svg>
 );
 
 const TruthDareGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 150" className="h-auto w-full" role="img" aria-label="Truth là trả lời, Dare là thử thách">
+  <svg viewBox="0 0 520 130" className="h-auto w-full" role="img" aria-label="Truth là trả lời, Dare là thử thách">
     <g>
-      <rect x="16" y="14" width="236" height="122" rx="24" fill="#161b2a" stroke="#60a5fa" strokeOpacity=".45" />
-      <path d="M60 49h70a13 13 0 0 1 13 13v26a13 13 0 0 1-13 13H90l-18 13 5-13H60A13 13 0 0 1 47 88V62A13 13 0 0 1 60 49Z" fill="none" stroke="#93c5fd" strokeWidth="2" />
-      <circle cx="76" cy="75" r="3" fill="#bfdbfe" /><circle cx="94" cy="75" r="3" fill="#bfdbfe" /><circle cx="112" cy="75" r="3" fill="#bfdbfe" />
-      <text x="185" y="67" fill="#dbeafe" fontSize="20" fontWeight="800" textAnchor="middle">TRUTH</text>
-      <text x="185" y="92" fill="#94a3b8" fontSize="13" textAnchor="middle">Trả lời thật lòng</text>
+      <rect x="16" y="10" width="236" height="110" rx="22" fill="#161b2a" stroke="#60a5fa" strokeOpacity=".35" />
+      <path d="M60 42h70a11 11 0 0 1 11 11v22a11 11 0 0 1-11 11H90l-15 11 4-11H60A11 11 0 0 1 49 75V53A11 11 0 0 1 60 42Z" fill="none" stroke="#93c5fd" strokeWidth="1.8" />
+      <circle cx="73" cy="64" r="2.5" fill="#bfdbfe" /><circle cx="88" cy="64" r="2.5" fill="#bfdbfe" /><circle cx="103" cy="64" r="2.5" fill="#bfdbfe" />
+      <text x="185" y="56" fill="#dbeafe" fontSize="18" fontWeight="800" textAnchor="middle">TRUTH</text>
+      <text x="185" y="76" fill="#94a3b8" fontSize="11" textAnchor="middle">Trả lời thật lòng</text>
+      <text x="185" y="100" fill="#64748b" fontSize="10" textAnchor="middle">Chia sẻ bí mật, kỷ niệm, cảm xúc</text>
     </g>
     <g>
-      <rect x="268" y="14" width="236" height="122" rx="24" fill="#281613" stroke="#fb7185" strokeOpacity=".45" />
-      <path d="M324 105c-15-12-17-27-7-38 7-8 7-15 4-24 13 6 20 16 19 28 7-4 10-9 11-16 10 10 15 21 13 33-2 15-15 27-31 27-4 0-7 0-9-1Z" fill="#fb7185" opacity=".9" />
-      <text x="430" y="67" fill="#ffe4e6" fontSize="20" fontWeight="800" textAnchor="middle">DARE</text>
-      <text x="430" y="92" fill="#a8a29e" fontSize="13" textAnchor="middle">Thực hiện thử thách</text>
+      <rect x="268" y="10" width="236" height="110" rx="22" fill="#281613" stroke="#fb7185" strokeOpacity=".35" />
+      <path d="M324 95c-13-10-15-24-6-33 6-7 6-13 4-21 11 5 17 14 16 24 6-3 9-8 10-14 8 9 13 18 11 29-2 13-13 23-27 23-3 0-6 0-8-1Z" fill="#fb7185" opacity=".8" />
+      <text x="430" y="56" fill="#ffe4e6" fontSize="18" fontWeight="800" textAnchor="middle">DARE</text>
+      <text x="430" y="76" fill="#a8a29e" fontSize="11" textAnchor="middle">Thực hiện thử thách</text>
+      <text x="430" y="100" fill="#64748b" fontSize="10" textAnchor="middle">Cử chỉ, hành động, tiếp xúc</text>
     </g>
   </svg>
 );
 
 const HeartProgressGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 132" className="h-auto w-full" role="img" aria-label="Intimacy tăng từ 0 đến 100 phần trăm bằng trái tim hồng">
+  <svg viewBox="0 0 520 140" className="h-auto w-full" role="img" aria-label="Intimacy tăng từ 0 đến 100 phần trăm">
     <defs>
       <linearGradient id="heartFill" x1="0" x2="1"><stop offset="0%" stopColor="#fda4af" /><stop offset="100%" stopColor="#fb7185" /></linearGradient>
-      <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+      <linearGradient id="barBg" x1="0" x2="1"><stop offset="0%" stopColor="#2b1a21" /><stop offset="100%" stopColor="#1f1218" /></linearGradient>
+      <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
     </defs>
-    <path d="M92 91C48 62 58 28 82 28c14 0 24 9 30 18 6-9 16-18 30-18 24 0 34 34-10 63l-20 14-20-14Z" fill="url(#heartFill)" filter="url(#softGlow)" />
-    <rect x="175" y="48" width="294" height="20" rx="10" fill="#2b1a21" stroke="#fb7185" strokeOpacity=".35" />
-    <rect x="175" y="48" width="213" height="20" rx="10" fill="url(#heartFill)" />
-    <text x="175" y="92" fill="#a8a29e" fontSize="12">0%</text>
-    <text x="469" y="92" fill="#fecdd3" fontSize="12" textAnchor="end">100%</text>
-    <text x="322" y="119" fill="#fff" fontSize="14" fontWeight="700" textAnchor="middle">Hoàn thành thẻ để làm đầy trái tim</text>
-  </svg>
-);
-
-const StarJourneyGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 204" className="h-auto w-full" role="img" aria-label="Standard từ 1 đến 5 sao, Position từ 6 đến 10 sao">
-    <text x="24" y="28" fill="#fecdd3" fontSize="13" fontWeight="800">STANDARD</text>
-    <path d="M44 78H476" stroke="#fb7185" strokeOpacity=".28" strokeWidth="2" />
-    {[1,2,3,4,5].map((star, index) => {
-      const x = 60 + index * 100;
-      return <g key={star}><circle cx={x} cy="78" r="27" fill="#25151c" stroke="#fb7185" strokeOpacity={0.4 + index * 0.1} /><text x={x} y="84" fill="#fff" fontSize="16" fontWeight="900" textAnchor="middle">★{star}</text></g>;
-    })}
-    <text x="24" y="143" fill="#bfdbfe" fontSize="13" fontWeight="800">POSITION</text>
-    <path d="M44 178H476" stroke="#60a5fa" strokeOpacity=".28" strokeWidth="2" />
-    {[6,7,8,9,10].map((star, index) => {
-      const x = 60 + index * 100;
-      return <g key={star}><circle cx={x} cy="178" r="24" fill="#101827" stroke="#60a5fa" strokeOpacity={0.4 + index * 0.1} /><text x={x} y="183" fill="#dbeafe" fontSize="14" fontWeight="900" textAnchor="middle">{star}</text></g>;
-    })}
+    {/* Heart icon */}
+    <path d="M72 82C40 58 48 30 66 30c10 0 17 7 22 14 5-7 12-14 22-14 18 0 26 28-8 52l-14 10-14-10Z" fill="url(#heartFill)" filter="url(#softGlow)" />
+    {/* Progress bar */}
+    <rect x="145" y="42" width="340" height="18" rx="9" fill="url(#barBg)" stroke="#fb7185" strokeOpacity=".25" />
+    <rect x="145" y="42" width="245" height="18" rx="9" fill="url(#heartFill)" opacity=".9" />
+    <text x="270" y="55" fill="#fff" fontSize="10" fontWeight="800" textAnchor="middle">72%</text>
+    {/* Labels */}
+    <text x="145" y="78" fill="#a8a29e" fontSize="10">0%</text>
+    <text x="485" y="78" fill="#fecdd3" fontSize="10" textAnchor="end">100%</text>
+    {/* Star gain info */}
+    <text x="260" y="104" fill="#fff" fontSize="12" fontWeight="700" textAnchor="middle">Hoàn thành thẻ để làm đầy trái tim</text>
+    <text x="260" y="122" fill="#a8a29e" fontSize="10" textAnchor="middle">⭐1 → +3%  ·  ⭐2 → +4%  ·  ⭐3 → +5%  ·  ⭐4 → +6%  ·  ⭐5 → +7%</text>
   </svg>
 );
 
 const ClothingGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 160" className="h-auto w-full" role="img" aria-label="Game tự theo dõi trang phục của hai người">
-    <g transform="translate(56 25)">
-      <circle cx="55" cy="24" r="18" fill="#2c1b22" stroke="#fb7185" strokeOpacity=".55" />
-      <path d="M24 130V83c0-22 14-37 31-37s31 15 31 37v47" fill="#24161c" stroke="#fb7185" strokeOpacity=".5" strokeWidth="2" />
-      <path d="M16 75l22-19 17 17 17-17 22 19-11 25-13-8v38H40V92l-13 8-11-25Z" fill="#7f1d3f" opacity=".8" />
-      <text x="55" y="153" fill="#fecdd3" fontSize="12" fontWeight="700" textAnchor="middle">NGƯỜI A</text>
+  <svg viewBox="0 0 520 170" className="h-auto w-full" role="img" aria-label="Game tự theo dõi trang phục của hai người">
+    {/* Person A */}
+    <g transform="translate(56 20)">
+      <circle cx="55" cy="20" r="16" fill="#2c1b22" stroke="#fb7185" strokeOpacity=".45" />
+      <path d="M26 120V78c0-20 13-33 29-33s29 13 29 33v42" fill="#24161c" stroke="#fb7185" strokeOpacity=".4" strokeWidth="1.5" />
+      {/* Shirt */}
+      <path d="M18 68l20-17 17 15 17-15 20 17-10 22-12-7v34H42V83l-12 7-12-22Z" fill="#7f1d3f" opacity=".75" />
+      {/* Labels */}
+      <text x="55" y="148" fill="#fecdd3" fontSize="11" fontWeight="700" textAnchor="middle">NGƯỜI A</text>
+      <text x="55" y="162" fill="#a8a29e" fontSize="9" textAnchor="middle">Áo · Quần · Lót</text>
     </g>
-    <path d="M218 80h84" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 7" opacity=".7" />
-    <circle cx="260" cy="80" r="28" fill="#21190f" stroke="#f59e0b" strokeOpacity=".45" />
-    <path d="M248 82l8 8 17-20" fill="none" stroke="#fcd34d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <g transform="translate(352 25)">
-      <circle cx="55" cy="24" r="18" fill="#171e2a" stroke="#60a5fa" strokeOpacity=".55" />
-      <path d="M24 130V83c0-22 14-37 31-37s31 15 31 37v47" fill="#151b25" stroke="#60a5fa" strokeOpacity=".5" strokeWidth="2" />
-      <path d="M16 75l22-19 17 17 17-17 22 19-11 25-13-8v38H40V92l-13 8-11-25Z" fill="#1e3a8a" opacity=".78" />
-      <text x="55" y="153" fill="#bfdbfe" fontSize="12" fontWeight="700" textAnchor="middle">NGƯỜI B</text>
+    {/* Arrow */}
+    <g>
+      <path d="M220 85h80" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="5 6" opacity=".6" />
+      <circle cx="260" cy="85" r="24" fill="#21190f" stroke="#f59e0b" strokeOpacity=".4" />
+      <path d="M250 87l7 7 14-17" fill="none" stroke="#fcd34d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="260" y="75" fill="#fde68a" fontSize="8" fontWeight="700" textAnchor="middle">TỰ ĐỘNG</text>
+    </g>
+    {/* Person B */}
+    <g transform="translate(352 20)">
+      <circle cx="55" cy="20" r="16" fill="#171e2a" stroke="#60a5fa" strokeOpacity=".45" />
+      <path d="M26 120V78c0-20 13-33 29-33s29 13 29 33v42" fill="#151b25" stroke="#60a5fa" strokeOpacity=".4" strokeWidth="1.5" />
+      <path d="M18 68l20-17 17 15 17-15 20 17-10 22-12-7v34H42V83l-12 7-12-22Z" fill="#1e3a8a" opacity=".7" />
+      <text x="55" y="148" fill="#bfdbfe" fontSize="11" fontWeight="700" textAnchor="middle">NGƯỜI B</text>
+      <text x="55" y="162" fill="#a8a29e" fontSize="9" textAnchor="middle">Áo · Quần · Lót · Bra</text>
     </g>
   </svg>
 );
 
 const PositionUnlockGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 190" className="h-auto w-full" role="img" aria-label="Hoàn thành Standard, đủ điều kiện trang phục và cả hai đồng ý để mở Position">
-    <g><circle cx="100" cy="72" r="38" fill="#28151d" stroke="#fb7185" strokeOpacity=".45" /><path d="M100 88C76 71 82 52 95 52c7 0 11 5 11 5s4-5 11-5c13 0 19 19-5 36l-6 4-6-4Z" fill="#fb7185" /><text x="100" y="129" fill="#fecdd3" fontSize="12" fontWeight="800" textAnchor="middle">STANDARD 100%</text></g>
-    <path d="M145 72H205" stroke="#a8a29e" strokeWidth="2" strokeDasharray="5 7" />
-    <g><circle cx="260" cy="72" r="38" fill="#21190f" stroke="#f59e0b" strokeOpacity=".45" /><path d="M244 70h32M248 58h24M251 82h18" stroke="#fcd34d" strokeWidth="2.5" strokeLinecap="round" /><text x="260" y="129" fill="#fde68a" fontSize="12" fontWeight="800" textAnchor="middle">TRANG PHỤC</text></g>
-    <path d="M305 72H365" stroke="#a8a29e" strokeWidth="2" strokeDasharray="5 7" />
-    <g><circle cx="420" cy="72" r="38" fill="#112136" stroke="#60a5fa" strokeOpacity=".45" /><path d="M405 76l9 9 20-24" fill="none" stroke="#93c5fd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /><text x="420" y="129" fill="#bfdbfe" fontSize="12" fontWeight="800" textAnchor="middle">CẢ HAI ĐỒNG Ý</text></g>
-    <path d="M260 145v22" stroke="#60a5fa" strokeWidth="2.5" strokeLinecap="round" /><path d="M250 160l10 10 10-10" fill="none" stroke="#60a5fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /><text x="260" y="187" fill="#dbeafe" fontSize="14" fontWeight="900" textAnchor="middle">POSITION</text>
+  <svg viewBox="0 0 520 180" className="h-auto w-full" role="img" aria-label="Ba điều kiện mở Position Deck">
+    {/* Step 1: Standard 100% */}
+    <g>
+      <circle cx="100" cy="62" r="34" fill="#28151d" stroke="#fb7185" strokeOpacity=".35" />
+      <path d="M100 78C82 65 86 50 96 50c5 0 9 4 9 4s4-4 9-4c10 0 14 15-4 28l-5 4-5-4Z" fill="#fb7185" />
+      <text x="100" y="113" fill="#fecdd3" fontSize="11" fontWeight="800" textAnchor="middle">STANDARD</text>
+      <text x="100" y="127" fill="#a8a29e" fontSize="10" textAnchor="middle">100%</text>
+    </g>
+    {/* Arrow */}
+    <path d="M140 62H200" stroke="#a8a29e" strokeWidth="1.5" strokeDasharray="5 6" />
+    <path d="M194 56l8 6-8 6" fill="none" stroke="#a8a29e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    {/* Step 2: Trang phục */}
+    <g>
+      <circle cx="260" cy="62" r="34" fill="#21190f" stroke="#f59e0b" strokeOpacity=".35" />
+      <path d="M244 60h32M248 48h24M251 72h18" stroke="#fcd34d" strokeWidth="2.2" strokeLinecap="round" />
+      <text x="260" y="113" fill="#fde68a" fontSize="11" fontWeight="800" textAnchor="middle">TRANG PHỤC</text>
+      <text x="260" y="127" fill="#a8a29e" fontSize="10" textAnchor="middle">Đủ điều kiện</text>
+    </g>
+    {/* Arrow */}
+    <path d="M300 62H360" stroke="#a8a29e" strokeWidth="1.5" strokeDasharray="5 6" />
+    <path d="M354 56l8 6-8 6" fill="none" stroke="#a8a29e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    {/* Step 3: Consent */}
+    <g>
+      <circle cx="420" cy="62" r="34" fill="#112136" stroke="#60a5fa" strokeOpacity=".35" />
+      <path d="M406 66l8 8 18-22" fill="none" stroke="#93c5fd" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="420" y="113" fill="#bfdbfe" fontSize="11" fontWeight="800" textAnchor="middle">CẢ HAI</text>
+      <text x="420" y="127" fill="#a8a29e" fontSize="10" textAnchor="middle">Đồng ý</text>
+    </g>
+    {/* Bottom arrow to POSITION */}
+    <path d="M260 138v16" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" />
+    <path d="M252 148l8 8 8-8" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <text x="260" y="175" fill="#dbeafe" fontSize="13" fontWeight="900" textAnchor="middle">→ MỞ KHÓA POSITION DECK ←</text>
   </svg>
 );
 
 const ConsentGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 130" className="h-auto w-full" role="img" aria-label="Có thể bỏ qua hoặc dừng bất cứ lúc nào">
-    <rect x="40" y="30" width="180" height="68" rx="20" fill="#21161a" stroke="#fb7185" strokeOpacity=".42" />
-    <path d="M83 49v30M97 49v30" stroke="#fda4af" strokeWidth="5" strokeLinecap="round" />
-    <text x="157" y="69" fill="#fff" fontSize="17" fontWeight="900" textAnchor="middle">SKIP</text>
-    <text x="157" y="87" fill="#a8a29e" fontSize="11" textAnchor="middle">Không muốn làm</text>
-    <path d="M240 64h40" stroke="#64748b" strokeWidth="2" strokeDasharray="5 6" />
-    <rect x="300" y="30" width="180" height="68" rx="20" fill="#17231d" stroke="#34d399" strokeOpacity=".42" />
-    <rect x="331" y="47" width="27" height="34" rx="5" fill="none" stroke="#6ee7b7" strokeWidth="2" />
-    <path d="M338 56h13M338 64h13M338 72h8" stroke="#a7f3d0" strokeWidth="1.8" strokeLinecap="round" />
-    <text x="406" y="69" fill="#fff" fontSize="17" fontWeight="900" textAnchor="middle">DỪNG</text>
-    <text x="406" y="87" fill="#a8a29e" fontSize="11" textAnchor="middle">Bất cứ lúc nào</text>
+  <svg viewBox="0 0 520 115" className="h-auto w-full" role="img" aria-label="Có thể bỏ qua hoặc dừng bất cứ lúc nào">
+    {/* Skip */}
+    <rect x="30" y="20" width="200" height="72" rx="18" fill="#21161a" stroke="#fb7185" strokeOpacity=".35" />
+    <g transform="translate(55 38)">
+      <path d="M0 0v36M12 0v36" stroke="#fda4af" strokeWidth="4.5" strokeLinecap="round" />
+    </g>
+    <text x="150" y="52" fill="#fff" fontSize="15" fontWeight="800" textAnchor="middle">BỎ QUA</text>
+    <text x="150" y="72" fill="#a8a29e" fontSize="10" textAnchor="middle">Không muốn thì bỏ, không phạt</text>
+    {/* Divider */}
+    <text x="260" y="60" fill="#64748b" fontSize="12" fontWeight="700" textAnchor="middle">hoặc</text>
+    {/* Stop */}
+    <rect x="290" y="20" width="200" height="72" rx="18" fill="#17231d" stroke="#34d399" strokeOpacity=".35" />
+    <g transform="translate(320 38)">
+      <rect width="28" height="28" rx="5" fill="none" stroke="#6ee7b7" strokeWidth="2" />
+      <path d="M7 8h14M7 15h14M7 22h8" stroke="#a7f3d0" strokeWidth="1.6" strokeLinecap="round" />
+    </g>
+    <text x="420" y="52" fill="#fff" fontSize="15" fontWeight="800" textAnchor="middle">DỪNG</text>
+    <text x="420" y="72" fill="#a8a29e" fontSize="10" textAnchor="middle">Kết thúc ngay bất cứ lúc nào</text>
   </svg>
 );
 
-const RuleSection: React.FC<{ eyebrow: string; title: string; description?: string; children: React.ReactNode }> = ({ eyebrow, title, description, children }) => (
-  <section className="rounded-3xl border border-white/10 bg-white/[0.025] p-4 sm:p-5">
-    <div className="mb-3">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-rose-200/70">{eyebrow}</p>
-      <h3 className="mt-1 text-base font-semibold text-white sm:text-lg">{title}</h3>
-      {description ? <p className="mt-1 text-xs leading-relaxed text-neutral-400 sm:text-sm">{description}</p> : null}
+/* ─────────────── Tab Content Panels ─────────────── */
+
+const OverviewTab: React.FC = () => (
+  <div className="space-y-4">
+    <SectionCard eyebrow="Vòng lặp cơ bản" title="Rút → Làm → Tăng Thân Mật → Đổi Lượt" description="Mỗi lượt, một người rút thẻ bài, hoàn thành nội dung (Truth hoặc Dare), nhận điểm thân mật rồi đổi lượt cho đối phương.">
+      <TurnFlowGraphic />
+    </SectionCard>
+
+    <SectionCard eyebrow="Hai loại thẻ" title="Truth (Sự Thật) & Dare (Thử Thách)" description="Truth yêu cầu trả lời câu hỏi thành thật. Dare yêu cầu thực hiện một hành động, cử chỉ hoặc thử thách cùng đối phương.">
+      <TruthDareGraphic />
+    </SectionCard>
+
+    {/* Quick stats */}
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <InfoPill icon="🎴" label="Tổng bài" value="108 lá" color="#fda4af" />
+      <InfoPill icon="📦" label="Standard" value="92 lá" color="#fde68a" />
+      <InfoPill icon="🔮" label="Position" value="16 lá" color="#93c5fd" />
+      <InfoPill icon="⭐" label="Cấp sao" value="★1 – ★5" color="#fcd34d" />
     </div>
-    <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-black/10 p-2 sm:p-3">{children}</div>
-  </section>
+
+    {/* Game flow summary */}
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4">
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-amber-200/60">Luồng trò chơi</p>
+      <div className="flex flex-col gap-1.5">
+        {[
+          { step: '1', text: 'Thiết lập: Nhập tên, chọn avatar, tùy chỉnh cấp độ & trang phục', color: '#fb7185' },
+          { step: '2', text: 'Rút bài: Chọn ngẫu nhiên hoặc tự bấm Truth / Dare', color: '#fcd34d' },
+          { step: '3', text: 'Hoàn thành hoặc Bỏ qua (có thể bị phạt cởi 1 món đồ nếu bật)', color: '#fda4af' },
+          { step: '4', text: 'Tăng dần Intimacy 0% → 100% → Mở khóa Position Deck', color: '#93c5fd' },
+          { step: '5', text: 'Kết thúc khi rút lá Have Sex, đạt mục tiêu, hoặc chủ động dừng', color: '#34d399' },
+        ].map(({ step, text, color }) => (
+          <div key={step} className="flex items-start gap-2.5">
+            <span
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black"
+              style={{ backgroundColor: `${color}20`, color }}
+            >
+              {step}
+            </span>
+            <p className="text-xs leading-relaxed text-neutral-300">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
 );
+
+const LevelsTab: React.FC = () => (
+  <div className="space-y-4">
+    {/* Three levels */}
+    {[
+      {
+        icon: '🌸',
+        name: 'Nhẹ Nhàng',
+        eng: 'Gentle',
+        stars: '⭐1 – ⭐2',
+        cards: '32 lá (16 Truth + 16 Dare)',
+        color: '#FF6B9D',
+        bg: '#26131b',
+        border: 'rgba(255, 107, 157, 0.35)',
+        desc: 'Khởi động êm ái, kỷ niệm đầu, câu hỏi dễ thương, cử chỉ dịu dàng. Nhìn mắt 30s, ôm 20s, thì thầm khen ngợi.',
+        examples: ['"Ấn tượng đầu tiên của bạn về đối phương?"', '"Nhìn vào mắt nhau 30 giây không chớp mắt"'],
+      },
+      {
+        icon: '🔥',
+        name: 'Thân Mật',
+        eng: 'Intimate',
+        stars: '⭐2 – ⭐4',
+        cards: '32 lá (16 Truth + 16 Dare)',
+        color: '#D4AF37',
+        bg: '#20180f',
+        border: 'rgba(212, 175, 55, 0.35)',
+        desc: 'Tán tỉnh, cử chỉ đắm đuối, hôn sâu, vuốt ve, thử thách cởi bớt đồ ngoài.',
+        examples: ['"Bạn thích được hôn ở đâu nhất?"', '"Hôn nhẹ lên cổ đối phương 15 giây"'],
+      },
+      {
+        icon: '💋',
+        name: 'Nồng Nhiệt',
+        eng: 'Passionate',
+        stars: '⭐3 – ⭐5',
+        cards: '28 lá (14 Truth + 14 Dare)',
+        color: '#fb7185',
+        bg: '#2d0c13',
+        border: 'rgba(251, 113, 133, 0.35)',
+        desc: 'Quyến rũ, táo bạo, khám phá khao khát, tiếp xúc cơ thể trực tiếp, đổi đồ cho nhau, ôm ấp nồng nàn.',
+        examples: ['"Điều gì khiến bạn khao khát nhất ở đối phương?"', '"Cùng cởi 1 món đồ rồi ôm sát nhau"'],
+      },
+    ].map((level) => (
+      <div
+        key={level.eng}
+        className="overflow-hidden rounded-2xl border p-4 sm:p-5"
+        style={{ backgroundColor: level.bg, borderColor: level.border }}
+      >
+        <div className="mb-3 flex items-center gap-3">
+          <span className="text-2xl">{level.icon}</span>
+          <div>
+            <h4 className="text-sm font-bold text-white">
+              {level.name} <span className="ml-1 text-xs font-normal text-neutral-500">({level.eng})</span>
+            </h4>
+            <div className="mt-0.5 flex flex-wrap gap-2">
+              <span className="text-[10px] font-bold" style={{ color: level.color }}>
+                {level.stars}
+              </span>
+              <span className="text-[10px] text-neutral-500">·</span>
+              <span className="text-[10px] text-neutral-400">{level.cards}</span>
+            </div>
+          </div>
+        </div>
+        <p className="mb-3 text-xs leading-relaxed text-neutral-300">{level.desc}</p>
+        <div className="space-y-1.5">
+          {level.examples.map((ex, i) => (
+            <div key={i} className="rounded-lg bg-black/20 px-3 py-2">
+              <p className="text-[11px] italic text-neutral-400">{ex}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+
+    {/* Tỉ lệ Truth/Dare thay đổi */}
+    <SectionCard
+      eyebrow="Tỉ lệ biến thiên"
+      title="Truth / Dare thay đổi theo Intimacy"
+      description="Ban đầu ưu tiên câu hỏi (70% Truth). Càng thân mật, Dare tăng dần lên 80%."
+      accentColor="#f59e0b"
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full text-[10px] sm:text-xs">
+          <thead>
+            <tr className="border-b border-white/[0.06]">
+              <th className="py-2 pr-2 text-left font-bold text-neutral-400">Intimacy</th>
+              <th className="py-2 px-2 text-center font-bold text-blue-300">Truth</th>
+              <th className="py-2 px-2 text-center font-bold text-rose-300">Dare</th>
+              <th className="py-2 pl-2 text-center font-bold text-amber-300">Sao phổ biến</th>
+            </tr>
+          </thead>
+          <tbody className="text-neutral-300">
+            {[
+              { range: '0–19%', truth: '70%', dare: '30%', stars: '⭐1 (65%)' },
+              { range: '20–39%', truth: '60%', dare: '40%', stars: '⭐1-2 (75%)' },
+              { range: '40–59%', truth: '45%', dare: '55%', stars: '⭐2-3 (65%)' },
+              { range: '60–79%', truth: '30%', dare: '70%', stars: '⭐3-4 (65%)' },
+              { range: '80–99%', truth: '20%', dare: '80%', stars: '⭐4-5 (80%)' },
+            ].map((row) => (
+              <tr key={row.range} className="border-b border-white/[0.03]">
+                <td className="py-1.5 pr-2 font-semibold text-white">{row.range}</td>
+                <td className="py-1.5 px-2 text-center text-blue-200">{row.truth}</td>
+                <td className="py-1.5 px-2 text-center text-rose-200">{row.dare}</td>
+                <td className="py-1.5 pl-2 text-center text-amber-200">{row.stars}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </SectionCard>
+  </div>
+);
+
+const ProgressionTab: React.FC = () => (
+  <div className="space-y-4">
+    {/* Phase 1: Standard */}
+    <SectionCard
+      eyebrow="Giai đoạn 1"
+      title="Hành Trình Tim Hồng (0% → 100%)"
+      description="Mỗi thẻ hoàn thành giúp tăng thanh Intimacy. Khi đạt 100%, mở khóa giai đoạn Position."
+    >
+      <HeartProgressGraphic />
+    </SectionCard>
+
+    {/* Star gains detail */}
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4">
+      <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-rose-200/60">Điểm thân mật theo sao</p>
+      <div className="grid grid-cols-5 gap-2">
+        {[
+          { star: 1, gain: '+3%', color: '#fda4af' },
+          { star: 2, gain: '+4%', color: '#fda4af' },
+          { star: 3, gain: '+5%', color: '#fcd34d' },
+          { star: 4, gain: '+6%', color: '#f59e0b' },
+          { star: 5, gain: '+7%', color: '#fb7185' },
+        ].map(({ star, gain, color }) => (
+          <div key={star} className="flex flex-col items-center rounded-xl border border-white/[0.06] bg-black/20 py-2.5">
+            <span className="text-sm" style={{ color }}>{'★'.repeat(star)}</span>
+            <span className="mt-1 text-xs font-black text-white">{gain}</span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 rounded-lg bg-amber-500/[0.08] px-3 py-2">
+        <p className="text-[11px] text-amber-200">
+          <strong className="font-bold">Bonus trang phục:</strong> Mỗi lượt có cởi đồ thành công → thêm <strong>+2%</strong> Intimacy.
+        </p>
+      </div>
+    </div>
+
+    {/* Phase 2: Position / Luxury */}
+    <SectionCard
+      eyebrow="Giai đoạn 2"
+      title="Hành Trình Tư Thế (Luxury 0% → 100%)"
+      description="Mở khóa bộ bài Position 16 lá. Thang sao ✦1–✦10 với độ khó tăng dần."
+      accentColor="#60a5fa"
+    >
+      <div className="space-y-3">
+        {/* Position star gains */}
+        <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-10">
+          {[
+            { star: 1, gain: '+6%' }, { star: 2, gain: '+7%' }, { star: 3, gain: '+8%' },
+            { star: 4, gain: '+9%' }, { star: 5, gain: '+10%' }, { star: 6, gain: '+11%' },
+            { star: 7, gain: '+12%' }, { star: 8, gain: '+13%' }, { star: 9, gain: '+14%' },
+            { star: 10, gain: '🏆' },
+          ].map(({ star, gain }) => (
+            <div key={star} className="flex flex-col items-center rounded-lg border border-white/[0.05] bg-black/20 py-1.5">
+              <span className="text-[10px] font-black text-blue-200">✦{star}</span>
+              <span className="text-[9px] font-bold text-neutral-400">{gain}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Have Sex mechanic */}
+        <div className="rounded-xl border border-rose-400/20 bg-rose-500/[0.06] px-3 py-2.5">
+          <p className="text-xs font-semibold text-rose-200">◆ Lá Tối Thượng: Have Sex (✦10)</p>
+          <p className="mt-1 text-[11px] leading-relaxed text-neutral-300">
+            Luxury 80–99% → <strong className="text-white">5%</strong> cơ hội mỗi lượt rút.
+            Luxury 100% → <strong className="text-white">100%</strong> chắc chắn xuất hiện.
+          </p>
+        </div>
+      </div>
+    </SectionCard>
+
+    {/* Position unlock */}
+    <SectionCard
+      eyebrow="Điều kiện mở khóa"
+      title="Ba bước chuyển sang Position"
+      description="Standard 100% + Đủ điều kiện trang phục + Cả hai đồng ý."
+      accentColor="#60a5fa"
+    >
+      <PositionUnlockGraphic />
+    </SectionCard>
+  </div>
+);
+
+const WardrobeTab: React.FC = () => (
+  <div className="space-y-4">
+    <SectionCard
+      eyebrow="Hệ thống Avatar"
+      title="Game tự theo dõi trang phục của cả hai"
+      description="Mỗi người có mô hình Avatar với trang phục riêng. Hệ thống tự động lọc bài phù hợp."
+    >
+      <ClothingGraphic />
+    </SectionCard>
+
+    {/* Outfit layers */}
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div className="rounded-2xl border border-rose-400/20 bg-rose-500/[0.04] p-3 sm:p-4">
+        <p className="mb-2 text-xs font-bold text-rose-200">👨 Nam</p>
+        <div className="space-y-1.5">
+          {[
+            { slot: 'Áo (shirt)', layer: 'Ngoài cùng', removable: true },
+            { slot: 'Quần (pants)', layer: 'Ngoài cùng', removable: true },
+            { slot: 'Quần lót (underwear)', layer: 'Trong cùng', removable: false },
+          ].map((item) => (
+            <div key={item.slot} className="flex items-center justify-between rounded-lg bg-black/20 px-2.5 py-1.5">
+              <span className="text-[11px] text-neutral-300">{item.slot}</span>
+              <span className={`text-[9px] font-bold ${item.removable ? 'text-emerald-300' : 'text-amber-300'}`}>
+                {item.removable ? '✓ Cởi trước' : '⬆ Cần cởi quần ngoài'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="rounded-2xl border border-blue-400/20 bg-blue-500/[0.04] p-3 sm:p-4">
+        <p className="mb-2 text-xs font-bold text-blue-200">👩 Nữ</p>
+        <div className="space-y-1.5">
+          {[
+            { slot: 'Áo (shirt)', layer: 'Ngoài cùng', removable: true },
+            { slot: 'Quần (pants)', layer: 'Ngoài cùng', removable: true },
+            { slot: 'Áo lót (bra)', layer: 'Trong', removable: false },
+            { slot: 'Quần lót (underwear)', layer: 'Trong cùng', removable: false },
+          ].map((item) => (
+            <div key={item.slot} className="flex items-center justify-between rounded-lg bg-black/20 px-2.5 py-1.5">
+              <span className="text-[11px] text-neutral-300">{item.slot}</span>
+              <span className={`text-[9px] font-bold ${item.removable ? 'text-emerald-300' : 'text-amber-300'}`}>
+                {item.removable ? '✓ Cởi trước' : '⬆ Cần cởi đồ ngoài'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Clothing effects */}
+    <SectionCard eyebrow="Hiệu ứng cởi đồ" title="5 kiểu hiệu ứng trang phục" accentColor="#f59e0b">
+      <div className="space-y-1.5">
+        {[
+          { icon: '👤', name: 'Tự cởi (self)', desc: 'Bạn tự chọn 1 món đồ hợp lệ của mình để cởi.' },
+          { icon: '👫', name: 'Cởi cho đối phương (opponent)', desc: 'Chọn 1 món trên người đối phương để họ cởi.' },
+          { icon: '🤝', name: 'Cả hai cùng cởi (both)', desc: 'Mỗi người tự tháo 1 món đồ ngoài.' },
+          { icon: '🎯', name: 'Cùng chọn người cởi (choice)', desc: 'Cặp đôi thỏa thuận ai sẽ cởi 1 món.' },
+          { icon: '🔄', name: 'Đổi đồ cho nhau (swap)', desc: 'Cùng tháo 1 món rồi đổi mặc cho nhau!' },
+        ].map((effect) => (
+          <div key={effect.name} className="flex items-start gap-2.5 rounded-lg bg-black/15 px-3 py-2">
+            <span className="mt-0.5 text-sm">{effect.icon}</span>
+            <div>
+              <p className="text-[11px] font-bold text-white">{effect.name}</p>
+              <p className="text-[10px] text-neutral-400">{effect.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+
+    {/* Penalty */}
+    <div className="rounded-2xl border border-amber-400/20 bg-amber-500/[0.04] px-4 py-3">
+      <p className="text-xs font-semibold text-amber-200">⚡ Luật phạt trang phục (tùy chọn)</p>
+      <p className="mt-1 text-[11px] leading-relaxed text-neutral-300">
+        Khi bật trong Thiết lập, nếu bạn chọn <strong className="text-white">"Bỏ qua"</strong> thẻ bài, bạn phải cởi 1 món đồ hợp lệ để chuộc lỗi.
+      </p>
+    </div>
+  </div>
+);
+
+const RewardsTab: React.FC = () => (
+  <div className="space-y-4">
+    {/* Star wallet */}
+    <SectionCard eyebrow="Ví sao cá nhân" title="Hoàn thành thẻ → Nhận Sao vào ví" description="Mỗi thẻ hoàn thành tặng số sao bằng cấp độ sao của thẻ đó. Dùng sao để kích hoạt kỹ năng chiến thuật." accentColor="#f59e0b">
+      <div className="flex items-center justify-center gap-6 py-3">
+        <div className="flex flex-col items-center">
+          <span className="text-3xl">⭐</span>
+          <p className="mt-1 text-xs font-bold text-amber-200">Ví Sao</p>
+          <p className="text-[10px] text-neutral-400">Tích lũy mỗi lượt</p>
+        </div>
+        <div className="h-12 w-px bg-white/10" />
+        <div className="space-y-1 text-xs text-neutral-300">
+          <p>Thẻ ⭐1 → nhận <strong className="text-white">1 sao</strong></p>
+          <p>Thẻ ⭐3 → nhận <strong className="text-white">3 sao</strong></p>
+          <p>Thẻ ⭐5 → nhận <strong className="text-white">5 sao</strong></p>
+        </div>
+      </div>
+    </SectionCard>
+
+    {/* Two skills */}
+    <div className="grid gap-3 sm:grid-cols-2">
+      {/* Reroll */}
+      <div className="rounded-2xl border border-amber-400/25 bg-amber-500/[0.05] p-4">
+        <div className="mb-3 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15">
+            <span className="text-xl">🎲</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-amber-200">Đổi Bài</p>
+            <p className="text-[10px] font-bold text-amber-400">Chi phí: 8 ⭐</p>
+          </div>
+        </div>
+        <p className="text-xs leading-relaxed text-neutral-300">
+          Rút lá bài không ưng? Tiêu <strong className="text-white">8 sao</strong> để đổi ngay lá khác mà không bị tính "Bỏ qua" hay bị phạt.
+        </p>
+      </div>
+
+      {/* Difficulty Boost */}
+      <div className="rounded-2xl border border-rose-400/25 bg-rose-500/[0.05] p-4">
+        <div className="mb-3 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-500/15">
+            <span className="text-xl">🔥</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-rose-200">Tăng Nhiệt</p>
+            <p className="text-[10px] font-bold text-rose-400">Chi phí: 10 ⭐</p>
+          </div>
+        </div>
+        <p className="text-xs leading-relaxed text-neutral-300">
+          Tiêu <strong className="text-white">10 sao</strong> để lượt rút kế tiếp nhảy vọt lên độ khó cao nhất. Ép bàn chơi xuất hiện bài nồng cháy và táo bạo!
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+const ConsentTab: React.FC = () => (
+  <div className="space-y-4">
+    <SectionCard eyebrow="Nguyên tắc vàng" title="Bỏ qua hoặc Dừng — bất cứ lúc nào" description="Không ai bị ép buộc. Mọi hành động đều tự nguyện, có thể đổi ý mà không cần giải thích.">
+      <ConsentGraphic />
+    </SectionCard>
+
+    {/* Consent rules */}
+    <div className="space-y-2">
+      {[
+        {
+          icon: '🛑',
+          title: 'Quyền dừng tuyệt đối',
+          desc: 'Bất kỳ lúc nào, bất kỳ ai cũng có thể nói "Dừng" hoặc bấm nút Bỏ qua mà không cần giải thích lý do.',
+          color: '#fb7185',
+        },
+        {
+          icon: '🔒',
+          title: 'Chế độ riêng tư (Privacy Mode)',
+          desc: 'Nội dung thẻ bị làm mờ mặc định. Người rút thẻ chạm để xem trước, đánh giá rồi mới đọc to cho đối phương.',
+          color: '#60a5fa',
+        },
+        {
+          icon: '🤝',
+          title: 'Xác nhận đồng thuận chuyển giai đoạn',
+          desc: 'Khi hoàn thành 100% Standard, CẢ HAI phải bấm "Đồng ý" thì mới mở khóa bộ bài Position.',
+          color: '#fcd34d',
+        },
+        {
+          icon: '💚',
+          title: 'An toàn cảm xúc & cơ thể',
+          desc: 'Không bao giờ ép đối phương trả lời bí mật nhạy cảm hay thực hiện hành động vượt giới hạn.',
+          color: '#34d399',
+        },
+      ].map((rule) => (
+        <div key={rule.title} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 text-lg">{rule.icon}</span>
+            <div>
+              <p className="text-xs font-bold" style={{ color: rule.color }}>
+                {rule.title}
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-neutral-300">{rule.desc}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Game end conditions */}
+    <SectionCard eyebrow="Kết thúc ván" title="4 cách kết thúc trò chơi" accentColor="#34d399">
+      <div className="space-y-1.5">
+        {[
+          { icon: '🏆', text: 'Rút trúng lá bài Have Sex (✦10) — đỉnh cao thăng hoa' },
+          { icon: '💗', text: 'Hoàn thành 100% Tim Hồng và chọn dừng lại (không vào Position)' },
+          { icon: '🎯', text: 'Đạt đủ số vòng mục tiêu đã cài trong Thiết lập' },
+          { icon: '⏹️', text: 'Người chơi chủ động bấm nút "Kết thúc ván" bất cứ lúc nào' },
+        ].map((item) => (
+          <div key={item.text} className="flex items-center gap-2.5 rounded-lg bg-black/15 px-3 py-2">
+            <span className="text-sm">{item.icon}</span>
+            <p className="text-[11px] text-neutral-300">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+
+    {/* Bottom consent banner */}
+    <div className="rounded-2xl border border-emerald-400/25 bg-emerald-500/[0.06] px-4 py-3.5">
+      <p className="text-center text-xs leading-relaxed text-emerald-100/90 sm:text-sm">
+        <strong className="font-semibold text-emerald-200">Nghe "Dừng" là dừng ngay.</strong>{' '}
+        Không quay phim, chụp ảnh hoặc chia sẻ nội dung riêng tư nếu chưa được đồng ý rõ ràng.
+      </p>
+    </div>
+  </div>
+);
+
+/* ─────────────── Main Modal ─────────────── */
 
 export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -213,6 +771,20 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
     };
   }, [onClose]);
 
+  const handleTabChange = (tabId: TabId) => {
+    setActiveTab(tabId);
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const TAB_CONTENT: Record<TabId, React.ReactNode> = {
+    overview: <OverviewTab />,
+    levels: <LevelsTab />,
+    progression: <ProgressionTab />,
+    wardrobe: <WardrobeTab />,
+    rewards: <RewardsTab />,
+    consent: <ConsentTab />,
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -235,39 +807,80 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.97, y: 10 }}
         transition={{ duration: 0.24, ease: 'easeOut' }}
-        className="relative my-auto max-h-[calc(100svh-1.5rem)] w-full max-w-3xl overflow-y-auto overscroll-contain rounded-[28px] border border-rose-400/25 bg-[#120c0f]/98 text-left text-white shadow-[0_28px_90px_rgba(0,0,0,0.72)]"
+        className="relative my-auto flex max-h-[calc(100svh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] border border-rose-400/25 bg-[#120c0f]/[0.98] text-left text-white shadow-[0_28px_90px_rgba(0,0,0,0.72)]"
       >
-        <header className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-[#120c0f]/95 px-5 py-4 backdrop-blur-xl sm:px-7 sm:py-5">
+        {/* ── Header ── */}
+        <header className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-white/10 bg-[#120c0f]/95 px-5 py-4 backdrop-blur-xl sm:px-7 sm:py-5">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-rose-400/30 bg-rose-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-rose-200">18+ · 2 người · tự nguyện</span>
-              <span className="text-[10px] text-neutral-500">Đọc trong khoảng 15 giây</span>
+              <span className="rounded-full border border-rose-400/30 bg-rose-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-rose-200">
+                18+ · 2 người · tự nguyện
+              </span>
             </div>
-            <h2 id="rules-title" className="font-serif-romantic text-2xl font-bold text-white sm:text-3xl">Cách chơi</h2>
-            <p id="rules-description" className="mt-1 max-w-xl text-xs leading-relaxed text-neutral-400 sm:text-sm">Rút thẻ, hoàn thành, tăng thân mật và đổi lượt.</p>
+            <h2 id="rules-title" className="font-serif-romantic text-2xl font-bold text-white sm:text-3xl">
+              Cách chơi & Luật chơi
+            </h2>
+            <p id="rules-description" className="mt-1 max-w-xl text-xs leading-relaxed text-neutral-400 sm:text-sm">
+              Toàn bộ hướng dẫn, hệ thống tiến trình, trang phục, kỹ năng và nguyên tắc đồng thuận.
+            </p>
           </div>
-
-          <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Đóng luật chơi" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-400 transition hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400">
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng luật chơi"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-400 transition hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+          >
             <VectorClose />
           </button>
         </header>
 
-        <main className="space-y-4 px-5 py-5 sm:px-7 sm:py-6">
-          <RuleSection eyebrow="01 · Một lượt" title="Rút → Làm → Tăng → Đổi"><TurnFlowGraphic /></RuleSection>
-          <RuleSection eyebrow="02 · Chọn cách chơi" title="Truth hoặc Dare"><TruthDareGraphic /></RuleSection>
-          <RuleSection eyebrow="03 · Standard" title="Làm đầy trái tim hồng" description="Hoàn thành thẻ để tăng Intimacy từ 0% đến 100%."><HeartProgressGraphic /></RuleSection>
-          <RuleSection eyebrow="04 · Độ nóng" title="Sao tăng dần theo hành trình" description="Standard dùng 1–5 sao. Position tiếp tục từ 6–10."><StarJourneyGraphic /></RuleSection>
-          <RuleSection eyebrow="05 · Trang phục" title="Game tự theo dõi trạng thái của cả hai" description="Chỉ những thẻ phù hợp với trang phục hiện tại mới được đưa ra."><ClothingGraphic /></RuleSection>
-          <RuleSection eyebrow="06 · Mở Position" title="Ba điều kiện, một bước chuyển"><PositionUnlockGraphic /></RuleSection>
-          <RuleSection eyebrow="07 · Quyền lựa chọn" title="Không muốn làm thì bỏ qua" description="Mỗi người có thể dừng hoặc đổi ý bất cứ lúc nào, không cần giải thích."><ConsentGraphic /></RuleSection>
-
-          <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/[0.05] px-4 py-3">
-            <p className="text-center text-xs leading-relaxed text-emerald-100/85 sm:text-sm"><strong className="font-semibold text-emerald-200">Nghe “Dừng” là dừng ngay.</strong>{' '}Không quay phim, chụp ảnh hoặc chia sẻ nội dung riêng tư nếu chưa được đồng ý rõ ràng.</p>
+        {/* ── Tab Navigation ── */}
+        <nav className="shrink-0 border-b border-white/[0.06] bg-[#120c0f]/80 backdrop-blur-sm" aria-label="Mục lục luật chơi">
+          <div className="flex gap-0.5 overflow-x-auto px-3 py-2 sm:justify-center sm:px-5">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabChange(tab.id)}
+                className={`relative flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-[11px] font-semibold transition-all duration-200 sm:text-xs ${
+                  activeTab === tab.id
+                    ? 'bg-rose-500/15 text-rose-200 shadow-[0_0_12px_rgba(251,113,133,0.12)]'
+                    : 'text-neutral-500 hover:bg-white/[0.04] hover:text-neutral-300'
+                }`}
+                aria-pressed={activeTab === tab.id}
+              >
+                <span className="text-sm">{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
           </div>
-        </main>
+        </nav>
 
-        <footer className="sticky bottom-0 border-t border-white/10 bg-[#120c0f]/95 px-5 py-4 backdrop-blur-xl sm:px-7">
-          <button type="button" onClick={onClose} className="mx-auto flex w-full max-w-sm items-center justify-center gap-2 rounded-full bg-gold-gradient px-5 py-3 text-sm font-bold text-neutral-950 shadow-[0_0_24px_rgba(212,175,55,0.24)] transition hover:shadow-[0_0_30px_rgba(255,107,157,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300">
+        {/* ── Scrollable Content ── */}
+        <div ref={contentRef} className="flex-1 overflow-y-auto overscroll-contain">
+          <main className="px-5 py-5 sm:px-7 sm:py-6">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+              >
+                {TAB_CONTENT[activeTab]}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
+
+        {/* ── Footer ── */}
+        <footer className="shrink-0 border-t border-white/10 bg-[#120c0f]/95 px-5 py-4 backdrop-blur-xl sm:px-7">
+          <button
+            type="button"
+            onClick={onClose}
+            className="mx-auto flex w-full max-w-sm items-center justify-center gap-2 rounded-full bg-gold-gradient px-5 py-3 text-sm font-bold text-neutral-950 shadow-[0_0_24px_rgba(212,175,55,0.24)] transition hover:shadow-[0_0_30px_rgba(255,107,157,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+          >
             <VectorCheck />
             <span>Đã hiểu, bắt đầu chơi</span>
           </button>
