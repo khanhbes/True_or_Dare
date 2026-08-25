@@ -5,11 +5,27 @@ param(
 
 $ErrorActionPreference = "Stop"
 $projectRoot = $PSScriptRoot
-$repoRoot = (& git -C $projectRoot rev-parse --show-toplevel).Trim()
+$candidateRepoRoot = ((Resolve-Path -LiteralPath (Join-Path $projectRoot "..")).Path).Replace("\", "/")
+$repoRootOutput = & git -c "safe.directory=$candidateRepoRoot" -C $projectRoot rev-parse --show-toplevel
+$repoRoot = if ($null -eq $repoRootOutput) { "" } else { $repoRootOutput.Trim() }
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($repoRoot)) {
     throw "Khong tim thay Git repository cha cua: $projectRoot"
 }
-$projectPath = [System.IO.Path]::GetRelativePath($repoRoot, $projectRoot).Replace("\", "/")
+$repoRoot = $repoRoot.Replace("\", "/")
+$normalizedProjectRoot = $projectRoot.Replace("\", "/").TrimEnd("/")
+if (-not $normalizedProjectRoot.StartsWith("$repoRoot/", [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Web app khong nam trong Git repository cha: $projectRoot"
+}
+$projectPath = $normalizedProjectRoot.Substring($repoRoot.Length).TrimStart("/")
+
+function Invoke-Git {
+    param(
+        [Parameter(ValueFromRemainingArguments)]
+        [string[]]$ArgumentList
+    )
+
+    & git -c "safe.directory=$repoRoot" @ArgumentList
+}
 
 function Invoke-NativeCommand {
     param(
@@ -27,7 +43,7 @@ function Invoke-NativeCommand {
 }
 
 function Get-BranchDistance {
-    $raw = (& git rev-list --left-right --count HEAD...origin/main).Trim()
+    $raw = (Invoke-Git rev-list --left-right --count HEAD...origin/main).Trim()
     if ($LASTEXITCODE -ne 0) {
         throw "Khong the so sanh nhanh local voi origin/main."
     }
@@ -44,7 +60,7 @@ function Get-BranchDistance {
 }
 
 function Get-LockFileRevision {
-    $value = & git rev-parse "HEAD:$projectPath/package-lock.json" 2>$null
+    $value = Invoke-Git rev-parse "HEAD:$projectPath/package-lock.json" 2>$null
     if ($LASTEXITCODE -ne 0) {
         return ""
     }
@@ -58,7 +74,7 @@ try {
         throw "Thu muc nay khong phai Git repository: $repoRoot"
     }
 
-    $branch = (& git branch --show-current).Trim()
+    $branch = (Invoke-Git branch --show-current).Trim()
     if ($LASTEXITCODE -ne 0 -or $branch -ne "main") {
         throw "Can chay tren branch main. Branch hien tai: '$branch'."
     }
@@ -67,7 +83,7 @@ try {
     Write-Host "Git repo: $repoRoot"
     Write-Host "Web app: $projectRoot"
 
-    $changes = @(& git status --short)
+    $changes = @(Invoke-Git status --short)
     if ($LASTEXITCODE -ne 0) {
         throw "Khong the doc git status."
     }
@@ -89,7 +105,10 @@ try {
     }
 
     Write-Host "Dang kiem tra origin/main..." -ForegroundColor Cyan
-    Invoke-NativeCommand git fetch origin main --prune
+    Invoke-Git fetch origin main --prune
+    if ($LASTEXITCODE -ne 0) {
+        throw "Lenh that bai ($LASTEXITCODE): git fetch origin main --prune"
+    }
     $distance = Get-BranchDistance
 
     if ($distance.Ahead -gt 0 -and $distance.Behind -gt 0) {
@@ -107,7 +126,10 @@ try {
 
     $oldLockRevision = Get-LockFileRevision
     Write-Host "Dang fast-forward $($distance.Behind) commit..." -ForegroundColor Cyan
-    Invoke-NativeCommand git pull --ff-only origin main
+    Invoke-Git pull --ff-only origin main
+    if ($LASTEXITCODE -ne 0) {
+        throw "Lenh that bai ($LASTEXITCODE): git pull --ff-only origin main"
+    }
     $newLockRevision = Get-LockFileRevision
 
     if ($oldLockRevision -ne $newLockRevision) {
@@ -115,7 +137,7 @@ try {
         Invoke-NativeCommand npm ci
     }
 
-    $latestCommit = (& git log -1 --pretty=format:"%h %s").Trim()
+    $latestCommit = (Invoke-Git log -1 --pretty=format:"%h %s").Trim()
     if ($LASTEXITCODE -ne 0) {
         throw "Da pull xong nhung khong doc duoc commit moi nhat."
     }
