@@ -475,10 +475,17 @@ export interface JourneyCardSelectionResult {
 const getJourneyPool = (options: SelectJourneyCardOptions) => {
   const enabledLevels = new Set(options.levels);
   const excluded = new Set(options.excludedCardIds ?? []);
+  const intimacyMaxStars: DifficultyStars = options.intimacyPercent < 20 ? 3 : options.intimacyPercent < 40 ? 4 : 5;
+  const profileMaxStars = getWardrobeDifficultyProfile(options.outfits).maxStars;
+  // Early Standard remains capped at ⭐3; later intimacy can unlock ⭐4/⭐5
+  // without requiring a manual strip step.
+  const wardrobeMaxStars = options.intimacyPercent < 20
+    ? (profileMaxStars <= 3 ? profileMaxStars : Math.min(profileMaxStars, 5))
+    : Math.max(profileMaxStars, intimacyMaxStars);
   const eligible = options.cards.filter(
     (card) => !excluded.has(card.id)
       && enabledLevels.has(card.level)
-      && deriveDifficultyStars(card) <= getWardrobeDifficultyProfile(options.outfits).maxStars
+      && deriveDifficultyStars(card) <= wardrobeMaxStars
       && isStandardJourneyCardEligible(card, options.actorIndex, options.outfits)
       && isClothingIntensityAllowed(card, options.intimacyPercent)
       && !(getCardClothingFamily(card) === 'both' && options.intimacyPercent < 20),
