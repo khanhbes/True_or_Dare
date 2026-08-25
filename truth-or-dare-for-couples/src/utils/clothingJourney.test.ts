@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createOutfitState, DEFAULT_OUTFITS } from './wardrobe';
-import { clothingEffectFamily, clothingWeight, createClothingJourney, expectedWardrobeProgress, getActiveOpportunity, normalizedWardrobeProgress, resolveClothingOpportunity, wardrobeDifference } from './clothingJourney';
+import { clothingEffectFamily, clothingWeight, createClothingJourney, expectedWardrobeProgress, getActiveOpportunity, getBothRemovalWeight, getWardrobeCatchUpTarget, normalizedWardrobeProgress, resolveClothingOpportunity, wardrobeDifference } from './clothingJourney';
 
 const outfits = [createOutfitState(DEFAULT_OUTFITS[0]), createOutfitState(DEFAULT_OUTFITS[1])] as const;
 
@@ -31,4 +31,11 @@ test('effect family classification supports self, opponent, both and special', (
   assert.equal(clothingEffectFamily({ kind: 'remove_garment', target: 'opponent' }), 'opponent');
   assert.equal(clothingEffectFamily({ kind: 'remove_garment', target: 'both' }), 'both');
   assert.equal(clothingEffectFamily({ kind: 'swap_garments' }), 'special');
+});
+
+test('both-removal weighting follows intimacy bands and wardrobe catch-up uses normalized progress', () => {
+  assert.equal(getBothRemovalWeight(10, outfits), 0);
+  assert.ok(getBothRemovalWeight(30, outfits) > 0);
+  assert.ok(getBothRemovalWeight(90, outfits) > getBothRemovalWeight(30, outfits));
+  assert.equal(getWardrobeCatchUpTarget(outfits), null);
 });

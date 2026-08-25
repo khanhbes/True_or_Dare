@@ -1,7 +1,35 @@
-import { ClothingEffect, OutfitStage, OutfitState, PlayerIndex } from '../types';
+import { ClothingEffect, ClothingFamily, ClothingIntensity, CardItem, OutfitState, PlayerIndex } from '../types';
 import { getOutfitStage, getPresentGarmentSlots } from './wardrobe';
 
 export type ClothingEventType = 'self' | 'opponent' | 'both' | 'choice' | 'challenge' | 'catch_up' | 'special';
+
+export const CLOTHING_INTENSITY_WINDOWS: Record<ClothingIntensity, readonly [number, number]> = {
+  C1: [20, 40], C2: [35, 55], C3: [50, 70], C4: [65, 85], C5: [80, 100],
+};
+
+export const getCardClothingFamily = (card: CardItem): ClothingFamily | null =>
+  card.progression?.clothingFamily ?? clothingEffectFamily(card.clothingEffect);
+
+export const getCardClothingIntensity = (card: CardItem): ClothingIntensity | null => {
+  if (!card.clothingEffect) return null;
+  if (card.progression?.clothingIntensity) return card.progression.clothingIntensity;
+  if (card.level === 'gentle') return 'C1';
+  if (card.level === 'passionate') return card.progression?.difficultyStars && card.progression.difficultyStars >= 4 ? 'C5' : 'C4';
+  return 'C2';
+};
+
+export const isClothingIntensityAllowed = (card: CardItem, intimacy: number): boolean => {
+  const intensity = getCardClothingIntensity(card);
+  if (!intensity) return true;
+  const [min, max] = CLOTHING_INTENSITY_WINDOWS[intensity];
+  return intimacy >= Math.max(0, min - 15) && intimacy <= max + 15;
+};
+
+export const getClothingFamilyCounts = (cards: readonly CardItem[]): Record<ClothingFamily, number> => {
+  const counts = Object.fromEntries(EVENT_TYPES.map((family) => [family, 0])) as Record<ClothingFamily, number>;
+  cards.forEach((card) => { const family = getCardClothingFamily(card); if (family) counts[family] += 1; });
+  return counts;
+};
 
 export interface ClothingOpportunity {
   index: number;
@@ -101,6 +129,20 @@ export const clothingWeight = (state: ClothingJourneyState, intimacy: number, ou
   const active = getActiveOpportunity(state, intimacy);
   const lag = Math.max(0, expectedWardrobeProgress(intimacy) - Math.min(normalizedWardrobeProgress(outfits[0]), normalizedWardrobeProgress(outfits[1])));
   return Math.min(12, (active ? 4 : 1) + Math.min(5, state.pityCounter) + (isCatchUpMode(intimacy, outfits) ? 3 : 0) + Math.floor(lag / 20));
+};
+
+export const getBothRemovalWeight = (intimacy: number, outfits: readonly [OutfitState, OutfitState]): number => {
+  if (intimacy < 20 || outfits.every((outfit) => getPresentGarmentSlots(outfit).length === 0)) return 0;
+  if (intimacy < 40) return 0.15;
+  if (intimacy < 60) return 0.6;
+  if (intimacy < 80) return 1.5;
+  return 2.5;
+};
+
+export const getWardrobeCatchUpTarget = (outfits: readonly [OutfitState, OutfitState]): PlayerIndex | null => {
+  const progress = outfits.map(normalizedWardrobeProgress);
+  if (Math.abs(progress[0] - progress[1]) < 15) return null;
+  return progress[0] < progress[1] ? 0 : 1;
 };
 
 export const clothingEffectFamily = (effect: ClothingEffect | null | undefined): ClothingEventType | null => {

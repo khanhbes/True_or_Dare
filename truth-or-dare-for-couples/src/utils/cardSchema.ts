@@ -1,4 +1,5 @@
 import type { CardItem, LuxuryProgressionConfig, ProgressionConfig } from '../types';
+import { migratePositionCard } from './positionStarMigration';
 
 const CARD_LEVELS = new Set(['gentle', 'intimate', 'passionate']);
 const CARD_TYPES = new Set(['truth', 'dare']);
@@ -69,7 +70,7 @@ export const isStoredCard = (value: unknown): value is CardItem => {
     (position.difficultyStars === undefined || (
       typeof position.difficultyStars === 'number' &&
       Number.isInteger(position.difficultyStars) &&
-      position.difficultyStars >= 1 && position.difficultyStars <= 10
+      position.difficultyStars >= 6 && position.difficultyStars <= 10
     )) &&
     (position.luxuryGain === undefined || (
       typeof position.luxuryGain === 'number' && Number.isFinite(position.luxuryGain) &&
@@ -131,7 +132,12 @@ export const normalizeStoredCard = (card: CardItem): CardItem => {
 export const parseStoredCards = (value: unknown): CardItem[] => {
   if (!Array.isArray(value)) return [];
   const seen = new Set<string>();
-  return value.filter(isStoredCard).map(normalizeStoredCard).filter((card) => {
+  return value.map((entry) => {
+    if (isRecord(entry) && entry.deck === 'position' && isRecord(entry.position)) {
+      try { return migratePositionCard(entry as unknown as CardItem); } catch { return entry; }
+    }
+    return entry;
+  }).filter(isStoredCard).map(normalizeStoredCard).filter((card) => {
     if (seen.has(card.id)) return false;
     seen.add(card.id);
     return true;

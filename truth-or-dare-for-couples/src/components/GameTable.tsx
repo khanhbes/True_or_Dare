@@ -483,6 +483,8 @@ export const GameTable: React.FC<GameTableProps> = ({
       preferredClothingFamily: getActiveOpportunity(clothingJourney, intimacyPercent)?.eventType === 'catch_up'
         ? 'opponent'
         : getActiveOpportunity(clothingJourney, intimacyPercent)?.eventType ?? null,
+      clothingHistory: clothingJourney.history,
+      firstRemoval: clothingJourney.firstRemoval,
     });
 
     if (!selection.card) {
@@ -596,6 +598,8 @@ export const GameTable: React.FC<GameTableProps> = ({
       intimacyPercent,
       config: progressionConfig,
       preferredClothingFamily: getActiveOpportunity(clothingJourney, intimacyPercent)?.eventType ?? null,
+      clothingHistory: clothingJourney.history,
+      firstRemoval: clothingJourney.firstRemoval,
     });
     if (!selection.card) {
       setDrawError('Không còn lá khác phù hợp để đổi. Sao của bạn được giữ nguyên.');
@@ -1294,7 +1298,7 @@ export const GameTable: React.FC<GameTableProps> = ({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={intimacyPercent}
-            className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,#f9a8d4,#fecdd3)] shadow-[0_0_10px_rgba(249,168,212,.25)]"
+            className="absolute inset-y-0 left-0 rounded-full bg-[#f9a8d4] shadow-[0_0_10px_rgba(249,168,212,.25)]"
           />
           {journeyPhase !== 'standard' && (
             <motion.div

@@ -110,10 +110,10 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
               <span className="text-[10px] text-neutral-500">Đọc trước khi bắt đầu</span>
             </div>
             <h2 id="rules-title" className="font-serif-romantic text-2xl font-bold text-amber-300 sm:text-3xl">
-              Cách Chơi & Luật Phạt
+              🎮 Cách Chơi
             </h2>
             <p id="rules-description" className="mt-1 max-w-xl text-xs leading-relaxed text-neutral-400 sm:text-sm">
-              Dành cho hai người trưởng thành, tự nguyện. Hãy thống nhất giới hạn và một từ dừng trước khi chơi.
+              🎴 Rút thẻ → ✅ hoàn thành → ❤️ tăng thân mật → 🔄 đổi lượt. Dành cho hai người trưởng thành, tự nguyện.
             </p>
           </div>
 
@@ -137,7 +137,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
               <div className="pt-0.5">
                 <h3 className="text-sm font-semibold text-white sm:text-base">1. Chuẩn bị cùng nhau</h3>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
-                  Nhập tên, chọn các cấp độ được phép, cách rút bài và trang phục ban đầu cho hai nhân vật. Mỗi ván là một hành trình từ 0–100%; nói rõ điều hai bạn thoải mái, điều không muốn làm và một từ dừng dễ nhớ.
+                  👫 Hai người thay phiên nhau rút Truth hoặc Dare. Truth là trả lời câu hỏi; Dare là thực hiện thử thách.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
                   Chỉ bắt đầu sau khi cả hai đều là người trưởng thành, tự nguyện và đã thống nhất giới hạn.
@@ -152,7 +152,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
               <div className="pt-0.5">
                 <h3 className="text-sm font-semibold text-white sm:text-base">2. Trang phục theo từng lớp</h3>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
-                  Hình nhân vật phản ánh đúng những món còn lại trong ván. Áo và quần ngoài được bỏ trước; áo lót chỉ chọn được khi không còn áo, quần lót chỉ chọn được khi không còn quần.
+                  👕 Trang phục thay đổi dần qua các thẻ. Game theo dõi trạng thái của cả hai và chỉ đưa ra thẻ phù hợp.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-amber-200/75">
                   Nhân vật luôn là hình minh họa kín đáo, kể cả khi không còn món đồ đã chọn.
@@ -167,7 +167,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
               <div className="pt-0.5">
                 <h3 className="text-sm font-semibold text-white sm:text-base">3. Mỗi lượt chơi</h3>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
-                  Đến lượt ai, người đó rút bài phù hợp với nhãn lượt Nam, lượt Nữ hoặc Cả hai. Người rút luôn là người nhận sao, điểm hoàn thành và luật phạt. Bài bắt đầu từ 1★ và tăng dần xác suất xuất hiện bài nhiều sao hơn khi mức thân mật tăng.
+                  ❤️ Hoàn thành thẻ làm tăng Intimacy từ 0% đến 100%. Mức sao và độ khó tăng dần theo hành trình.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-rose-200/75">
                   Hoàn thành bài sẽ cộng điểm theo số sao. Cởi đồ do hiệu ứng của thẻ có thưởng thêm; bỏ qua và cởi đồ do luật phạt không cộng điểm. Bỏ qua được xử lý theo luật phạt đã cấu hình; cả hai luôn có thể dừng mà không cần giải thích.
@@ -216,10 +216,10 @@ export const RulesModal: React.FC<RulesModalProps> = ({ onClose }) => {
               <div className="pt-0.5">
                 <h3 className="text-sm font-semibold text-white sm:text-base">5. Tim Luxury và bộ Tư thế</h3>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-300 sm:text-sm">
-                  Khi tim hồng đạt 100%, bộ bài thường dừng. Trước khi xác nhận tiếp tục, cả hai bỏ từng món trang phục đã chọn theo đúng thứ tự lớp; bước chuẩn bị này không cộng sao, điểm hay luật phạt. Tim hồng được giữ đầy bên dưới và tim Luxury bắt đầu từ 0%; bài Tư thế trải từ 1★ đến 10★ và khó dần theo tiến độ.
+                  💗 Khi Standard đạt 100%, nếu trang phục chưa đủ điều kiện game tiếp tục Standard nóng hơn. Khi cả hai sẵn sàng và cùng đồng ý, Position Deck bắt đầu.
                 </p>
                 <p className="mt-2 text-[11px] leading-relaxed text-blue-200/75">
-                  Lá Have Sex có số sao do quản trị cấu hình và có xác suất riêng mặc định 5% từ 80% Luxury; ở 100% game bắt buộc chọn một lá Have Sex hợp lệ nếu có. Mọi lá vẫn là đề xuất có thể bỏ qua; xem rồi xác nhận lá này sẽ kết thúc ván, không tạo nghĩa vụ phải thực hiện.
+                  ⭐ Standard dùng ⭐1–⭐5. 💎 Position dùng ⭐6–⭐10. Sao mô tả độ nóng của thẻ, không đổi màu trái tim.
                 </p>
               </div>
             </li>

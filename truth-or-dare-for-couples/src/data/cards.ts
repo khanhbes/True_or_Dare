@@ -1,4 +1,5 @@
 import { CardItem, DifficultyStars } from '../types';
+import { migratePositionCards } from '../utils/positionStarMigration';
 
 const BASE_CARDS: CardItem[] = [
   // ==================== 🌸 NHẸ NHÀNG (GENTLE) - TRUTH ====================
@@ -930,7 +931,7 @@ const STAR_BY_ID = new Map<string, DifficultyStars>(
   ),
 );
 
-export const INITIAL_CARDS: CardItem[] = BASE_CARDS.map((card) => {
+export const INITIAL_CARDS: CardItem[] = migratePositionCards(BASE_CARDS).map((card) => {
   if (card.deck === 'position') return card;
   return {
     ...card,

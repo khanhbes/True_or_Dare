@@ -3,6 +3,7 @@ export type CardType = 'truth' | 'dare';
 export type PlayerIndex = 0 | 1;
 export type CardDeck = 'standard' | 'position';
 export type DifficultyStars = 1 | 2 | 3 | 4 | 5;
+/** Runtime Position stars are 6–10; 1–5 remain in this type only for legacy save migration. */
 export type PositionDifficultyStars = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 export type TurnAudience = 'male' | 'female' | 'both';
 /** @deprecated Hydrated for old backups only. New writes use TurnAudience. */
@@ -16,6 +17,8 @@ export type GarmentSlot = 'shirt' | 'pants' | 'bra' | 'underwear';
 export type OutfitStage = 'dressed' | 'underwear_only' | 'empty';
 export type StandardRemovalTarget = 'self' | 'opponent';
 export type PositionRemovalTarget = 'male' | 'female' | 'both';
+export type ClothingFamily = 'self' | 'opponent' | 'both' | 'choice' | 'challenge' | 'catch_up' | 'special';
+export type ClothingIntensity = 'C1' | 'C2' | 'C3' | 'C4' | 'C5';
 export type GameEndReason = 'pink_complete' | 'have_sex' | 'no_cards' | 'manual';
 
 export interface GarmentConfig {
@@ -56,6 +59,10 @@ export interface CardProgressionMetadata {
   intimacyGain?: number;
   actorStages?: OutfitStage[];
   partnerStages?: OutfitStage[];
+  /** Explicit clothing metadata; legacy cards may omit it and use a safe derived fallback. */
+  clothingFamily?: ClothingFamily;
+  clothingIntensity?: ClothingIntensity;
+  clothingCooldownFamily?: ClothingFamily;
 }
 
 export interface PositionMetadata {

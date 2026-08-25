@@ -16,10 +16,10 @@ import {
 } from '../types';
 import { isCardEligibleForOutfits } from './cardSelection';
 import { getOutfitStage } from './wardrobe';
-import { ClothingEventType, clothingEffectFamily } from './clothingJourney';
+import { ClothingEventType, clothingEffectFamily, getCardClothingFamily, getWardrobeCatchUpTarget, isClothingIntensityAllowed } from './clothingJourney';
 
 export const DIFFICULTY_STARS = [1, 2, 3, 4, 5] as const;
-export const POSITION_DIFFICULTY_STARS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+export const POSITION_DIFFICULTY_STARS = [6, 7, 8, 9, 10] as const;
 export const STANDARD_CARD_TYPES = ['truth', 'dare'] as const;
 
 export type WardrobeDifficultyTier = 'dressed' | 'underwear_only' | 'empty';
@@ -106,13 +106,13 @@ const positionWeights = (
 
 export const DEFAULT_LUXURY_PROGRESSION_CONFIG: Readonly<LuxuryProgressionConfig> = {
   bands: [
-    { minPercent: 0, maxPercent: 19, starWeights: positionWeights({ 1: 50, 2: 30, 3: 20 }) },
-    { minPercent: 20, maxPercent: 39, starWeights: positionWeights({ 2: 20, 3: 40, 4: 25, 5: 15 }) },
-    { minPercent: 40, maxPercent: 59, starWeights: positionWeights({ 3: 10, 4: 25, 5: 35, 6: 20, 7: 10 }) },
-    { minPercent: 60, maxPercent: 79, starWeights: positionWeights({ 5: 10, 6: 25, 7: 35, 8: 20, 9: 10 }) },
-    { minPercent: 80, maxPercent: 99, starWeights: positionWeights({ 5: 5, 6: 10, 7: 20, 8: 25, 9: 35, 10: 5 }) },
+    { minPercent: 0, maxPercent: 19, starWeights: positionWeights({ 6: 70, 7: 30 }) },
+    { minPercent: 20, maxPercent: 39, starWeights: positionWeights({ 6: 25, 7: 55, 8: 20 }) },
+    { minPercent: 40, maxPercent: 59, starWeights: positionWeights({ 7: 25, 8: 55, 9: 20 }) },
+    { minPercent: 60, maxPercent: 79, starWeights: positionWeights({ 8: 25, 9: 60, 10: 15 }) },
+    { minPercent: 80, maxPercent: 99, starWeights: positionWeights({ 9: 60, 10: 40 }) },
   ],
-  starGains: { 1: 6, 2: 7, 3: 8, 4: 9, 5: 10, 6: 11, 7: 12, 8: 13, 9: 14, 10: 0 },
+  starGains: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 6, 7: 8, 8: 10, 9: 12, 10: 0 },
   finalCardChance: 5,
 };
 
@@ -228,13 +228,11 @@ export const deriveDifficultyStars = (card: CardItem): DifficultyStars => {
 
 export const derivePositionDifficultyStars = (card: CardItem): PositionDifficultyStars => {
   const explicit = card.position?.difficultyStars;
-  if (explicit && POSITION_DIFFICULTY_STARS.includes(explicit)) return explicit;
-  const legacy = card.progression?.difficultyStars;
-  if (legacy && POSITION_DIFFICULTY_STARS.includes(legacy)) return legacy;
+  if (explicit && POSITION_DIFFICULTY_STARS.includes(explicit as 6 | 7 | 8 | 9 | 10)) return explicit as PositionDifficultyStars;
   if (card.position?.family === 'have_sex') return 10;
-  if (card.position?.family === 'handjob') return 7;
-  if (card.position?.family === 'blowjob') return 5;
-  return 3;
+  if (card.position?.family === 'handjob') return 8;
+  if (card.position?.family === 'blowjob') return 7;
+  return 6;
 };
 
 export const getPositionLuxuryGain = (
@@ -398,10 +396,12 @@ const starWeightsForAvailable = (
   availableStars: readonly DifficultyStars[],
   band: ProgressionBand,
   outfits: readonly [OutfitState, OutfitState],
+  intimacyPercent: number,
   difficultyBoost = false,
 ): Record<DifficultyStars, number> => {
   const profile = getWardrobeDifficultyProfile(outfits);
-  const cappedStars = availableStars.filter((star) => star <= profile.maxStars);
+  const intimacyMaxStars: DifficultyStars = intimacyPercent < 20 ? 3 : intimacyPercent < 40 ? 4 : 5;
+  const cappedStars = availableStars.filter((star) => star <= Math.max(profile.maxStars, intimacyMaxStars));
   const bandWeights = normalize(DIFFICULTY_STARS, Object.fromEntries(
     DIFFICULTY_STARS.map((star) => [
       star,
@@ -411,7 +411,9 @@ const starWeightsForAvailable = (
   const wardrobeWeights = normalize(DIFFICULTY_STARS, Object.fromEntries(
     DIFFICULTY_STARS.map((star) => [
       star,
-      cappedStars.includes(star) ? profile.weights[star] : 0,
+      cappedStars.includes(star)
+        ? Math.max(profile.weights[star], intimacyPercent >= 60 ? band.starWeights[star] : 0)
+        : 0,
     ]),
   ) as Record<DifficultyStars, number>);
   const combined = normalize(DIFFICULTY_STARS, Object.fromEntries(
@@ -452,6 +454,9 @@ export interface SelectJourneyCardOptions {
   difficultyBoost?: boolean;
   /** Soft preference supplied by the clothing journey; falls back to the full eligible pool. */
   preferredClothingFamily?: ClothingEventType | null;
+  /** Session history used to avoid repeating one clothing family. */
+  clothingHistory?: readonly ClothingEventType[];
+  firstRemoval?: readonly [boolean, boolean];
   random?: () => number;
 }
 
@@ -471,15 +476,31 @@ const getJourneyPool = (options: SelectJourneyCardOptions) => {
     (card) => !excluded.has(card.id)
       && enabledLevels.has(card.level)
       && deriveDifficultyStars(card) <= getWardrobeDifficultyProfile(options.outfits).maxStars
-      && isStandardJourneyCardEligible(card, options.actorIndex, options.outfits),
+      && isStandardJourneyCardEligible(card, options.actorIndex, options.outfits)
+      && isClothingIntensityAllowed(card, options.intimacyPercent)
+      && !(getCardClothingFamily(card) === 'both' && options.intimacyPercent < 20),
   );
-  const familyPool = options.preferredClothingFamily
-    ? eligible.filter((card) => clothingEffectFamily(card.clothingEffect) === options.preferredClothingFamily)
+  const unseenFamily = options.clothingHistory && options.intimacyPercent >= 20
+    ? eligible.find((card) => getCardClothingFamily(card) && !options.clothingHistory!.includes(getCardClothingFamily(card)!))
+    : undefined;
+  const familyPreference = options.preferredClothingFamily ?? (unseenFamily ? getCardClothingFamily(unseenFamily) : null);
+  const familyPool = familyPreference
+    ? eligible.filter((card) => getCardClothingFamily(card) === familyPreference)
     : eligible;
   const familyCandidates = familyPool.length > 0 ? familyPool : eligible;
-  const pool = options.preferredType
-    ? familyCandidates.filter((card) => card.type === options.preferredType)
+  const missingFirstRemoval = options.firstRemoval?.findIndex((removed) => !removed);
+  const balancePool = missingFirstRemoval !== undefined && missingFirstRemoval >= 0
+    ? familyCandidates.filter((card) => {
+      const family = getCardClothingFamily(card);
+      if (family === 'both') return true;
+      const target = family === 'opponent' ? (options.actorIndex === 0 ? 1 : 0) : family === 'self' ? options.actorIndex : null;
+      return target === missingFirstRemoval;
+    })
     : familyCandidates;
+  const balancedCandidates = balancePool.length > 0 ? balancePool : familyCandidates;
+  const pool = options.preferredType
+    ? balancedCandidates.filter((card) => card.type === options.preferredType)
+    : balancedCandidates;
   const used = new Set(options.usedCardIds);
   let candidates = pool.filter((card) => !used.has(card.id));
   const didResetPool = pool.length > 0 && candidates.length === 0;
@@ -516,7 +537,7 @@ const probabilitiesForCandidates = (
       candidates.some((card) => card.type === type && deriveDifficultyStars(card) === star),
     );
     if (availableStars.length === 0) continue;
-    const conditional = starWeightsForAvailable(availableStars, band, outfits, difficultyBoost);
+    const conditional = starWeightsForAvailable(availableStars, band, outfits, intimacyPercent, difficultyBoost);
     for (const star of DIFFICULTY_STARS) stars[star] += types[type] * conditional[star];
   }
   return { types, stars };
@@ -548,6 +569,14 @@ export const getJourneyAvailableTypes = (
     options.outfits,
     options.difficultyBoost ?? false,
   );
+  if (import.meta.env?.DEV) {
+    console.debug('[standard-star-draw]', {
+      intimacy: options.intimacyPercent,
+      candidates: candidates.length,
+      candidateStars: Object.fromEntries(DIFFICULTY_STARS.map((star) => [star, candidates.filter((card) => deriveDifficultyStars(card) === star).length])),
+      weights: probabilities.stars,
+    });
+  }
   return STANDARD_CARD_TYPES.filter((type) =>
     probabilities.types[type] > 0 && candidates.some((card) => card.type === type),
   );
@@ -610,6 +639,7 @@ export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCar
     availableStars,
     band,
     options.outfits,
+    options.intimacyPercent,
     options.difficultyBoost ?? false,
   );
   const selectedStar = chooseWeighted(availableStars, conditionalStars, random);
@@ -691,7 +721,9 @@ const luxuryProbabilitiesForCandidates = (
   );
   const nonFinalRaw = positionWeights({});
   for (const star of nonFinalStars) nonFinalRaw[star] = band.starWeights[star];
-  const stars = normalize(POSITION_DIFFICULTY_STARS, nonFinalRaw);
+  const stars = positionWeights({}) as Record<PositionDifficultyStars, number>;
+  const normalizedStars = normalize(POSITION_DIFFICULTY_STARS, nonFinalRaw);
+  for (const star of POSITION_DIFFICULTY_STARS) stars[star] = normalizedStars[star];
   const finalHasPositiveWeight = finalCandidates.some(
     (card) => band.starWeights[derivePositionDifficultyStars(card)] > 0,
   );
