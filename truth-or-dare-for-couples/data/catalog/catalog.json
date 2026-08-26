@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceCreatedAt": "2026-08-23T16:15:00.547Z",
-  "sourceDatasetRevision": 106,
+  "sourceCreatedAt": "2026-08-26T10:36:48.476Z",
+  "sourceDatasetRevision": 107,
   "systemCardCount": 108,
   "visibleCardCount": 217,
   "cards": [
@@ -15,7 +15,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -29,7 +40,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -43,7 +65,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -57,7 +90,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -71,7 +115,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -85,7 +140,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -99,7 +165,18 @@
       "position": null,
       "progression": {
         "audience": "current",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -113,7 +190,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -127,7 +215,18 @@
       "position": null,
       "progression": {
         "audience": "current",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -141,7 +240,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -155,7 +265,18 @@
       "position": null,
       "progression": {
         "audience": "current",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -169,7 +290,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -183,7 +315,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -197,7 +340,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -211,7 +365,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -225,7 +390,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -239,7 +415,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -253,7 +440,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -267,7 +465,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -281,7 +490,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -295,7 +515,18 @@
       "position": null,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "truth"
     },
@@ -309,7 +540,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 1,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -323,7 +565,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 1,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -337,7 +590,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 1,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -351,7 +615,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 1,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -369,7 +644,18 @@
         "difficultyStars": 1,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -383,10 +669,21 @@
       "phaseTag": "gentle",
       "heat": 2,
       "progression": {
-        "difficultyStars": 1,
+        "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -399,10 +696,21 @@
       "phaseTag": "gentle",
       "heat": 2,
       "progression": {
-        "difficultyStars": 1,
+        "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -416,7 +724,18 @@
       "heat": 2,
       "progression": {
         "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -429,10 +748,21 @@
       "phaseTag": "gentle",
       "heat": 2,
       "progression": {
-        "difficultyStars": 1,
+        "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -448,7 +778,18 @@
         "difficultyStars": 1,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "illustrationOverride": true
     },
@@ -463,7 +804,18 @@
         "difficultyStars": 1,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -476,10 +828,21 @@
       "content": "Bạn thích đối phương nấu cho mình món gì nhất?",
       "icon": "couple_feeding",
       "progression": {
-        "difficultyStars": 1,
+        "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -497,7 +860,18 @@
       "heat": 2,
       "progression": {
         "audience": "current",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -511,10 +885,21 @@
       "phaseTag": "gentle",
       "heat": 2,
       "progression": {
-        "difficultyStars": 1,
+        "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -530,7 +915,18 @@
         "difficultyStars": 1,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -544,7 +940,18 @@
       "heat": 2,
       "progression": {
         "audience": "current",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -555,7 +962,18 @@
       "icon": "whisper",
       "progression": {
         "audience": "current",
-        "difficultyStars": 1
+        "difficultyStars": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -569,10 +987,21 @@
       "content": "Hai bạn hãy ôm nhau trong 20 giây",
       "icon": "kiss_mistletoe",
       "progression": {
-        "difficultyStars": 1,
+        "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -591,7 +1020,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 2,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -605,7 +1045,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 2,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -619,7 +1070,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 2,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -633,7 +1095,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 2,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -652,7 +1125,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 2,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -666,7 +1150,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 2,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -680,7 +1175,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 2,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -697,7 +1203,18 @@
         "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -713,7 +1230,18 @@
         "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -729,7 +1257,18 @@
         "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -742,7 +1281,18 @@
         "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -756,7 +1306,18 @@
       "icon": "heart",
       "progression": {
         "audience": "both",
-        "difficultyStars": 2
+        "difficultyStars": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -770,7 +1331,18 @@
       "icon": "kiss_air",
       "progression": {
         "audience": "both",
-        "difficultyStars": 2
+        "difficultyStars": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -787,7 +1359,18 @@
         "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -806,7 +1389,18 @@
         "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "timerSeconds": 19
     },
@@ -823,7 +1417,18 @@
         "difficultyStars": 2,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "timerSeconds": 20
     },
@@ -839,7 +1444,18 @@
       "heat": 2,
       "progression": {
         "audience": "current",
-        "difficultyStars": 2
+        "difficultyStars": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -853,7 +1469,18 @@
       "heat": 2,
       "progression": {
         "audience": "current",
-        "difficultyStars": 2
+        "difficultyStars": 3,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "illustrationOverride": true,
       "timerSeconds": 20
@@ -869,7 +1496,18 @@
       "heat": 2,
       "progression": {
         "audience": "current",
-        "difficultyStars": 2
+        "difficultyStars": 3,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -883,10 +1521,21 @@
       "phaseTag": "gentle",
       "heat": 2,
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -898,7 +1547,18 @@
       "icon": "couple_selfie",
       "progression": {
         "audience": "current",
-        "difficultyStars": 2
+        "difficultyStars": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -913,7 +1573,18 @@
       "icon": "couple_slow_dance",
       "progression": {
         "audience": "both",
-        "difficultyStars": 2
+        "difficultyStars": 1,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -927,7 +1598,18 @@
       "icon": "couple_holding_hands",
       "progression": {
         "audience": "both",
-        "difficultyStars": 2
+        "difficultyStars": 2,
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -944,10 +1626,21 @@
         "kind": "pass_turn"
       },
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 1,
         "audience": "male",
         "phaseTag": "gentle",
-        "heat": 2
+        "heat": 2,
+        "intimacyGain": 3,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "gentle",
@@ -964,7 +1657,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 3,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -977,8 +1681,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 2,
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -991,8 +1706,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 2,
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1005,8 +1731,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 2,
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1019,8 +1756,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 2,
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1034,7 +1782,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1049,8 +1808,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 4,
-        "audience": "both"
+        "difficultyStars": 2,
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1064,8 +1834,19 @@
       "timerSeconds": 60,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 5,
-        "turnAudience": "both"
+        "difficultyStars": 3,
+        "turnAudience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1078,8 +1859,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 1,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1093,8 +1885,19 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 1,
-        "audience": "both"
+        "difficultyStars": 3,
+        "audience": "both",
+        "intimacyGain": 0,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "illustrationOverride": true
     },
@@ -1112,8 +1915,19 @@
       },
       "deck": "standard",
       "progression": {
-        "difficultyStars": 2,
-        "audience": "both"
+        "difficultyStars": 3,
+        "audience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1126,8 +1940,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 2,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1141,7 +1966,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 2,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 4,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1154,8 +1990,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 2,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1169,10 +2016,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1185,10 +2043,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 4,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1201,10 +2070,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "illustrationOverride": true
     },
@@ -1218,10 +2098,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1234,10 +2125,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1247,10 +2149,21 @@
       "content": "Bạn thích thơm má, hôn môi hay đá lưỡi?",
       "icon": "hug",
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1263,10 +2176,21 @@
       "content": "Bạn thích nắm tay, ôm hay hôn nhất",
       "icon": "music_perfume",
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1282,8 +2206,19 @@
       "timerSeconds": 30,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 2,
-        "turnAudience": "both"
+        "difficultyStars": 4,
+        "turnAudience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1297,10 +2232,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1313,10 +2259,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1327,10 +2284,21 @@
       "timerSeconds": 30,
       "icon": "couple_forehead_touch",
       "progression": {
-        "difficultyStars": 2,
+        "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1346,7 +2314,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 3,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1359,8 +2338,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1374,7 +2364,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 3,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1388,7 +2389,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 3,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1401,8 +2413,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1416,7 +2439,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 3,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1430,7 +2464,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 3,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1444,7 +2489,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 3,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1461,7 +2517,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1477,7 +2544,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1493,7 +2571,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1509,7 +2598,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1525,7 +2625,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1539,7 +2650,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1552,10 +2674,21 @@
       "content": "Người nữ: ánh mắt hoặc cách chạm nào của người nam khiến bạn cảm thấy được khao khát nhất?",
       "icon": "eyes_voice",
       "progression": {
-        "difficultyStars": 3,
+        "difficultyStars": 4,
         "audience": "female",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1572,10 +2705,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 3,
+        "difficultyStars": 4,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1589,10 +2733,21 @@
       "phaseTag": "intimate",
       "heat": 5,
       "progression": {
-        "difficultyStars": 3,
+        "difficultyStars": 4,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1608,7 +2763,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1622,7 +2788,18 @@
         "difficultyStars": 3,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1637,8 +2814,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 4,
-        "turnAudience": "both"
+        "difficultyStars": 3,
+        "turnAudience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1651,8 +2839,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 4,
-        "turnAudience": "both"
+        "difficultyStars": 3,
+        "turnAudience": "both",
+        "intimacyGain": 5,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1664,7 +2863,18 @@
       "icon": "heart",
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1680,7 +2890,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 4,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1698,7 +2919,18 @@
         "difficultyStars": 4,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 5
+        "heat": 5,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1718,7 +2950,17 @@
         "difficultyStars": 4,
         "audience": "both",
         "phaseTag": "intimate",
-        "heat": 6
+        "heat": 6,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1731,7 +2973,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 5,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1744,8 +2997,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 5,
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1756,10 +3020,21 @@
       "content": "Lời nói, cử chỉ nào là dấu hiệu của bạn rằng bạn muốn \"lên giường\" với đối phương?",
       "icon": "whisper",
       "progression": {
-        "difficultyStars": 3,
+        "difficultyStars": 5,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -1773,8 +3048,19 @@
       "hint": "Một lời đề nghị luôn có thể được trả lời bằng “không”.",
       "icon": "flame",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -1789,8 +3075,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1804,8 +3101,19 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1815,8 +3123,19 @@
       "content": "Bạn hôn vào 2 vị trí mà đối phương chỉ trên người đối phương",
       "icon": "body_kiss",
       "progression": {
-        "difficultyStars": 3,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -1832,7 +3151,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1846,8 +3176,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 4,
-        "audience": "both"
+        "difficultyStars": 5,
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1860,8 +3201,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 4,
-        "audience": "both"
+        "difficultyStars": 5,
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1875,7 +3227,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1888,8 +3251,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 4,
-        "audience": "both"
+        "difficultyStars": 5,
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1903,7 +3277,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1916,8 +3301,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 4,
-        "turnAudience": "both"
+        "difficultyStars": 5,
+        "turnAudience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -1929,7 +3325,18 @@
       "icon": "couple_feeding",
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -1950,7 +3357,18 @@
         "difficultyStars": 4,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1964,7 +3382,18 @@
       "heat": 8,
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -1978,7 +3407,18 @@
       "heat": 8,
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "illustrationOverride": true
     },
@@ -1992,10 +3432,21 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 5,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "illustrationOverride": true
     },
@@ -2007,7 +3458,18 @@
       "icon": "heart",
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -2021,7 +3483,18 @@
       "icon": "couple_embrace_art",
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -2043,7 +3516,18 @@
       "heat": 8,
       "progression": {
         "difficultyStars": 4,
-        "audience": "male"
+        "audience": "male",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "illustrationOverride": true
     },
@@ -2056,8 +3540,19 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 4,
-        "audience": "male"
+        "difficultyStars": 5,
+        "audience": "male",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "customImageId": "asset:fc8ff0715c1ac8dfe4fc2fcd2548eb3ef08f17b31daeef357c80cd40ab500044",
       "illustrationOverride": true
@@ -2069,8 +3564,19 @@
       "content": "Lần đầu bạn nhìn thấy cobe của đối phương bạn có suy nghĩ như nào?",
       "icon": "heart",
       "progression": {
-        "difficultyStars": 4,
-        "audience": "male"
+        "difficultyStars": 5,
+        "audience": "male",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -2086,8 +3592,19 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 4,
-        "audience": "female"
+        "difficultyStars": 5,
+        "audience": "female",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "customImageId": "asset:fd2e7030dcb00e4069433721f1ffa23a768089e83183cf5f87dfd61710d40aed",
       "appearance": {
@@ -2104,8 +3621,19 @@
       "content": "Lần đầu bạn nhìn thấy caube của đối phương bạn có suy nghĩ như nào?",
       "icon": "eyes_voice",
       "progression": {
-        "difficultyStars": 4,
-        "audience": "female"
+        "difficultyStars": 5,
+        "audience": "female",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -2121,7 +3649,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 4,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -2131,14 +3670,19 @@
       "level": "passionate",
       "content": "Cả hai nằm lên người nhau, hôn sâu, cho phép sử dụng tay sờ nhưng không được mò vào trong 1 phút",
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 5,
         "audience": "both",
         "actorStages": [
-          "underwear_only"
+          "dressed",
+          "underwear_only",
+          "empty"
         ],
         "partnerStages": [
-          "underwear_only"
-        ]
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "intimacyGain": 7
       },
       "deck": "standard",
       "phaseTag": "intimate",
@@ -2162,10 +3706,16 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 5,
         "audience": "both",
         "partnerStages": [
-          "underwear_only"
+          "underwear_only",
+          "empty"
+        ],
+        "intimacyGain": 7,
+        "actorStages": [
+          "underwear_only",
+          "empty"
         ]
       }
     },
@@ -2179,8 +3729,18 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 4,
-        "audience": "both"
+        "difficultyStars": 5,
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only"
+        ]
       },
       "clothingEffect": {
         "kind": "remove_garment",
@@ -2199,14 +3759,24 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 5,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "clothingEffect": {
         "kind": "remove_garment",
-        "target": "opponent"
+        "target": "self"
       }
     },
     {
@@ -2220,10 +3790,21 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 5,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -2236,8 +3817,19 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 4,
-        "audience": "both"
+        "difficultyStars": 5,
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -2251,10 +3843,19 @@
         "kind": "swap_garments"
       },
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 5,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 9
+        "heat": 9,
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -2267,10 +3868,16 @@
       "content": "Bạn nữ chổng người như hình, bạn nam sẽ ôm vào và sờ khu vực cobe trong 1 phút không được thò vào bên trong",
       "timerSeconds": 60,
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 5,
         "audience": "male",
         "partnerStages": [
-          "underwear_only"
+          "underwear_only",
+          "empty"
+        ],
+        "intimacyGain": 7,
+        "actorStages": [
+          "underwear_only",
+          "empty"
         ]
       },
       "deck": "standard",
@@ -2290,10 +3897,16 @@
       "level": "passionate",
       "content": "Bạn nam đứng, bạn nữ đứng sau bạn nam và sờ vào khu vực caube trong 1 phút không được thò vào bên trong trong 1 phút",
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 5,
         "audience": "female",
         "partnerStages": [
-          "underwear_only"
+          "underwear_only",
+          "empty"
+        ],
+        "intimacyGain": 7,
+        "actorStages": [
+          "underwear_only",
+          "empty"
         ]
       },
       "deck": "standard",
@@ -2318,7 +3931,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 5,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -2332,7 +3956,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 5,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -2347,7 +3982,18 @@
       "heat": 8,
       "progression": {
         "difficultyStars": 5,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "illustrationOverride": true
     },
@@ -2360,8 +4006,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 5,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -2377,7 +4034,16 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 5,
-        "audience": "both"
+        "audience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -2394,11 +4060,14 @@
         "difficultyStars": 5,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 7
       },
       "position": null
     },
@@ -2415,6 +4084,12 @@
         "difficultyStars": 5,
         "audience": "both",
         "partnerStages": [
+          "underwear_only",
+          "empty"
+        ],
+        "intimacyGain": 7,
+        "actorStages": [
+          "underwear_only",
           "empty"
         ]
       },
@@ -2429,8 +4104,19 @@
       "isCustom": true,
       "deck": "standard",
       "progression": {
-        "difficultyStars": 5,
-        "audience": "both"
+        "difficultyStars": 4,
+        "audience": "both",
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -2444,7 +4130,18 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 5,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": null
     },
@@ -2461,7 +4158,18 @@
         "difficultyStars": 5,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -2475,10 +4183,21 @@
       "phaseTag": "passionate",
       "heat": 8,
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 4,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       }
     },
     {
@@ -2492,7 +4211,18 @@
         "difficultyStars": 5,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -2506,10 +4236,21 @@
       "timerSeconds": 60,
       "icon": "couple_embrace_art",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 4,
         "audience": "both",
         "phaseTag": "passionate",
-        "heat": 8
+        "heat": 8,
+        "intimacyGain": 6,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -2528,7 +4269,17 @@
       },
       "progression": {
         "difficultyStars": 5,
-        "audience": "current"
+        "audience": "current",
+        "intimacyGain": 7,
+        "actorStages": [
+          "dressed",
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "dressed",
+          "underwear_only"
+        ]
       },
       "deck": "standard",
       "phaseTag": "passionate",
@@ -2544,7 +4295,16 @@
       "heat": 5,
       "progression": {
         "difficultyStars": 5,
-        "audience": "male"
+        "audience": "male",
+        "intimacyGain": 7,
+        "actorStages": [
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "underwear_only",
+          "empty"
+        ]
       },
       "customImageId": "asset:b0f7b893f5d365098305f932870fc8e23ddaf95af706067b117e5e3c1616b274",
       "appearance": {
@@ -2567,7 +4327,13 @@
         "difficultyStars": 5,
         "audience": "female",
         "partnerStages": [
-          "underwear_only"
+          "underwear_only",
+          "empty"
+        ],
+        "intimacyGain": 7,
+        "actorStages": [
+          "underwear_only",
+          "empty"
         ]
       },
       "customImageId": "asset:973b2d04766e64d4f700a71cb987d0c4f0791a03ee501e36529463cd91e7f416",
@@ -2588,13 +4354,16 @@
       "hint": "Tư thế Idyll",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "difficultyStars": 6,
@@ -2623,16 +4392,19 @@
       "timerSeconds": 60,
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 3,
+        "difficultyStars": 7,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
-        "difficultyStars": 8,
+        "difficultyStars": 7,
         "family": "oral",
         "orderGroup": 1,
         "rarity": "luxury",
@@ -2657,16 +4429,19 @@
       "hint": "Tư thế Shinning",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 3,
+        "difficultyStars": 7,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
-        "difficultyStars": 8,
+        "difficultyStars": 7,
         "family": "oral",
         "orderGroup": 1,
         "rarity": "luxury",
@@ -2704,13 +4479,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -2728,7 +4506,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 6,
         "family": "blowjob",
         "orderGroup": 2,
         "rarity": "luxury",
@@ -2736,13 +4514,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -2761,9 +4542,15 @@
       },
       "deck": "position",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 7,
         "turnAudience": "both",
         "partnerStages": [
+          "underwear_only",
+          "empty"
+        ],
+        "intimacyGain": 0,
+        "actorStages": [
+          "underwear_only",
           "empty"
         ]
       },
@@ -2772,7 +4559,7 @@
         "turnAudience": "male",
         "orderGroup": 2,
         "rarity": "luxury",
-        "difficultyStars": 8
+        "difficultyStars": 7
       }
     },
     {
@@ -2789,7 +4576,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 9,
         "family": "blowjob",
         "orderGroup": 2,
         "rarity": "luxury",
@@ -2797,13 +4584,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -2816,13 +4606,16 @@
       "hint": "Tư thế Superhero",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "difficultyStars": 10,
@@ -2850,13 +4643,16 @@
       "hint": "Tư thế Hunger",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "difficultyStars": 10,
@@ -2884,13 +4680,16 @@
       "hint": "Tư thế Forbidden Fruit",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "blowjob",
@@ -2918,13 +4717,16 @@
       "hint": "Tư thế Inquisitor",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "difficultyStars": 10,
@@ -2957,7 +4759,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 9,
         "family": "blowjob",
         "orderGroup": 2,
         "rarity": "luxury",
@@ -2965,13 +4767,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -2989,7 +4794,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 9,
         "family": "blowjob",
         "orderGroup": 2,
         "rarity": "luxury",
@@ -2997,13 +4802,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3021,7 +4829,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 9,
         "family": "blowjob",
         "orderGroup": 2,
         "rarity": "luxury",
@@ -3029,13 +4837,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3053,7 +4864,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 9,
         "family": "blowjob",
         "orderGroup": 2,
         "rarity": "luxury",
@@ -3061,13 +4872,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3085,7 +4899,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 10,
+        "difficultyStars": 9,
         "family": "blowjob",
         "orderGroup": 2,
         "rarity": "luxury",
@@ -3093,13 +4907,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3125,13 +4942,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3150,14 +4970,17 @@
       "timerSeconds": 20,
       "deck": "position",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
@@ -3176,13 +4999,16 @@
       "hint": "Tư thế The Tittyfuck",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "difficultyStars": 6,
@@ -3215,21 +5041,24 @@
       },
       "deck": "position",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
         "recipient": "both",
         "orderGroup": 3,
         "rarity": "luxury",
-        "difficultyStars": 7
+        "difficultyStars": 6
       }
     },
     {
@@ -3246,14 +5075,17 @@
       },
       "deck": "position",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 7,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
@@ -3278,14 +5110,17 @@
       "timerSeconds": 30,
       "deck": "position",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 7,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
@@ -3310,21 +5145,24 @@
       },
       "deck": "position",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
         "recipient": "male",
         "orderGroup": 3,
         "rarity": "luxury",
-        "difficultyStars": 7
+        "difficultyStars": 6
       }
     },
     {
@@ -3342,21 +5180,24 @@
       },
       "deck": "position",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
         "recipient": "male",
         "orderGroup": 3,
         "rarity": "luxury",
-        "difficultyStars": 7
+        "difficultyStars": 6
       }
     },
     {
@@ -3374,14 +5215,17 @@
       "timerSeconds": 20,
       "deck": "position",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 7,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
@@ -3399,14 +5243,17 @@
       "content": "Hai bạn đối mặt và chạm vào nhau. Vuốt ve mông và lưng của nhau nữa. Bạn nữ  dựa vào tường, cô ấy có thể nâng một chân lên và quấn quanh hông bạn nam. Điều đó giúp bạn nam dễ dàng chạm và đưa tay vào cobe",
       "hint": "Close together",
       "progression": {
-        "difficultyStars": 5,
+        "difficultyStars": 7,
         "audience": "both",
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
@@ -3439,7 +5286,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 6,
         "family": "handjob",
         "orderGroup": 3,
         "rarity": "luxury",
@@ -3447,13 +5294,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 6,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3466,13 +5316,16 @@
       "hint": "Tư thế The Rear View",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 7,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "family": "handjob",
@@ -3501,13 +5354,16 @@
       "timerSeconds": 90,
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 7,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "difficultyStars": 7,
@@ -3535,13 +5391,16 @@
       "hint": "Tư thế The Little Spoon",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 7,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "difficultyStars": 7,
@@ -3568,9 +5427,17 @@
       "content": "Bạn nam đang ở tư thế chống bốn điểm (bằng tay và đầu gối, hoặc khuỷu tay và đầu gối), bạn nữ dùng cả hai tay kích thích caube của anh ấy.",
       "hint": "Tư thế Milking The Bull",
       "progression": {
-        "difficultyStars": 4,
+        "difficultyStars": 8,
         "audience": "both",
-        "intimacyGain": 0
+        "intimacyGain": 0,
+        "actorStages": [
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "underwear_only",
+          "empty"
+        ]
       },
       "position": {
         "difficultyStars": 8,
@@ -3603,7 +5470,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3611,13 +5478,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3635,7 +5505,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3643,13 +5513,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3667,7 +5540,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3675,13 +5548,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3699,7 +5575,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3707,13 +5583,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3731,7 +5610,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3739,13 +5618,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3763,7 +5645,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3771,13 +5653,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3795,7 +5680,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 7,
+        "difficultyStars": 8,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3803,13 +5688,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3835,13 +5723,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3867,13 +5758,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3899,13 +5793,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 8,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3923,7 +5820,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 8,
+        "difficultyStars": 9,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3931,13 +5828,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3955,7 +5855,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 8,
+        "difficultyStars": 9,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3963,13 +5863,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -3987,7 +5890,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 8,
+        "difficultyStars": 9,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -3995,13 +5898,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -4019,7 +5925,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 8,
+        "difficultyStars": 9,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -4027,13 +5933,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 9,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -4051,7 +5960,7 @@
       "isCustom": true,
       "level": "passionate",
       "position": {
-        "difficultyStars": 9,
+        "difficultyStars": 10,
         "family": "have_sex",
         "orderGroup": 4,
         "rarity": "mythic",
@@ -4059,13 +5968,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -4091,13 +6003,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -4123,13 +6038,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -4155,13 +6073,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -4187,7 +6108,16 @@
       },
       "progression": {
         "audience": "both",
-        "difficultyStars": 5
+        "difficultyStars": 10,
+        "intimacyGain": 0,
+        "actorStages": [
+          "underwear_only",
+          "empty"
+        ],
+        "partnerStages": [
+          "underwear_only",
+          "empty"
+        ]
       },
       "type": "dare"
     },
@@ -4213,13 +6143,16 @@
       },
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "type": "dare"
     },
@@ -4232,13 +6165,16 @@
       "hint": "Tư thế Gimlet",
       "progression": {
         "actorStages": [
+          "underwear_only",
           "empty"
         ],
         "audience": "both",
-        "difficultyStars": 5,
+        "difficultyStars": 10,
         "partnerStages": [
+          "underwear_only",
           "empty"
-        ]
+        ],
+        "intimacyGain": 0
       },
       "position": {
         "difficultyStars": 10,
