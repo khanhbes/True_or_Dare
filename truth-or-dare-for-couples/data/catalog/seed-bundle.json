@@ -1,22 +1,8 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-08-23T16:15:00.547Z",
+  "createdAt": "2026-08-26T10:12:08.165Z",
   "sourceOrigin": "https://staging.true-or-dare-couples.pages.dev",
   "customCards": [
-    {
-      "content": "Điều bạn không thích ở đối phương là gì?",
-      "deck": "standard",
-      "icon": "lips",
-      "id": "custom-1787156774186",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
     {
       "content": "Cả 2 cùng nói ngày mình yêu nhau là ngày bao nhiêu?",
       "deck": "standard",
@@ -26,22 +12,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Cảm giác lần đầu bạn hôn đối phương như nào?",
-      "deck": "standard",
-      "icon": "kiss_nose",
-      "id": "custom-1787157101000",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -54,8 +27,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -68,8 +42,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -82,8 +57,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -96,22 +72,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "current",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Nỗi sợ lớn nhất của bạn là gì?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787159286475",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -124,8 +87,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "current",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -138,8 +102,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -152,36 +117,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "current",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Ai có nhiều mập mờ hơn?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787162883931",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Ai có nhiều người yêu cũ hơn?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787162960686",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -194,8 +132,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -208,8 +147,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -222,8 +162,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -236,8 +177,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -250,22 +192,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
-      },
-      "type": "truth"
-    },
-    {
-      "content": "Bạn sợ nhất điều gì trong tình yêu?",
-      "deck": "standard",
-      "icon": "heart",
-      "id": "custom-1787207454914",
-      "isCustom": true,
-      "level": "gentle",
-      "position": null,
-      "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -278,8 +207,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -292,8 +222,9 @@
       "level": "gentle",
       "position": null,
       "progression": {
-        "audience": "both",
-        "difficultyStars": 1
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "type": "truth"
     },
@@ -307,35 +238,8 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 1,
-        "audience": "both"
-      },
-      "position": null
-    },
-    {
-      "id": "custom-1787453058250",
-      "type": "truth",
-      "level": "gentle",
-      "content": "Ai là người làm lành trước khi cãi nhau?",
-      "icon": "heart",
-      "isCustom": true,
-      "deck": "standard",
-      "progression": {
-        "difficultyStars": 1,
-        "turnAudience": "both"
-      },
-      "position": null
-    },
-    {
-      "id": "custom-1787453208212",
-      "type": "truth",
-      "level": "gentle",
-      "content": "Bạn có sợ đánh mất đối phương không?",
-      "icon": "heart",
-      "isCustom": true,
-      "deck": "standard",
-      "progression": {
-        "difficultyStars": 1,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "position": null
     },
@@ -349,9 +253,94 @@
       "deck": "standard",
       "progression": {
         "difficultyStars": 1,
-        "turnAudience": "both"
+        "turnAudience": "both",
+        "intimacyGain": 3
       },
       "position": null
+    },
+    {
+      "content": "Điều bạn không thích ở đối phương là gì?",
+      "deck": "standard",
+      "icon": "lips",
+      "id": "custom-1787156774186",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both"
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Cảm giác lần đầu bạn hôn đối phương như nào?",
+      "deck": "standard",
+      "icon": "kiss_nose",
+      "id": "custom-1787157101000",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both"
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Nỗi sợ lớn nhất của bạn là gì?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787159286475",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both"
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Ai có nhiều mập mờ hơn?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787162883931",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both"
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Ai có nhiều người yêu cũ hơn?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787162960686",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both"
+      },
+      "type": "truth"
+    },
+    {
+      "content": "Bạn sợ nhất điều gì trong tình yêu?",
+      "deck": "standard",
+      "icon": "heart",
+      "id": "custom-1787207454914",
+      "isCustom": true,
+      "level": "gentle",
+      "position": null,
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both"
+      },
+      "type": "truth"
     },
     {
       "id": "custom-1787343720267",
@@ -444,6 +433,20 @@
       "position": null
     },
     {
+      "id": "custom-1787453058250",
+      "type": "truth",
+      "level": "gentle",
+      "content": "Ai là người làm lành trước khi cãi nhau?",
+      "icon": "heart",
+      "isCustom": true,
+      "deck": "standard",
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both"
+      },
+      "position": null
+    },
+    {
       "id": "custom-1787453135815",
       "type": "truth",
       "level": "gentle",
@@ -524,6 +527,21 @@
       "progression": {
         "difficultyStars": 3,
         "audience": "both"
+      },
+      "position": null
+    },
+    {
+      "id": "custom-1787453208212",
+      "type": "truth",
+      "level": "gentle",
+      "content": "Bạn có sợ đánh mất đối phương không?",
+      "icon": "heart",
+      "isCustom": true,
+      "deck": "standard",
+      "progression": {
+        "difficultyStars": 3,
+        "turnAudience": "both",
+        "intimacyGain": 5
       },
       "position": null
     },
@@ -2288,11 +2306,18 @@
   ],
   "editedCards": [
     {
+      "id": "g-t-1",
+      "type": "truth",
+      "level": "gentle",
       "content": "Ấn tượng đầu tiên của bạn về đối phương trong lần đầu tiên gặp mặt là gì?",
       "hint": "Hãy thật thà chia sẻ cảm xúc lúc ấy nhé!",
-      "id": "g-t-1",
-      "level": "gentle",
-      "type": "truth"
+      "phaseTag": "gentle",
+      "heat": 2,
+      "progression": {
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
+      }
     },
     {
       "content": "Thói quen hay hành động nhỏ đáng yêu nào của người ấy khiến bạn âm thầm mỉm cười mỗi khi nhớ đến?",
@@ -2333,10 +2358,17 @@
       "type": "truth"
     },
     {
-      "content": "Bạn thích đối phương nấu cho mình món gì nhất?",
       "id": "g-t-12",
+      "type": "truth",
       "level": "gentle",
-      "type": "truth"
+      "content": "Bạn thích đối phương nấu cho mình món gì nhất?",
+      "progression": {
+        "difficultyStars": 1,
+        "turnAudience": "both",
+        "intimacyGain": 3
+      },
+      "phaseTag": "gentle",
+      "heat": 2
     },
     {
       "content": "Bạn có thấy cấn gì về bạn thân khác giới của đối phương không?",
@@ -2349,16 +2381,6 @@
       "id": "g-t-16",
       "level": "gentle",
       "type": "truth"
-    },
-    {
-      "content": "Nhìn thẳng vào mắt đối phương trong 30 giây",
-      "id": "g-d-1",
-      "level": "gentle",
-      "progression": {
-        "audience": "current",
-        "difficultyStars": 1
-      },
-      "type": "dare"
     },
     {
       "content": "Gửi một tin nhắn ngắn ngọt ngào vào điện thoại đối phương ngay lúc này.",
@@ -2382,6 +2404,33 @@
       "type": "dare"
     },
     {
+      "id": "g-t-2",
+      "type": "truth",
+      "level": "gentle",
+      "content": "Khoảnh khắc nào khiến bạn nhận ra mình đã thực sự \"phải lòng\" người ấy?",
+      "hint": "Một nụ cười, một cử chỉ hay một lời nói?",
+      "phaseTag": "gentle",
+      "heat": 2,
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both",
+        "intimacyGain": 4
+      }
+    },
+    {
+      "id": "g-t-11",
+      "type": "truth",
+      "level": "gentle",
+      "content": "Điều nhỏ bé nào đối phương làm gần đây khiến bạn cảm thấy mình được quan tâm nhất?",
+      "hint": "Có thể là một tin nhắn, một ánh nhìn hoặc một việc rất bình thường.",
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both"
+      },
+      "phaseTag": "gentle",
+      "heat": 2
+    },
+    {
       "content": "Nét tính cách nào của đối phương khiến bạn muốn đồng hành lâu dài?",
       "id": "g-t-14",
       "level": "gentle",
@@ -2402,6 +2451,19 @@
         "difficultyStars": 2
       },
       "type": "truth"
+    },
+    {
+      "id": "g-d-1",
+      "type": "dare",
+      "level": "gentle",
+      "content": "Nhìn thẳng vào mắt đối phương trong 30 giây",
+      "phaseTag": "gentle",
+      "heat": 2,
+      "progression": {
+        "difficultyStars": 2,
+        "turnAudience": "both",
+        "intimacyGain": 4
+      }
     },
     {
       "content": "Dùng bàn tay chạm nhẹ lên khuôn mặt đối phương, lên má trong 20 giây",
@@ -3478,42 +3540,37 @@
         "minPercent": 40,
         "maxPercent": 59,
         "starWeights": {
-          "6": 0,
-          "7": 0,
-          "8": 10,
-          "9": 25,
-          "10": 35
+          "6": 20,
+          "7": 10,
+          "8": 0,
+          "9": 0,
+          "10": 0
         }
       },
       {
         "minPercent": 60,
         "maxPercent": 79,
         "starWeights": {
-          "6": 0,
-          "7": 0,
-          "8": 0,
-          "9": 0,
-          "10": 10
+          "6": 25,
+          "7": 35,
+          "8": 20,
+          "9": 10,
+          "10": 0
         }
       },
       {
         "minPercent": 80,
         "maxPercent": 99,
         "starWeights": {
-          "6": 0,
-          "7": 0,
-          "8": 0,
-          "9": 0,
+          "6": 10,
+          "7": 20,
+          "8": 25,
+          "9": 35,
           "10": 5
         }
       }
     ],
     "starGains": {
-      "1": 6,
-      "2": 7,
-      "3": 8,
-      "4": 9,
-      "5": 10,
       "6": 11,
       "7": 12,
       "8": 13,

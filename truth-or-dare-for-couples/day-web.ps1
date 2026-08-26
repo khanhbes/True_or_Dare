@@ -193,7 +193,7 @@ try {
         Write-Host "[2-4/5] Da bo qua lint, test va build theo yeu cau." -ForegroundColor Yellow
     }
 
-    $changes = @(& git status --short -- $projectPath)
+    $changes = @(& git status --short -- .)
     if ($LASTEXITCODE -ne 0) {
         throw "Khong the doc git status."
     }
@@ -213,10 +213,10 @@ try {
 
     if ($changes.Count -gt 0) {
         Write-Host "[5/5] Stage va commit thay doi..." -ForegroundColor Cyan
-        Invoke-NativeCommand git add --all -- $projectPath
-        Assert-NoSensitiveFilesAreStaged -Pathspec $projectPath
+        Invoke-NativeCommand git add --all -- .
+        Assert-NoSensitiveFilesAreStaged -Pathspec .
 
-        & git diff --cached --quiet -- $projectPath
+        & git diff --cached --quiet -- .
         $hasStagedChanges = $LASTEXITCODE -eq 1
         if ($LASTEXITCODE -notin @(0, 1)) {
             throw "Khong the kiem tra thay doi da stage."
@@ -226,7 +226,7 @@ try {
             if ([string]::IsNullOrWhiteSpace($Message)) {
                 $Message = "update web $((Get-Date).ToString('yyyy-MM-dd HH:mm'))"
             }
-            Invoke-NativeCommand git commit -m $Message -- $projectPath
+            Invoke-NativeCommand git commit -m $Message -- .
         }
     }
     else {
