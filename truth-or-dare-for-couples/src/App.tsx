@@ -141,10 +141,12 @@ export default function App() {
   });
   const datasetRevisionRef = useRef(0);
   const screenRef = useRef<'intro' | 'setup' | 'game' | 'collection'>('intro');
+  const catalogSyncModeRef = useRef<CatalogSyncStatus['mode']>('loading');
   const mutationQueueRef = useRef<Promise<void>>(Promise.resolve());
 
-  // Keep screenRef in sync so the polling closure can read it without stale closure
+  // Keep refs in sync so async closures never read stale values
   useEffect(() => { screenRef.current = screen; }, [screen]);
+  useEffect(() => { catalogSyncModeRef.current = catalogSync.mode; }, [catalogSync.mode]);
 
   // Every view is a full-page destination. Reset the document scroll before
   // paint so entering the game from the bottom of Setup never clips its header.
@@ -516,16 +518,40 @@ export default function App() {
     label: string,
     mutation: (expectedRevision: number) => Promise<{ datasetRevision: number }>,
   ) => {
-    if (catalogSync.mode !== 'cloud') {
-      setCatalogSync((current) => ({
-        ...current,
-        mode: 'draft',
-        message: `${label} đang được giữ dưới dạng bản nháp trên thiết bị. Hãy kết nối lại rồi thử lưu.`,
-      }));
-      return;
+    if (catalogSync.mode === 'draft') {
+      // Already in draft — don't stack another draft message, just queue the attempt
     }
     setCatalogSync((current) => ({ ...current, message: `${label}…` }));
     mutationQueueRef.current = mutationQueueRef.current.then(async () => {
+      // If we are not connected to cloud, try to reconnect first so the
+      // mutation goes through (e.g. user edits stars while on cached data)
+      if (catalogSyncModeRef.current !== 'cloud') {
+        try {
+          const remote = await fetchCloudCatalog();
+          await catalogCache.put(remote);
+          datasetRevisionRef.current = remote.datasetRevision;
+          setCustomCards(remote.customCards);
+          setEditedCards(remote.editedCards);
+          setDeletedSystemCardIds(remote.deletedSystemCardIds);
+          setProgressionConfig(hydrateProgressionConfig(remote.progressionConfig));
+          setLuxuryProgressionConfig(hydrateLuxuryProgressionConfig(remote.luxuryProgressionConfig));
+          setCloudCatalog(remote);
+          setCatalogSync({
+            mode: 'cloud',
+            datasetRevision: remote.datasetRevision,
+            updatedAt: remote.updatedAt,
+            lastBackupAt: remote.lastBackupAt,
+            message: `Đã kết nối lại cloud. ${label}…`,
+          });
+        } catch {
+          setCatalogSync((current) => ({
+            ...current,
+            mode: 'draft',
+            message: `${label} đang được giữ dưới dạng bản nháp trên thiết bị. Hãy kết nối lại rồi thử lưu.`,
+          }));
+          return;
+        }
+      }
       const result = await mutation(datasetRevisionRef.current);
       datasetRevisionRef.current = result.datasetRevision;
       const remote = await fetchCloudCatalog();
