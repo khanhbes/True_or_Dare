@@ -1,9 +1,12 @@
 import React, { useMemo } from 'react';
 
+const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
+const PARTICLE_COUNT = isMobile ? 10 : 16;
+
 export const ParticleBackground: React.FC = () => {
   // Generate random fixed particles for glowing ambient embers/fireflies
   const particles = useMemo(() => {
-    return Array.from({ length: 28 }).map((_, i) => ({
+    return Array.from({ length: PARTICLE_COUNT }).map((_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
@@ -41,7 +44,8 @@ export const ParticleBackground: React.FC = () => {
             width: `${p.size}px`,
             height: `${p.size}px`,
             backgroundColor: p.color,
-            boxShadow: `0 0 ${p.size * 3}px ${p.color}`,
+            // Use filter:drop-shadow instead of box-shadow — GPU-composited, no layout reflow
+            filter: `drop-shadow(0 0 ${p.size * 2}px ${p.color})`,
             animationDuration: `${p.duration}s`,
             animationDelay: `${p.delay}s`,
           }}

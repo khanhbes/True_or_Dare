@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import {
@@ -93,11 +93,13 @@ import {
   getCardTurnAudience,
   getCardDeck,
   getStandardCardPerformerIndex,
-  getJourneyDrawProbabilities,
-  getJourneyAvailableTypes,
+  getJourneyDrawAnalysis,
+  getLuxuryDrawProbabilities,
   selectJourneyCard,
   POSITION_DIFFICULTY_STARS,
   selectLuxuryPositionCard,
+  type JourneyDrawProbabilities,
+  type LuxuryDrawProbabilities,
 } from '../utils/progression';
 
 interface GameTableProps {
@@ -179,7 +181,7 @@ const getPositionFamilyLabel = (card: CardItem) =>
       ? POSITION_FAMILY_LABELS[card.position.family]
       : '';
 
-const PlayerOutfitStatus: React.FC<PlayerOutfitStatusProps> = ({
+const PlayerOutfitStatus: React.FC<PlayerOutfitStatusProps> = React.memo(({
   player,
   outfitState,
   rewardState,
@@ -224,7 +226,8 @@ const PlayerOutfitStatus: React.FC<PlayerOutfitStatusProps> = ({
       </div>
     </aside>
   );
-};
+});
+PlayerOutfitStatus.displayName = 'PlayerOutfitStatus';
 
 export const GameTable: React.FC<GameTableProps> = ({
   player1,
@@ -300,8 +303,8 @@ export const GameTable: React.FC<GameTableProps> = ({
   const [hasTimerStarted, setHasTimerStarted] = useState(false);
   const [activeCardWasRerolled, setActiveCardWasRerolled] = useState(false);
   const [drawProbabilitySnapshot, setDrawProbabilitySnapshot] = useState<
-    | { deck: 'standard'; probabilities: ReturnType<typeof getJourneyDrawProbabilities> }
-    | { deck: 'position'; probabilities: ReturnType<typeof selectLuxuryPositionCard>['probabilities'] }
+    | { deck: 'standard'; probabilities: JourneyDrawProbabilities }
+    | { deck: 'position'; probabilities: LuxuryDrawProbabilities }
     | null
   >(null);
   const didPlayTimerAlarmRef = useRef(false);
@@ -320,7 +323,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   const activeDifficultyBoost = pendingDifficultyBoosts.find(
     (boost) => boost.targetPlayerIndex === currentPlayerIndex,
   ) ?? null;
-  const journeySelectionOptions = {
+  const journeySelectionOptions = useMemo(() => ({
     cards: availableCards,
     actorIndex: currentPlayerIndex,
     outfits: outfitStates,
@@ -330,20 +333,32 @@ export const GameTable: React.FC<GameTableProps> = ({
     config: progressionConfig,
     difficultyBoost: Boolean(activeDifficultyBoost),
     directorState: cardDirectorState,
-  } as const;
-  const availableDrawTypes = getJourneyAvailableTypes(journeySelectionOptions);
+  }), [
+    availableCards, currentPlayerIndex, outfitStates, usedCardIds,
+    settings.levels, intimacyPercent, progressionConfig, activeDifficultyBoost, cardDirectorState,
+  ]);
+  const drawAnalysis = useMemo(
+    () => getJourneyDrawAnalysis(journeySelectionOptions),
+    [journeySelectionOptions],
+  );
+  const availableDrawTypes = drawAnalysis.availableTypes;
   const drawProbabilities = drawProbabilitySnapshot?.deck === 'standard'
     ? drawProbabilitySnapshot.probabilities
-    : getJourneyDrawProbabilities(journeySelectionOptions);
-  const currentLuxuryProbabilities = selectLuxuryPositionCard({
-    cards: availableCards,
-    actorIndex: currentPlayerIndex,
-    outfits: outfitStates,
-    usedCardIds: sessionPositionCardIds,
-    luxuryPercent: luxuryIntimacyPercent,
-    config: luxuryProgressionConfig,
-    random: () => 0,
-  }).probabilities;
+    : drawAnalysis.probabilities;
+  const currentLuxuryProbabilities = useMemo(
+    () =>
+      journeyPhase === 'position' || journeyPhase === 'position_consent'
+        ? getLuxuryDrawProbabilities({
+            cards: availableCards,
+            actorIndex: currentPlayerIndex,
+            outfits: outfitStates,
+            usedCardIds: sessionPositionCardIds,
+            luxuryPercent: luxuryIntimacyPercent,
+            config: luxuryProgressionConfig,
+          })
+        : null,
+    [journeyPhase, availableCards, currentPlayerIndex, outfitStates, sessionPositionCardIds, luxuryIntimacyPercent, luxuryProgressionConfig],
+  );
   const luxuryDrawProbabilities = drawProbabilitySnapshot?.deck === 'position'
     ? drawProbabilitySnapshot.probabilities
     : currentLuxuryProbabilities;

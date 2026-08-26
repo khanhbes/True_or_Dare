@@ -557,24 +557,18 @@ const probabilitiesForCandidates = (
   return { types, stars };
 };
 
-export const getJourneyDrawProbabilities = (
-  options: SelectJourneyCardOptions,
-): JourneyDrawProbabilities => {
-  const { candidates } = getJourneyPool(options);
-  return probabilitiesForCandidates(
-    candidates,
-    options.intimacyPercent,
-    options.config,
-    options.preferredType ?? null,
-    options.outfits,
-    options.difficultyBoost ?? false,
-  );
-};
+export interface JourneyDrawAnalysis {
+  eligible: CardItem[];
+  pool: CardItem[];
+  candidates: CardItem[];
+  availableTypes: CardType[];
+  probabilities: JourneyDrawProbabilities;
+}
 
-export const getJourneyAvailableTypes = (
+export const getJourneyDrawAnalysis = (
   options: SelectJourneyCardOptions,
-): CardType[] => {
-  const { candidates } = getJourneyPool(options);
+): JourneyDrawAnalysis => {
+  const { eligible, pool, candidates } = getJourneyPool(options);
   const probabilities = probabilitiesForCandidates(
     candidates,
     options.intimacyPercent,
@@ -583,17 +577,22 @@ export const getJourneyAvailableTypes = (
     options.outfits,
     options.difficultyBoost ?? false,
   );
-  if (import.meta.env?.DEV) {
-    console.debug('[standard-star-draw]', {
-      intimacy: options.intimacyPercent,
-      candidates: candidates.length,
-      candidateStars: Object.fromEntries(DIFFICULTY_STARS.map((star) => [star, candidates.filter((card) => deriveDifficultyStars(card) === star).length])),
-      weights: probabilities.stars,
-    });
-  }
-  return STANDARD_CARD_TYPES.filter((type) =>
+  const availableTypes = STANDARD_CARD_TYPES.filter((type) =>
     probabilities.types[type] > 0 && candidates.some((card) => card.type === type),
   );
+  return { eligible, pool, candidates, availableTypes, probabilities };
+};
+
+export const getJourneyDrawProbabilities = (
+  options: SelectJourneyCardOptions,
+): JourneyDrawProbabilities => {
+  return getJourneyDrawAnalysis(options).probabilities;
+};
+
+export const getJourneyAvailableTypes = (
+  options: SelectJourneyCardOptions,
+): CardType[] => {
+  return getJourneyDrawAnalysis(options).availableTypes;
 };
 
 export const selectJourneyCard = (options: SelectJourneyCardOptions): JourneyCardSelectionResult => {
@@ -751,6 +750,34 @@ export interface LuxuryPositionSelectionResult {
   missingFinalCard: boolean;
   errorCode?: 'no_cards' | 'no_positive_weight' | 'missing_final' | 'no_progress_gain';
 }
+
+export interface GetLuxuryDrawProbabilitiesOptions {
+  cards: readonly CardItem[];
+  actorIndex: PlayerIndex;
+  outfits: readonly [OutfitState, OutfitState];
+  usedCardIds: readonly string[];
+  luxuryPercent: number;
+  config: LuxuryProgressionConfig;
+}
+
+export const getLuxuryDrawProbabilities = (
+  options: GetLuxuryDrawProbabilitiesOptions,
+): LuxuryDrawProbabilities => {
+  const outfitsReady = options.outfits.every((outfit) => getOutfitStage(outfit) === 'empty');
+  const positionCards = options.cards.filter((card) =>
+    outfitsReady &&
+    getCardDeck(card) === 'position' &&
+    card.position &&
+    audienceMatches(getCardTurnAudience(card), options.actorIndex) &&
+    isCardEligibleForOutfits(card, options.actorIndex, options.outfits),
+  );
+  const finals = positionCards.filter((card) => card.position?.family === 'have_sex');
+  const nonFinalEligible = positionCards.filter((card) => card.position?.family !== 'have_sex');
+  const used = new Set(options.usedCardIds);
+  let candidates = nonFinalEligible.filter((card) => !used.has(card.id));
+  if (nonFinalEligible.length > 0 && candidates.length === 0) candidates = [...nonFinalEligible];
+  return luxuryProbabilitiesForCandidates(candidates, finals, options.luxuryPercent, options.config);
+};
 
 const positionRecipientMatches = (card: CardItem, actorIndex: PlayerIndex): boolean =>
   audienceMatches(getCardTurnAudience(card), actorIndex);

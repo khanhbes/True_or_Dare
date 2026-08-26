@@ -17,7 +17,7 @@ interface GameCardProps {
 
 const CORNER_SYMBOLS = ['♠', '♥', '♦', '♣'];
 
-export const GameCard: React.FC<GameCardProps> = ({
+const GameCardInner: React.FC<GameCardProps> = ({
   card,
   size = 'md',
   showContent = true,
@@ -227,3 +227,6 @@ export const GameCard: React.FC<GameCardProps> = ({
     </div>
   );
 };
+
+export const GameCard = React.memo(GameCardInner);
+GameCard.displayName = 'GameCard';

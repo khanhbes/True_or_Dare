@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { ParticleBackground } from './components/ParticleBackground';
 import { IntroScreen } from './components/IntroScreen';
@@ -140,7 +140,11 @@ export default function App() {
     message: 'Đang kiểm tra catalog cloud…',
   });
   const datasetRevisionRef = useRef(0);
+  const screenRef = useRef<'intro' | 'setup' | 'game' | 'collection'>('intro');
   const mutationQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+  // Keep screenRef in sync so the polling closure can read it without stale closure
+  useEffect(() => { screenRef.current = screen; }, [screen]);
 
   // Every view is a full-page destination. Reset the document scroll before
   // paint so entering the game from the bottom of Setup never clips its header.
@@ -367,7 +371,10 @@ export default function App() {
       }
     };
     const onVisibility = () => { if (document.visibilityState === 'visible') void refreshCatalog(); };
-    const interval = window.setInterval(() => void refreshCatalog(), 10_000);
+    const interval = window.setInterval(() => {
+      // Suppress mid-game polling to avoid catalog churn during gameplay
+      if (screenRef.current !== 'game') void refreshCatalog();
+    }, 10_000);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       active = false;
@@ -376,20 +383,25 @@ export default function App() {
     };
   }, [catalogSync.mode]);
 
-  // Combine built-in cards + custom cards
-  const editedCardMap = new Map<string, CardItem>(
-    editedCards.map((card) => [card.id, card] as const),
-  );
-  const allCards = [
-    ...INITIAL_CARDS
-      .filter((card) => !deletedSystemCardIds.includes(card.id))
-      .map((card) => mergeEditedSystemCard(card, editedCardMap.get(card.id))),
-    ...customCards,
-  ].sort(compareCollectionCards);
+  // Combine built-in cards + custom cards (memoized to avoid re-computation every render)
+  const allCards = useMemo(() => {
+    const editedCardMap = new Map<string, CardItem>(
+      editedCards.map((card) => [card.id, card] as const),
+    );
+    return [
+      ...INITIAL_CARDS
+        .filter((card) => !deletedSystemCardIds.includes(card.id))
+        .map((card) => mergeEditedSystemCard(card, editedCardMap.get(card.id))),
+      ...customCards,
+    ].sort(compareCollectionCards);
+  }, [customCards, editedCards, deletedSystemCardIds]);
 
-  // Filter available cards by active levels selected in settings
-  const availableCards = allCards.filter(
-    (card) => getCardDeck(card) === 'position' || settings.levels.includes(card.level),
+  // Filter available cards by active levels selected in settings (memoized)
+  const availableCards = useMemo(
+    () => allCards.filter(
+      (card) => getCardDeck(card) === 'position' || settings.levels.includes(card.level),
+    ),
+    [allCards, settings.levels],
   );
 
   useEffect(() => {

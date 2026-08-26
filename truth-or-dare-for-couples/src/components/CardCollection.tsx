@@ -1222,17 +1222,21 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
             }
 
             return (
-              <GameCard
+              <div
                 key={card.id}
-                card={card}
-                size="sm"
-                isFavorited={favorites.includes(card.id)}
-                onToggleFavorite={onToggleFavorite}
-                onClick={() => {
-                  setPendingDeleteCardId(null);
-                  setSelectedCard(card);
-                }}
-              />
+                style={{ contentVisibility: 'auto', containIntrinsicSize: '0 300px' }}
+              >
+                <GameCard
+                  card={card}
+                  size="sm"
+                  isFavorited={favorites.includes(card.id)}
+                  onToggleFavorite={onToggleFavorite}
+                  onClick={() => {
+                    setPendingDeleteCardId(null);
+                    setSelectedCard(card);
+                  }}
+                />
+              </div>
             );
           })}
         </div>

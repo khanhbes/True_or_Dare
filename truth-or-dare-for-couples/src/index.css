@@ -751,7 +751,9 @@
   .card-position-rare .mythic-icon-aura::before,
   .card-position-rare .mythic-icon-aura svg,
   .card-position-rare .mythic-icon-aura .card-custom-icon,
-  .avatar-menu { animation: none; }
+  .avatar-menu,
+  .animate-float-slow,
+  .input-shimmer::placeholder { animation: none; }
   .interactive-box:hover { transform: none; }
 }
 
