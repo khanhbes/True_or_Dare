@@ -141,14 +141,51 @@ export const isProgressionConfigValue = (value: unknown): value is ProgressionCo
   });
 };
 
+export const migrateLegacyLuxuryConfig = (value: unknown): unknown => {
+  if (!isRecord(value) || !Array.isArray(value.bands)) return value;
+  const rawGains = isRecord(value.starGains) ? value.starGains : {};
+  const hasLegacyGainKeys = [1, 2, 3, 4, 5].some((star) => typeof rawGains[String(star)] === 'number') &&
+    ![6, 7, 8, 9, 10].every((star) => typeof rawGains[String(star)] === 'number');
+  const starGains = hasLegacyGainKeys
+    ? {
+        6: rawGains['1'] ?? 6,
+        7: rawGains['2'] ?? 7,
+        8: rawGains['3'] ?? 8,
+        9: rawGains['4'] ?? 9,
+        10: 0,
+        ...rawGains,
+      }
+    : rawGains;
+
+  return {
+    ...value,
+    starGains,
+    bands: value.bands.map((band) => {
+      if (!isRecord(band) || !isRecord(band.starWeights)) return band;
+      const weights = band.starWeights;
+      const legacyHasWeights = [1, 2, 3, 4, 5].some((star) => Number(weights[String(star)]) > 0) &&
+        ![6, 7, 8, 9, 10].some((star) => Number(weights[String(star)]) > 0);
+      if (!legacyHasWeights) return band;
+      return {
+        ...band,
+        starWeights: Object.fromEntries([6, 7, 8, 9, 10].map((star) => [
+          star,
+          weights[String(star - 5)] ?? 0,
+        ])),
+      };
+    }),
+  };
+};
+
 export const isLuxuryProgressionConfigValue = (value: unknown): value is LuxuryProgressionConfig => {
-  if (!isRecord(value) || !Array.isArray(value.bands) || value.bands.length !== 5 ||
-      !isRecord(value.starGains)) return false;
+  const migrated = migrateLegacyLuxuryConfig(value);
+  if (!isRecord(migrated) || !Array.isArray(migrated.bands) || migrated.bands.length !== 5 ||
+      !isRecord(migrated.starGains) ||
+      (migrated.finalCardChance !== undefined && !isWeight(migrated.finalCardChance))) return false;
   const stars = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const starGains = value.starGains as Record<string, unknown>;
-  const gains = stars.map((star) => starGains[String(star)]);
+  const gains = stars.map((star) => migrated.starGains[String(star)]);
   if (!gains.every(isWeight) || !gains.slice(0, 9).some((gain) => gain > 0)) return false;
-  return value.bands.every((band) => {
+  return migrated.bands.every((band) => {
     if (!isRecord(band) || !isRecord(band.starWeights)) return false;
     const sw = band.starWeights as Record<string, unknown>;
     return stars.every((star) => isWeight(sw[String(star)])) &&
@@ -196,8 +233,9 @@ export const parseCatalogPayload = (value: unknown): CatalogPayload | null => {
       typeof schemaVersion !== 'number' || !Number.isInteger(schemaVersion) || schemaVersion < 1 ||
       typeof datasetRevision !== 'number' || !Number.isInteger(datasetRevision) || datasetRevision < 0 ||
       typeof value.seededAt !== 'string' || typeof value.updatedAt !== 'string') return null;
+  const luxuryProgressionConfig = migrateLegacyLuxuryConfig(value.luxuryProgressionConfig);
   if (!isProgressionConfigValue(value.progressionConfig) ||
-      !isLuxuryProgressionConfigValue(value.luxuryProgressionConfig)) return null;
+      !isLuxuryProgressionConfigValue(luxuryProgressionConfig)) return null;
   if (value.counts.customCards !== customCards.length || value.counts.editedCards !== editedCards.length ||
       value.counts.deletedSystemCards !== deletedSystemCardIds.length || value.counts.assets !== assets.length) {
     return null;
@@ -211,7 +249,7 @@ export const parseCatalogPayload = (value: unknown): CatalogPayload | null => {
     editedCards,
     deletedSystemCardIds,
     progressionConfig: value.progressionConfig,
-    luxuryProgressionConfig: value.luxuryProgressionConfig,
+    luxuryProgressionConfig,
     assets,
     counts: {
       customCards: customCards.length,

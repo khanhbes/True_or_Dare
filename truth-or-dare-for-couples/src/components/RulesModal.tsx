@@ -63,8 +63,8 @@ const SectionCard: React.FC<{
           {eyebrow}
         </p>
       )}
-      <h3 className="mt-1 text-base font-semibold text-white sm:text-lg">{title}</h3>
-      {description && <p className="mt-1 text-xs leading-relaxed text-neutral-400 sm:text-sm">{description}</p>}
+      <h3 className="mt-1 break-words text-base font-semibold leading-snug text-white sm:text-lg">{title}</h3>
+      {description && <p className="mt-1 break-words text-xs leading-relaxed text-neutral-400 sm:text-sm">{description}</p>}
     </div>
     <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-black/20 p-3 sm:p-4">{children}</div>
   </section>
@@ -76,11 +76,11 @@ const InfoPill: React.FC<{ icon: string; label: string; value: string; color?: s
   value,
   color = '#fda4af',
 }) => (
-  <div className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
+  <div className="flex min-w-0 items-center gap-2.5 overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
     <span className="text-base">{icon}</span>
     <div className="min-w-0">
       <p className="text-[10px] uppercase tracking-wider text-neutral-500">{label}</p>
-      <p className="text-xs font-bold" style={{ color }}>
+      <p className="break-words text-xs font-bold leading-tight" style={{ color }}>
         {value}
       </p>
     </div>
@@ -90,181 +90,255 @@ const InfoPill: React.FC<{ icon: string; label: string; value: string; color?: s
 /* ─────────────── SVG Graphics ─────────────── */
 
 const TurnFlowGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 100" className="h-auto w-full" role="img" aria-label="Rút thẻ, hoàn thành, tăng thân mật, đổi lượt">
+  <svg
+    viewBox="0 0 560 124"
+    className="h-auto w-full"
+    role="img"
+    aria-label="Rút thẻ, hoàn thành, tăng thân mật, đổi lượt"
+    preserveAspectRatio="xMidYMid meet"
+  >
     <defs>
       <linearGradient id="flowGlow" x1="0" x2="1">
         <stop offset="0%" stopColor="#fb7185" />
         <stop offset="50%" stopColor="#f59e0b" />
-        <stop offset="100%" stopColor="#fb7185" />
+        <stop offset="100%" stopColor="#60a5fa" />
       </linearGradient>
     </defs>
-    {/* Connecting arrows */}
-    <path d="M122 50H148" fill="none" stroke="url(#flowGlow)" strokeWidth="2.5" strokeLinecap="round" opacity=".5" />
-    <path d="M142 44l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".5" />
-    <path d="M252 50H278" fill="none" stroke="url(#flowGlow)" strokeWidth="2.5" strokeLinecap="round" opacity=".5" />
-    <path d="M272 44l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".5" />
-    <path d="M382 50H408" fill="none" stroke="url(#flowGlow)" strokeWidth="2.5" strokeLinecap="round" opacity=".5" />
-    <path d="M402 44l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".5" />
 
-    {/* Step 1: Rút Thẻ */}
+    {/* Arrows sit in dedicated gaps instead of touching the cards. */}
+    <path d="M128 62H151" fill="none" stroke="url(#flowGlow)" strokeWidth="2.4" strokeLinecap="round" opacity=".55" />
+    <path d="M145 56l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".55" />
+    <path d="M268 62H291" fill="none" stroke="url(#flowGlow)" strokeWidth="2.4" strokeLinecap="round" opacity=".55" />
+    <path d="M285 56l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".55" />
+    <path d="M408 62H431" fill="none" stroke="url(#flowGlow)" strokeWidth="2.4" strokeLinecap="round" opacity=".55" />
+    <path d="M425 56l8 6-8 6" fill="none" stroke="url(#flowGlow)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".55" />
+
     <g>
-      <rect x="10" y="16" width="112" height="68" rx="16" fill="#26131b" stroke="#fb7185" strokeOpacity=".45" />
-      <rect x="34" y="30" width="20" height="28" rx="4" fill="none" stroke="#fda4af" strokeWidth="1.8" opacity=".6" />
-      <rect x="42" y="26" width="20" height="28" rx="4" fill="#2e1720" stroke="#fecdd3" strokeWidth="1.8" />
-      <text x="84" y="54" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">RÚT</text>
+      <rect x="8" y="24" width="120" height="76" rx="17" fill="#26131b" stroke="#fb7185" strokeOpacity=".45" />
+      <rect x="28" y="43" width="22" height="31" rx="4" fill="none" stroke="#fda4af" strokeWidth="1.8" opacity=".6" />
+      <rect x="37" y="38" width="22" height="31" rx="4" fill="#2e1720" stroke="#fecdd3" strokeWidth="1.8" />
+      <text x="91" y="58" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="800">RÚT</text>
+      <text x="91" y="73" textAnchor="middle" fill="#a8a29e" fontSize="8.5">một lá</text>
     </g>
-    {/* Step 2: Hoàn thành */}
+
     <g>
-      <rect x="148" y="16" width="104" height="68" rx="16" fill="#20180f" stroke="#f59e0b" strokeOpacity=".45" />
-      <circle cx="177" cy="50" r="14" fill="none" stroke="#fcd34d" strokeWidth="1.8" />
-      <path d="M170 50l5 5 10-12" fill="none" stroke="#fde68a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="218" y="54" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">XONG</text>
+      <rect x="151" y="24" width="117" height="76" rx="17" fill="#20180f" stroke="#f59e0b" strokeOpacity=".45" />
+      <circle cx="178" cy="62" r="14" fill="none" stroke="#fcd34d" strokeWidth="1.8" />
+      <path d="M171 62l5 5 10-12" fill="none" stroke="#fde68a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="226" y="59" textAnchor="middle" fill="#fff" fontSize="10.5" fontWeight="800">HOÀN</text>
+      <text x="226" y="73" textAnchor="middle" fill="#fff" fontSize="10.5" fontWeight="800">THÀNH</text>
     </g>
-    {/* Step 3: Tăng thân mật */}
+
     <g>
-      <rect x="278" y="16" width="104" height="68" rx="16" fill="#26131b" stroke="#fb7185" strokeOpacity=".45" />
-      <path d="M306 60C293 51 296 40 305 40c5 0 8 4 8 4s3-4 8-4c9 0 12 11-1 20l-7 5-7-5Z" fill="#fb7185" opacity=".85" />
-      <text x="348" y="54" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">+THÂN</text>
-      <text x="348" y="66" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">MẬT</text>
+      <rect x="291" y="24" width="117" height="76" rx="17" fill="#26131b" stroke="#fb7185" strokeOpacity=".45" />
+      <path d="M319 71C306 62 309 51 318 51c5 0 8 4 8 4s3-4 8-4c9 0 12 11-1 20l-7 5-7-5Z" fill="#fb7185" opacity=".85" />
+      <text x="365" y="58" textAnchor="middle" fill="#fff" fontSize="9.5" fontWeight="800">+ THÂN</text>
+      <text x="365" y="72" textAnchor="middle" fill="#fff" fontSize="9.5" fontWeight="800">MẬT</text>
     </g>
-    {/* Step 4: Đổi lượt (loop) */}
+
     <g>
-      <rect x="408" y="16" width="100" height="68" rx="16" fill="#161b2a" stroke="#60a5fa" strokeOpacity=".45" />
-      <path d="M440 38c12-4 20 2 20 12s-8 16-18 16" fill="none" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
-      <path d="M446 62l-7 6 6 5" fill="none" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="474" y="54" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">ĐỔI</text>
-      <text x="474" y="66" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="700">LƯỢT</text>
+      <rect x="431" y="24" width="121" height="76" rx="17" fill="#161b2a" stroke="#60a5fa" strokeOpacity=".45" />
+      <path d="M460 48c13-5 22 2 22 13s-8 17-19 17" fill="none" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
+      <path d="M468 73l-7 6 6 5" fill="none" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="515" y="59" textAnchor="middle" fill="#fff" fontSize="9.5" fontWeight="800">ĐỔI</text>
+      <text x="515" y="73" textAnchor="middle" fill="#fff" fontSize="9.5" fontWeight="800">LƯỢT</text>
     </g>
   </svg>
 );
 
 const TruthDareGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 130" className="h-auto w-full" role="img" aria-label="Truth là trả lời, Dare là thử thách">
+  <svg
+    viewBox="0 0 560 164"
+    className="h-auto w-full"
+    role="img"
+    aria-label="Truth là trả lời, Dare là thử thách"
+    preserveAspectRatio="xMidYMid meet"
+  >
     <g>
-      <rect x="16" y="10" width="236" height="110" rx="22" fill="#161b2a" stroke="#60a5fa" strokeOpacity=".35" />
-      <path d="M60 42h70a11 11 0 0 1 11 11v22a11 11 0 0 1-11 11H90l-15 11 4-11H60A11 11 0 0 1 49 75V53A11 11 0 0 1 60 42Z" fill="none" stroke="#93c5fd" strokeWidth="1.8" />
-      <circle cx="73" cy="64" r="2.5" fill="#bfdbfe" /><circle cx="88" cy="64" r="2.5" fill="#bfdbfe" /><circle cx="103" cy="64" r="2.5" fill="#bfdbfe" />
-      <text x="185" y="56" fill="#dbeafe" fontSize="18" fontWeight="800" textAnchor="middle">TRUTH</text>
-      <text x="185" y="76" fill="#94a3b8" fontSize="11" textAnchor="middle">Trả lời thật lòng</text>
-      <text x="185" y="100" fill="#64748b" fontSize="10" textAnchor="middle">Chia sẻ bí mật, kỷ niệm, cảm xúc</text>
+      <rect x="12" y="12" width="262" height="140" rx="22" fill="#161b2a" stroke="#60a5fa" strokeOpacity=".35" />
+      <path d="M43 47h66a11 11 0 0 1 11 11v23a11 11 0 0 1-11 11H77l-14 11 4-11H43A11 11 0 0 1 32 81V58A11 11 0 0 1 43 47Z" fill="none" stroke="#93c5fd" strokeWidth="1.8" />
+      <circle cx="54" cy="69" r="2.5" fill="#bfdbfe" />
+      <circle cx="69" cy="69" r="2.5" fill="#bfdbfe" />
+      <circle cx="84" cy="69" r="2.5" fill="#bfdbfe" />
+
+      <text x="196" y="55" fill="#dbeafe" fontSize="17" fontWeight="800" textAnchor="middle">TRUTH</text>
+      <text x="196" y="77" fill="#94a3b8" fontSize="10.5" textAnchor="middle">Trả lời thật lòng</text>
+      <text x="196" y="104" fill="#64748b" fontSize="8.8" textAnchor="middle">
+        <tspan x="196" dy="0">Chia sẻ suy nghĩ, kỷ niệm</tspan>
+        <tspan x="196" dy="13">hoặc cảm xúc của bạn</tspan>
+      </text>
     </g>
+
     <g>
-      <rect x="268" y="10" width="236" height="110" rx="22" fill="#281613" stroke="#fb7185" strokeOpacity=".35" />
-      <path d="M324 95c-13-10-15-24-6-33 6-7 6-13 4-21 11 5 17 14 16 24 6-3 9-8 10-14 8 9 13 18 11 29-2 13-13 23-27 23-3 0-6 0-8-1Z" fill="#fb7185" opacity=".8" />
-      <text x="430" y="56" fill="#ffe4e6" fontSize="18" fontWeight="800" textAnchor="middle">DARE</text>
-      <text x="430" y="76" fill="#a8a29e" fontSize="11" textAnchor="middle">Thực hiện thử thách</text>
-      <text x="430" y="100" fill="#64748b" fontSize="10" textAnchor="middle">Cử chỉ, hành động, tiếp xúc</text>
+      <rect x="286" y="12" width="262" height="140" rx="22" fill="#281613" stroke="#fb7185" strokeOpacity=".35" />
+      <path d="M337 111c-13-10-15-24-6-33 6-7 6-13 4-21 11 5 17 14 16 24 6-3 9-8 10-14 8 9 13 18 11 29-2 13-13 23-27 23-3 0-6 0-8-1Z" fill="#fb7185" opacity=".8" />
+
+      <text x="467" y="55" fill="#ffe4e6" fontSize="17" fontWeight="800" textAnchor="middle">DARE</text>
+      <text x="467" y="77" fill="#a8a29e" fontSize="10.5" textAnchor="middle">Thực hiện thử thách</text>
+      <text x="467" y="104" fill="#64748b" fontSize="8.8" textAnchor="middle">
+        <tspan x="467" dy="0">Cử chỉ, hành động</tspan>
+        <tspan x="467" dy="13">hoặc thử thách cùng nhau</tspan>
+      </text>
     </g>
   </svg>
 );
 
 const HeartProgressGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 140" className="h-auto w-full" role="img" aria-label="Intimacy tăng từ 0 đến 100 phần trăm">
+  <svg
+    viewBox="0 0 560 172"
+    className="h-auto w-full"
+    role="img"
+    aria-label="Intimacy tăng từ 0 đến 100 phần trăm"
+    preserveAspectRatio="xMidYMid meet"
+  >
     <defs>
-      <linearGradient id="heartFill" x1="0" x2="1"><stop offset="0%" stopColor="#fda4af" /><stop offset="100%" stopColor="#fb7185" /></linearGradient>
-      <linearGradient id="barBg" x1="0" x2="1"><stop offset="0%" stopColor="#2b1a21" /><stop offset="100%" stopColor="#1f1218" /></linearGradient>
-      <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+      <linearGradient id="heartFill" x1="0" x2="1">
+        <stop offset="0%" stopColor="#fda4af" />
+        <stop offset="100%" stopColor="#fb7185" />
+      </linearGradient>
+      <linearGradient id="barBg" x1="0" x2="1">
+        <stop offset="0%" stopColor="#2b1a21" />
+        <stop offset="100%" stopColor="#1f1218" />
+      </linearGradient>
+      <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="blur" />
+        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+      </filter>
     </defs>
-    {/* Heart icon */}
-    <path d="M72 82C40 58 48 30 66 30c10 0 17 7 22 14 5-7 12-14 22-14 18 0 26 28-8 52l-14 10-14-10Z" fill="url(#heartFill)" filter="url(#softGlow)" />
-    {/* Progress bar */}
-    <rect x="145" y="42" width="340" height="18" rx="9" fill="url(#barBg)" stroke="#fb7185" strokeOpacity=".25" />
-    <rect x="145" y="42" width="245" height="18" rx="9" fill="url(#heartFill)" opacity=".9" />
-    <text x="270" y="55" fill="#fff" fontSize="10" fontWeight="800" textAnchor="middle">72%</text>
-    {/* Labels */}
-    <text x="145" y="78" fill="#a8a29e" fontSize="10">0%</text>
-    <text x="485" y="78" fill="#fecdd3" fontSize="10" textAnchor="end">100%</text>
-    {/* Star gain info */}
-    <text x="260" y="104" fill="#fff" fontSize="12" fontWeight="700" textAnchor="middle">Hoàn thành thẻ để làm đầy trái tim</text>
-    <text x="260" y="122" fill="#a8a29e" fontSize="10" textAnchor="middle">⭐1 → +3%  ·  ⭐2 → +4%  ·  ⭐3 → +5%  ·  ⭐4 → +6%  ·  ⭐5 → +7%</text>
+
+    <path d="M78 91C43 66 52 34 71 34c11 0 19 7 24 15 5-8 13-15 24-15 19 0 28 32-8 57l-16 11-17-11Z" fill="url(#heartFill)" filter="url(#softGlow)" />
+
+    <rect x="156" y="48" width="360" height="20" rx="10" fill="url(#barBg)" stroke="#fb7185" strokeOpacity=".25" />
+    <rect x="156" y="48" width="259" height="20" rx="10" fill="url(#heartFill)" opacity=".9" />
+    <text x="286" y="62" fill="#fff" fontSize="10" fontWeight="800" textAnchor="middle">72%</text>
+    <text x="156" y="87" fill="#a8a29e" fontSize="9.5">0%</text>
+    <text x="516" y="87" fill="#fecdd3" fontSize="9.5" textAnchor="end">100%</text>
+
+    <text x="336" y="113" fill="#fff" fontSize="11" fontWeight="700" textAnchor="middle">Hoàn thành thẻ để làm đầy trái tim</text>
+
+    {/* Star gains are split into compact pills so the line never overflows. */}
+    {[
+      { x: 156, label: '★1', gain: '+3%' },
+      { x: 228, label: '★2', gain: '+4%' },
+      { x: 300, label: '★3', gain: '+5%' },
+      { x: 372, label: '★4', gain: '+6%' },
+      { x: 444, label: '★5', gain: '+7%' },
+    ].map(({ x, label, gain }) => (
+      <g key={label}>
+        <rect x={x} y="129" width="62" height="27" rx="9" fill="#1b1317" stroke="#fb7185" strokeOpacity=".18" />
+        <text x={x + 19} y="146" fill="#fda4af" fontSize="8.5" fontWeight="800" textAnchor="middle">{label}</text>
+        <text x={x + 44} y="146" fill="#d4d4d8" fontSize="8.5" fontWeight="700" textAnchor="middle">{gain}</text>
+      </g>
+    ))}
   </svg>
 );
 
 const ClothingGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 170" className="h-auto w-full" role="img" aria-label="Game tự theo dõi trang phục của hai người">
-    {/* Person A */}
-    <g transform="translate(56 20)">
-      <circle cx="55" cy="20" r="16" fill="#2c1b22" stroke="#fb7185" strokeOpacity=".45" />
-      <path d="M26 120V78c0-20 13-33 29-33s29 13 29 33v42" fill="#24161c" stroke="#fb7185" strokeOpacity=".4" strokeWidth="1.5" />
-      {/* Shirt */}
-      <path d="M18 68l20-17 17 15 17-15 20 17-10 22-12-7v34H42V83l-12 7-12-22Z" fill="#7f1d3f" opacity=".75" />
-      {/* Labels */}
-      <text x="55" y="148" fill="#fecdd3" fontSize="11" fontWeight="700" textAnchor="middle">NGƯỜI A</text>
-      <text x="55" y="162" fill="#a8a29e" fontSize="9" textAnchor="middle">Áo · Quần · Lót</text>
+  <svg
+    viewBox="0 0 560 208"
+    className="h-auto w-full"
+    role="img"
+    aria-label="Game tự theo dõi trang phục của hai người"
+    preserveAspectRatio="xMidYMid meet"
+  >
+    <g transform="translate(52 20)">
+      <circle cx="58" cy="20" r="16" fill="#2c1b22" stroke="#fb7185" strokeOpacity=".45" />
+      <path d="M29 120V78c0-20 13-33 29-33s29 13 29 33v42" fill="#24161c" stroke="#fb7185" strokeOpacity=".4" strokeWidth="1.5" />
+      <path d="M21 68l20-17 17 15 17-15 20 17-10 22-12-7v34H45V83l-12 7-12-22Z" fill="#7f1d3f" opacity=".75" />
+      <text x="58" y="150" fill="#fecdd3" fontSize="10.5" fontWeight="700" textAnchor="middle">NGƯỜI A</text>
+      <text x="58" y="167" fill="#a8a29e" fontSize="8.5" textAnchor="middle">Áo · Quần · Lót</text>
     </g>
-    {/* Arrow */}
+
     <g>
-      <path d="M220 85h80" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="5 6" opacity=".6" />
-      <circle cx="260" cy="85" r="24" fill="#21190f" stroke="#f59e0b" strokeOpacity=".4" />
-      <path d="M250 87l7 7 14-17" fill="none" stroke="#fcd34d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="260" y="75" fill="#fde68a" fontSize="8" fontWeight="700" textAnchor="middle">TỰ ĐỘNG</text>
+      <path d="M223 92h114" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="5 6" opacity=".55" />
+      <circle cx="280" cy="92" r="29" fill="#21190f" stroke="#f59e0b" strokeOpacity=".4" />
+      <text x="280" y="84" fill="#fde68a" fontSize="7.8" fontWeight="800" textAnchor="middle">TỰ ĐỘNG</text>
+      <path d="M269 97l8 8 16-19" fill="none" stroke="#fcd34d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="280" y="134" fill="#a8a29e" fontSize="8" textAnchor="middle">lọc thẻ phù hợp</text>
     </g>
-    {/* Person B */}
-    <g transform="translate(352 20)">
-      <circle cx="55" cy="20" r="16" fill="#171e2a" stroke="#60a5fa" strokeOpacity=".45" />
-      <path d="M26 120V78c0-20 13-33 29-33s29 13 29 33v42" fill="#151b25" stroke="#60a5fa" strokeOpacity=".4" strokeWidth="1.5" />
-      <path d="M18 68l20-17 17 15 17-15 20 17-10 22-12-7v34H42V83l-12 7-12-22Z" fill="#1e3a8a" opacity=".7" />
-      <text x="55" y="148" fill="#bfdbfe" fontSize="11" fontWeight="700" textAnchor="middle">NGƯỜI B</text>
-      <text x="55" y="162" fill="#a8a29e" fontSize="9" textAnchor="middle">Áo · Quần · Lót · Bra</text>
+
+    <g transform="translate(392 20)">
+      <circle cx="58" cy="20" r="16" fill="#171e2a" stroke="#60a5fa" strokeOpacity=".45" />
+      <path d="M29 120V78c0-20 13-33 29-33s29 13 29 33v42" fill="#151b25" stroke="#60a5fa" strokeOpacity=".4" strokeWidth="1.5" />
+      <path d="M21 68l20-17 17 15 17-15 20 17-10 22-12-7v34H45V83l-12 7-12-22Z" fill="#1e3a8a" opacity=".7" />
+      <text x="58" y="150" fill="#bfdbfe" fontSize="10.5" fontWeight="700" textAnchor="middle">NGƯỜI B</text>
+      <text x="58" y="167" fill="#a8a29e" fontSize="8.1" textAnchor="middle">Áo · Quần · Lót · Bra</text>
     </g>
   </svg>
 );
 
 const PositionUnlockGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 180" className="h-auto w-full" role="img" aria-label="Ba điều kiện mở Position Deck">
-    {/* Step 1: Standard 100% */}
+  <svg
+    viewBox="0 0 560 224"
+    className="h-auto w-full"
+    role="img"
+    aria-label="Ba điều kiện mở Position Deck"
+    preserveAspectRatio="xMidYMid meet"
+  >
     <g>
-      <circle cx="100" cy="62" r="34" fill="#28151d" stroke="#fb7185" strokeOpacity=".35" />
-      <path d="M100 78C82 65 86 50 96 50c5 0 9 4 9 4s4-4 9-4c10 0 14 15-4 28l-5 4-5-4Z" fill="#fb7185" />
-      <text x="100" y="113" fill="#fecdd3" fontSize="11" fontWeight="800" textAnchor="middle">STANDARD</text>
-      <text x="100" y="127" fill="#a8a29e" fontSize="10" textAnchor="middle">100%</text>
+      <circle cx="105" cy="70" r="35" fill="#28151d" stroke="#fb7185" strokeOpacity=".35" />
+      <path d="M105 86C87 73 91 58 101 58c5 0 9 4 9 4s4-4 9-4c10 0 14 15-4 28l-5 4-5-4Z" fill="#fb7185" />
+      <text x="105" y="124" fill="#fecdd3" fontSize="10.5" fontWeight="800" textAnchor="middle">STANDARD</text>
+      <text x="105" y="140" fill="#a8a29e" fontSize="9.5" textAnchor="middle">100%</text>
     </g>
-    {/* Arrow */}
-    <path d="M140 62H200" stroke="#a8a29e" strokeWidth="1.5" strokeDasharray="5 6" />
-    <path d="M194 56l8 6-8 6" fill="none" stroke="#a8a29e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    {/* Step 2: Trang phục */}
+
+    <path d="M146 70H218" stroke="#a8a29e" strokeWidth="1.5" strokeDasharray="5 6" />
+    <path d="M210 64l8 6-8 6" fill="none" stroke="#a8a29e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+
     <g>
-      <circle cx="260" cy="62" r="34" fill="#21190f" stroke="#f59e0b" strokeOpacity=".35" />
-      <path d="M244 60h32M248 48h24M251 72h18" stroke="#fcd34d" strokeWidth="2.2" strokeLinecap="round" />
-      <text x="260" y="113" fill="#fde68a" fontSize="11" fontWeight="800" textAnchor="middle">TRANG PHỤC</text>
-      <text x="260" y="127" fill="#a8a29e" fontSize="10" textAnchor="middle">Đủ điều kiện</text>
+      <circle cx="280" cy="70" r="35" fill="#21190f" stroke="#f59e0b" strokeOpacity=".35" />
+      <path d="M264 68h32M268 56h24M271 80h18" stroke="#fcd34d" strokeWidth="2.2" strokeLinecap="round" />
+      <text x="280" y="124" fill="#fde68a" fontSize="10.2" fontWeight="800" textAnchor="middle">TRANG PHỤC</text>
+      <text x="280" y="140" fill="#a8a29e" fontSize="9" textAnchor="middle">Đủ điều kiện</text>
     </g>
-    {/* Arrow */}
-    <path d="M300 62H360" stroke="#a8a29e" strokeWidth="1.5" strokeDasharray="5 6" />
-    <path d="M354 56l8 6-8 6" fill="none" stroke="#a8a29e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    {/* Step 3: Consent */}
+
+    <path d="M322 70H394" stroke="#a8a29e" strokeWidth="1.5" strokeDasharray="5 6" />
+    <path d="M386 64l8 6-8 6" fill="none" stroke="#a8a29e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+
     <g>
-      <circle cx="420" cy="62" r="34" fill="#112136" stroke="#60a5fa" strokeOpacity=".35" />
-      <path d="M406 66l8 8 18-22" fill="none" stroke="#93c5fd" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="420" y="113" fill="#bfdbfe" fontSize="11" fontWeight="800" textAnchor="middle">CẢ HAI</text>
-      <text x="420" y="127" fill="#a8a29e" fontSize="10" textAnchor="middle">Đồng ý</text>
+      <circle cx="455" cy="70" r="35" fill="#112136" stroke="#60a5fa" strokeOpacity=".35" />
+      <path d="M441 74l8 8 18-22" fill="none" stroke="#93c5fd" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="455" y="124" fill="#bfdbfe" fontSize="10.5" fontWeight="800" textAnchor="middle">CẢ HAI</text>
+      <text x="455" y="140" fill="#a8a29e" fontSize="9.5" textAnchor="middle">Đồng ý</text>
     </g>
-    {/* Bottom arrow to POSITION */}
-    <path d="M260 138v16" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" />
-    <path d="M252 148l8 8 8-8" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <text x="260" y="175" fill="#dbeafe" fontSize="13" fontWeight="900" textAnchor="middle">→ MỞ KHÓA POSITION DECK ←</text>
+
+    <path d="M280 153v20" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" />
+    <path d="M272 166l8 8 8-8" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <rect x="174" y="184" width="212" height="28" rx="14" fill="#0f1b2a" stroke="#60a5fa" strokeOpacity=".3" />
+    <text x="280" y="202" fill="#dbeafe" fontSize="10.5" fontWeight="900" textAnchor="middle">MỞ KHÓA POSITION DECK</text>
   </svg>
 );
 
 const ConsentGraphic: React.FC = () => (
-  <svg viewBox="0 0 520 115" className="h-auto w-full" role="img" aria-label="Có thể bỏ qua hoặc dừng bất cứ lúc nào">
-    {/* Skip */}
-    <rect x="30" y="20" width="200" height="72" rx="18" fill="#21161a" stroke="#fb7185" strokeOpacity=".35" />
-    <g transform="translate(55 38)">
-      <path d="M0 0v36M12 0v36" stroke="#fda4af" strokeWidth="4.5" strokeLinecap="round" />
+  <svg
+    viewBox="0 0 560 142"
+    className="h-auto w-full"
+    role="img"
+    aria-label="Có thể bỏ qua hoặc dừng bất cứ lúc nào"
+    preserveAspectRatio="xMidYMid meet"
+  >
+    <rect x="18" y="22" width="244" height="96" rx="19" fill="#21161a" stroke="#fb7185" strokeOpacity=".35" />
+    <g transform="translate(46 49)">
+      <path d="M0 0v34M12 0v34" stroke="#fda4af" strokeWidth="4.5" strokeLinecap="round" />
     </g>
-    <text x="150" y="52" fill="#fff" fontSize="15" fontWeight="800" textAnchor="middle">BỎ QUA</text>
-    <text x="150" y="72" fill="#a8a29e" fontSize="10" textAnchor="middle">Không muốn thì bỏ, không phạt</text>
-    {/* Divider */}
-    <text x="260" y="60" fill="#64748b" fontSize="12" fontWeight="700" textAnchor="middle">hoặc</text>
-    {/* Stop */}
-    <rect x="290" y="20" width="200" height="72" rx="18" fill="#17231d" stroke="#34d399" strokeOpacity=".35" />
-    <g transform="translate(320 38)">
+    <text x="164" y="57" fill="#fff" fontSize="14" fontWeight="800" textAnchor="middle">BỎ QUA</text>
+    <text x="164" y="78" fill="#a8a29e" fontSize="8.8" textAnchor="middle">
+      <tspan x="164" dy="0">Không muốn làm thì bỏ qua</tspan>
+      <tspan x="164" dy="13">không cần giải thích</tspan>
+    </text>
+
+    <text x="280" y="74" fill="#64748b" fontSize="10" fontWeight="700" textAnchor="middle">HOẶC</text>
+
+    <rect x="298" y="22" width="244" height="96" rx="19" fill="#17231d" stroke="#34d399" strokeOpacity=".35" />
+    <g transform="translate(326 50)">
       <rect width="28" height="28" rx="5" fill="none" stroke="#6ee7b7" strokeWidth="2" />
       <path d="M7 8h14M7 15h14M7 22h8" stroke="#a7f3d0" strokeWidth="1.6" strokeLinecap="round" />
     </g>
-    <text x="420" y="52" fill="#fff" fontSize="15" fontWeight="800" textAnchor="middle">DỪNG</text>
-    <text x="420" y="72" fill="#a8a29e" fontSize="10" textAnchor="middle">Kết thúc ngay bất cứ lúc nào</text>
+    <text x="446" y="57" fill="#fff" fontSize="14" fontWeight="800" textAnchor="middle">DỪNG</text>
+    <text x="446" y="78" fill="#a8a29e" fontSize="8.8" textAnchor="middle">
+      <tspan x="446" dy="0">Kết thúc ngay khi cần</tspan>
+      <tspan x="446" dy="13">bất cứ lúc nào</tspan>
+    </text>
   </svg>
 );
 
@@ -526,9 +600,9 @@ const WardrobeTab: React.FC = () => (
             { slot: 'Quần (pants)', layer: 'Ngoài cùng', removable: true },
             { slot: 'Quần lót (underwear)', layer: 'Trong cùng', removable: false },
           ].map((item) => (
-            <div key={item.slot} className="flex items-center justify-between rounded-lg bg-black/20 px-2.5 py-1.5">
-              <span className="text-[11px] text-neutral-300">{item.slot}</span>
-              <span className={`text-[9px] font-bold ${item.removable ? 'text-emerald-300' : 'text-amber-300'}`}>
+            <div key={item.slot} className="flex items-start justify-between gap-2 rounded-lg bg-black/20 px-2.5 py-1.5">
+              <span className="min-w-0 break-words text-[11px] leading-snug text-neutral-300">{item.slot}</span>
+              <span className={`max-w-[58%] shrink-0 text-right text-[9px] font-bold leading-snug ${item.removable ? 'text-emerald-300' : 'text-amber-300'}`}>
                 {item.removable ? '✓ Cởi trước' : '⬆ Cần cởi quần ngoài'}
               </span>
             </div>
@@ -544,9 +618,9 @@ const WardrobeTab: React.FC = () => (
             { slot: 'Áo lót (bra)', layer: 'Trong', removable: false },
             { slot: 'Quần lót (underwear)', layer: 'Trong cùng', removable: false },
           ].map((item) => (
-            <div key={item.slot} className="flex items-center justify-between rounded-lg bg-black/20 px-2.5 py-1.5">
-              <span className="text-[11px] text-neutral-300">{item.slot}</span>
-              <span className={`text-[9px] font-bold ${item.removable ? 'text-emerald-300' : 'text-amber-300'}`}>
+            <div key={item.slot} className="flex items-start justify-between gap-2 rounded-lg bg-black/20 px-2.5 py-1.5">
+              <span className="min-w-0 break-words text-[11px] leading-snug text-neutral-300">{item.slot}</span>
+              <span className={`max-w-[58%] shrink-0 text-right text-[9px] font-bold leading-snug ${item.removable ? 'text-emerald-300' : 'text-amber-300'}`}>
                 {item.removable ? '✓ Cởi trước' : '⬆ Cần cởi đồ ngoài'}
               </span>
             </div>
@@ -567,9 +641,9 @@ const WardrobeTab: React.FC = () => (
         ].map((effect) => (
           <div key={effect.name} className="flex items-start gap-2.5 rounded-lg bg-black/15 px-3 py-2">
             <span className="mt-0.5 text-sm">{effect.icon}</span>
-            <div>
-              <p className="text-[11px] font-bold text-white">{effect.name}</p>
-              <p className="text-[10px] text-neutral-400">{effect.desc}</p>
+            <div className="min-w-0">
+              <p className="break-words text-[11px] font-bold text-white">{effect.name}</p>
+              <p className="break-words text-[10px] leading-relaxed text-neutral-400">{effect.desc}</p>
             </div>
           </div>
         ))}
@@ -679,11 +753,11 @@ const ConsentTab: React.FC = () => (
         <div key={rule.title} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4">
           <div className="flex items-start gap-3">
             <span className="mt-0.5 text-lg">{rule.icon}</span>
-            <div>
-              <p className="text-xs font-bold" style={{ color: rule.color }}>
+            <div className="min-w-0">
+              <p className="break-words text-xs font-bold" style={{ color: rule.color }}>
                 {rule.title}
               </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-neutral-300">{rule.desc}</p>
+              <p className="mt-1 break-words text-[11px] leading-relaxed text-neutral-300">{rule.desc}</p>
             </div>
           </div>
         </div>
