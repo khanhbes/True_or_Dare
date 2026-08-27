@@ -1,7 +1,7 @@
 {
   "format": "true-or-dare-local-catalog",
   "version": 1,
-  "generatedAt": "2026-08-26T16:02:55.751Z",
+  "generatedAt": "2026-08-27T14:28:18.913Z",
   "sourceOrigin": "https://staging.true-or-dare-couples.pages.dev",
   "datasetRevision": 139,
   "counts": {
@@ -72,7 +72,7 @@
     "assets/cb1c89e4a1e670d581ee4630dc1d7af85e70fd3de5aa538178f386aa022c8271.png": "cb1c89e4a1e670d581ee4630dc1d7af85e70fd3de5aa538178f386aa022c8271",
     "assets/41996c2d12e8cdb51c72453dce8d3dacce869667d721142b05cea497d53e69d9.png": "41996c2d12e8cdb51c72453dce8d3dacce869667d721142b05cea497d53e69d9",
     "assets/a3b8fc8d0ee366a9a5117c1c49b1bfca207d16a05342a024cfc192e731577b67.png": "a3b8fc8d0ee366a9a5117c1c49b1bfca207d16a05342a024cfc192e731577b67",
-    "catalog.json": "db32e9078af5caff22d4129187c39adc9acbacb8998d2dfa632d5e3b726caa4f",
-    "seed-bundle.json": "62ec3f942afe29b3cd5e1d25142a28247610ef5b7cb1e2e2627180e1271f5977"
+    "catalog.json": "263b715b45cafea40407f60f18e2be904f37b0f194ac072e1862d5572f1d6559",
+    "seed-bundle.json": "afc9a254567a23bdec1333bf7d62b15a532ae15f36c441f519821235a77b6895"
   }
 }
